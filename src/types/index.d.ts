@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2023-08-15 10:28:10
  * @FilePath     : /src/types/index.d.ts
- * @LastEditTime : 2024-06-08 20:50:53
+ * @LastEditTime : 2024-12-01 16:21:35
  * @Description  : Frequently used data structures in SiYuan
  */
 
@@ -89,7 +89,7 @@ type doOperation = {
     retData: null;
 }
 
-interface Window {
+declare interface Window {
     siyuan: {
         config: any;
         notebooks: any;
@@ -103,4 +103,12 @@ interface Window {
         emojis: any;
     };
     Lute: any;
+    Query: typeof import("@/data-query/query").default;
+    mermaid: any;
+    echarts: any;
+}
+
+// globalThis
+declare interface GlobalThis {
+    Query: Window['Query'];
 }

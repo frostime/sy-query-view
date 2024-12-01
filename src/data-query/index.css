@@ -1,0 +1,65 @@
+.js-query-data-view {
+    margin: 5px auto;
+}
+
+.embed-container[data-node-id] {
+    border: 1px solid var(--b3-border-color);
+    padding: 0.5em;
+    border-radius: 0;
+    margin-top: 0px;
+    margin-bottom: 0px;
+    box-sizing: border-box;
+    /* gap: 0px; */
+
+    & a.embed-jump-icon {
+        opacity: 0;
+        position: absolute;
+        top: 0.5em;
+        right: 0.5em;
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 0.85rem;
+        text-decoration: none;
+
+        height: 1.5em;
+        width: 1.5em;
+
+        &>svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        &:hover {
+            opacity: 0.9;
+            background-color: var(--b3-theme-primary-lightest);
+            text-decoration: none;
+        }
+    }
+
+    & .embed-more-svg {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-top: 0;
+        height: 1em;
+        &>svg {
+            height: 100%;
+            transform: rotate(90deg);
+            opacity: 0.6;
+        }
+        &:hover {
+            background-color: var(--b3-theme-primary-lightest);
+        }
+    }
+}
+
+
+
+.remove-mermaid {
+    /* 缓慢删除, 向下移动退场 */
+    transition: opacity 1s ease-in-out, transform 1s ease-in-out;
+}
+
+.mindmap-node-siyuan {
+    cursor: pointer;
+}

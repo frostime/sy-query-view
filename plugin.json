@@ -20,12 +20,12 @@
     "desktop-window"
   ],
   "displayName": {
-    "en_US": "Plugin sample with vite and svelte",
-    "zh_CN": "插件样例 vite + svelte 版"
+    "en_US": "Javascript Query and Dataview",
+    "zh_CN": "数据查询与视图"
   },
   "description": {
-    "en_US": "SiYuan plugin sample with vite and svelte",
-    "zh_CN": "使用 vite 和 svelte 开发的思源插件样例"
+    "en_US": "Use Javascript to query and render as Dataview view",
+    "zh_CN": "使用 Javascript 查询, 并自定义渲染为 Dataview 视图"
   },
   "readme": {
     "en_US": "README.md",
@@ -37,8 +37,8 @@
     ]
   },
   "keywords": [
-    "plugin",
-    "sample",
-    "插件样例"
+    "javascript",
+    "query",
+    "dataview"
   ]
 }

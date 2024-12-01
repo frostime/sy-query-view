@@ -1,0 +1,8 @@
+src_dataquery_componentsts:
+  mermaid_render_failed: Mermaid 渲染失败, 请检查代码
+src_dataquery_editorts:
+  onlydesktop: 仅在桌面环境下支持在代码编辑器中打开
+src_setting_indexts:
+  local_command_desc: 本地用于打开代码编辑器的命令, 默认为 "code {{filepath}}" 代表使用 VSCode 打开, 其中 {{filepath}}
+    在运行时会被替换为真实的代码文件
+  open_local_editor: 打开本地编辑器

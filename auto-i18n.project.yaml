@@ -1,0 +1,28 @@
+# py-auto-i18n project.
+# * `i18n_dir`: The directory for storing translation files
+# * `main_file`: The translation file for the main language
+# * `code_files`: The types of code files to scan
+# * `i18n_pattern`: The pattern to mark text that needs to be translated in the code
+# * `dict`: A dictionary of specific terms for translation; you can place specific translations for your project here
+# * `strategy`: The translation strategy
+#   * `"diff"` means only translating new content
+#   * `"full"` means translating all content
+# * `i18n_var_prefix`: The prefix used for replacement variables in the code
+# * `export_dir`: The export directory. If set, it will be used as the output directory for the export command.
+# * `i18n_var_mid`: The strategy for generating the middle part of the i18n key. Options are:
+#   * `"filename"`: Uses the full filename, e.g. `testts`
+#   * `"filename_noext"`: Uses the filename without its extension
+#   * `"pathname"`: Uses the relative path of the file, replacing '/' with '_'
+# 
+code_files:
+- src/**/*.ts
+- src/**/*.svelte
+dict:
+  - 思源翻译为 SiYuan
+export_dir: src/types
+i18n_dir: public/i18n
+i18n_pattern: \(\(`(.+?)`\)\)
+i18n_var_mid: pathname
+i18n_var_prefix: i18n
+main_file: zh_CN.yaml
+strategy: diff

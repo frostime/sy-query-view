@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2023-12-17 18:28:19
  * @FilePath     : /src/libs/setting-utils.ts
- * @LastEditTime : 2024-05-01 17:44:16
+ * @LastEditTime : 2024-12-01 17:02:07
  * @Description  : 
  */
 
@@ -366,6 +366,9 @@ export class SettingUtils {
                 hintElement.className = 'b3-label fn__flex-center';
                 itemElement = hintElement;
                 break;
+        }
+        if (item.direction === 'row') {
+            itemElement.classList.remove('fn__size200');
         }
         return itemElement;
     }
