@@ -103,7 +103,7 @@ declare interface Window {
         emojis: any;
     };
     Lute: any;
-    Query: typeof import("@/data-query/query").default;
+    Query: typeof import("@/core/query").default;
     mermaid: any;
     echarts: any;
 }

@@ -2,15 +2,15 @@ import {
     Plugin,
 } from "siyuan";
 import "@/index.scss";
-import * as DataQuery from "./data-query";
+import * as DataQuery from "./core";
 import * as Setting from "./setting";
 
-export let i18n;
+let i18n: I18n;
 
 export default class QueryView extends Plugin {
 
     async onload() {
-        i18n = this.i18n;
+        i18n = this.i18n as I18n;
         Setting.load(this);
         DataQuery.load(this);
     }
@@ -19,3 +19,5 @@ export default class QueryView extends Plugin {
         DataQuery.unload(this);
     }
 }
+
+export { i18n };

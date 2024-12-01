@@ -213,7 +213,8 @@ class Mermaid {
         }
 
         const text = ((b?.fcontent || b?.content) || b?.id) || 'empty';
-        const str = oneline(text);
+        let str = oneline(text);
+        str = window.Lute.EscapeHTMLStr(str);
         return str;
     }
     constructor(options: {
