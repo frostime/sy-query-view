@@ -90,6 +90,8 @@ type Block = {
     updated: string;
 }
 
+type PartialBlock = Partial<Block>;
+
 type doOperation = {
     action: string;
     data: string;

@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-12-01 18:18:56
  * @FilePath     : /scripts/generate-types.js
- * @LastEditTime : 2024-12-01 19:54:42
+ * @LastEditTime : 2024-12-01 22:05:03
  * @Description  : 
  */
 import { Project } from 'ts-morph';
@@ -53,30 +53,12 @@ declare interface IProtyle {
     extractQueryInterface(queryFile, outputFile);
     outputFile.addStatements('\n');
 
-    // ========== others ==========
+    // ========== data-view.ts ==========
 
-    const sourceFiles = [
-        project.addSourceFileAtPath(resolve(__dirname, '../src/core/data-view.ts')),
-        // project.addSourceFileAtPath(resolve(__dirname, '../src/core/query.ts')),
-        project.addSourceFileAtPath(resolve(__dirname, '../src/core/proxy.ts')),
-    ];
+    const dataViewFile = project.addSourceFileAtPath(resolve(__dirname, '../src/core/data-view.ts'));
 
-    // 先收集所有类型定义，避免循环引用
-    const typeMap = new Map();
-    sourceFiles.forEach(sourceFile => {
-        sourceFile.getInterfaces().forEach(intf => {
-            const name = intf.getName();
-            const text = intf.getText()
-                .replace(/import\(".*?"\)\./g, '')
-            typeMap.set(name, text);
-        });
-    });
+    extractClassAndInterface(dataViewFile, outputFile);
 
-
-    // 处理每个源文件
-    sourceFiles.forEach(sourceFile => {
-        extractTypes(sourceFile, outputFile, typeMap);
-    });
     await outputFile.save();
 }
 
@@ -144,7 +126,7 @@ function extractQueryInterface(sourceFile, outputFile) {
     }
 }
 
-function extractTypes(sourceFile, outputFile, typeMap) {
+function extractClassAndInterface(sourceFile, outputFile) {
     // 提取类定义
     for (const cls of sourceFile.getClasses()) {
         const name = cls.getName();
@@ -212,31 +194,16 @@ function extractTypes(sourceFile, outputFile, typeMap) {
     }
 
     // 提取接口定义
+    const handledInterfaces = new Set();
     for (const intf of sourceFile.getInterfaces()) {
         const name = intf.getName();
-        if (!typeMap.has(name)) return;
+        if (handledInterfaces.has(name)) return;
 
-        const text = processInterfaceText(typeMap.get(name));
+        const text = processInterfaceText(intf.getText().replace(/import\(".*?"\)\./g, ''));
         outputFile.addStatements(text);
+        handledInterfaces.add(name);
     }
-}
-
-function proxyPrompt() {
-const prompt = `
-- 任务：请根据 Proxy 的内部定义，补全 IWrappedBlock 和 IWrappedList 的类型定义
-- 要求：保留 Proxy 中原始的注释文档，到 interface 中
-- 输出: 仅仅包括两个 interface 的代码, 不包含任何其他修饰符或者内容
-
-\`\`\`ts
-${ts.formatText(project.getSourceFileOrThrow('src/core/proxy.ts').getFullText())}
-\`\`\`
-`
-    // copy to clipboard
-    navigator.clipboard.writeText(prompt);
-    console.log('已复制到剪贴板');
-    console.log(prompt);
 }
 
 // 运行生成器
 generateTypeDefinitions().catch(console.error);
-proxyPrompt(); //太贵了, 不敢用 API
