@@ -13,7 +13,7 @@ import { i18n } from "@/index";
 const renderAttr = (b: Block, attr: keyof Block, options?: {
     onlyDate?: boolean;
     onlyTime?: boolean;
-}) => {
+}): string => {
     let v: string | number = '';
 
     const link = (title: string, id: BlockId) => `[${title}](siyuan://blocks/${id})`;
@@ -71,7 +71,7 @@ const renderAttr = (b: Block, attr: keyof Block, options?: {
             v = b[attr];
             break;
     }
-    return v;
+    return v.toString();
 }
 
 

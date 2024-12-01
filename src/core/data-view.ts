@@ -57,15 +57,15 @@ export interface ITableOptions {
     renderer?: (b: Block, attr: keyof Block) => string | number | undefined | null; //仅对BlockTable有效
 }
 
-export interface TreeNode {
+export interface ITreeNode {
     id?: string;
     name?: string;
     content?: string;
-    children?: TreeNode[];
+    children?: ITreeNode[];
     [key: string]: any;  // 允许其他自定义属性
 }
 
-export interface GraphNode {
+export interface IGraphNode {
     id: string;
     name?: string;
     content?: string;
@@ -74,7 +74,7 @@ export interface GraphNode {
     [key: string]: any;  // 允许其他自定义属性
 }
 
-export interface GraphLink {
+export interface IGraphLink {
     source: string;      // 源节点ID
     target: string;      // 目标节点ID
     value?: number;      // 用于控制连线粗细或其他属性
@@ -386,7 +386,7 @@ export class DataView {
     /**
      * Creates a table view specifically for Block objects
      * @param blocks - Array of Block objects to display
-     * @param cols - Array of Block properties to show as columns
+     * @param cols - Array of Block properties to show as columns, can be null
      * @param options - Configuration options
      * @param options.center - Center align table contents
      * @param options.fullwidth - Make table full width
@@ -394,7 +394,7 @@ export class DataView {
      * @param options.renderer - Custom function to render cell contents
      * @returns HTMLElement containing the block table
      */
-    blockTable(blocks: Block[], cols?: (keyof Block)[], options: ITableOptions = {}) {
+    blockTable(blocks: Block[], cols: (keyof Block)[] | null, options: ITableOptions = {}) {
         let tableContainer = newDivWrapper();
         const table = new BlockTable({
             target: tableContainer,
@@ -686,13 +686,13 @@ export class DataView {
      * @param options.echartsOption - Additional ECharts configuration
      * @returns HTMLElement containing the tree visualization
      */
-    echartsTree(data: TreeNode, options: {
+    echartsTree(data: ITreeNode, options: {
         height?: string,
         width?: string,
         title?: string,
         orient?: 'LR' | 'TB',
-        nameRenderer?: (node: TreeNode) => string,
-        valueRenderer?: (node: TreeNode) => string,
+        nameRenderer?: (node: ITreeNode) => string,
+        valueRenderer?: (node: ITreeNode) => string,
         symbolSize?: number,
         seriesOption?: IEchartsSeriesOption,
         echartsOption?: IEchartsOption,
@@ -770,14 +770,14 @@ export class DataView {
      * @param options.echartsOption - Additional ECharts configuration
      * @returns HTMLElement containing the graph visualization
      */
-    echartsGraph(nodes: GraphNode[], links: GraphLink[], options: {
+    echartsGraph(nodes: IGraphNode[], links: IGraphLink[], options: {
         height?: string,
         width?: string,
         title?: string,
         symbolSize?: number,
-        renderer?: (node: GraphNode) => string,
-        nameRenderer?: (node: GraphNode) => string,
-        valueRenderer?: (node: GraphNode) => string,
+        renderer?: (node: IGraphNode) => string,
+        nameRenderer?: (node: IGraphNode) => string,
+        valueRenderer?: (node: IGraphNode) => string,
         seriesOption?: IEchartsSeriesOption,
         echartsOption?: IEchartsOption,
     } = {}) {

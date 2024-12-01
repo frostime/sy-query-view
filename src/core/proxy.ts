@@ -1,31 +1,11 @@
 import { renderAttr } from "./components";
 
 export interface IWrappedBlock extends Block {
-    unwrap(): Block;
-    unwrapped: Block;
-    asuri: string;
-    touri: string;
-    aslink: string;
-    tolink: string;
-    asref: string;
-    toref: string;
-    attr(attr: keyof Block, renderer?: (block: Block, attr: keyof Block) => string | null): string;
-    updatedDate: string;
-    createdDate: string;
-    updatedTime: string;
-    createdTime: string;
-    updatedDatetime: string;
-    createdDatetime: string;
-    [key: `custom-${string}`]: string;
+    //TODO
 }
 
 export interface IWrappedList extends Array<IWrappedBlock> {
-    unwrap(): Block[];
-    unwrapped: Block[];
-    pick(...attrs: (keyof Block)[]): IWrappedList;
-    omit(...attrs: (keyof Block)[]): IWrappedList;
-    sorton(attr: keyof Block, order?: 'asc' | 'desc'): IWrappedList;
-    groupby(predicate: (keyof Block) | ((b: Block) => any), fnEach?: (groupname: any, blocks: Block[]) => any): Record<string, IWrappedList>;
+    //TODO
 }
 
 /**
