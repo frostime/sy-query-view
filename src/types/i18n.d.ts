@@ -6,7 +6,11 @@ interface I18n {
         onlydesktop: string;
     };
     src_setting_indexts: {
+        api_interface: string;
+        apitypedefinition: string;
+        defaultcolumnsofdataviewtable: string;
         local_command_desc: string;
         open_local_editor: string;
+        table_default_columns: string;
     };
 }

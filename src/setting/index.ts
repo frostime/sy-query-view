@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-12-01 16:25:57
  * @FilePath     : /src/setting/index.ts
- * @LastEditTime : 2024-12-01 17:02:39
+ * @LastEditTime : 2024-12-02 22:48:08
  * @Description  : 
  */
 
@@ -12,7 +12,8 @@ import { i18n } from "@/index";
 import { Plugin } from "siyuan";
 import { SettingUtils } from "@/libs/setting-utils";
 let defaultSetting = {
-    codeEditor: 'code -w {{filepath}}'
+    codeEditor: 'code -w {{filepath}}',
+    defaultTableColumns: ['type', 'content', 'hpath', 'box'].join(',')
 };
 
 let settingUtils: SettingUtils;
@@ -48,11 +49,26 @@ export const load = async (plugin: Plugin) => {
         height: '500px'
     });
     settingUtils.addItem({
+        type: 'hint',
+        title: i18n.src_setting_indexts.api_interface,
+        description: ((`API 接口的类型定义，请参考: `)) + `<a href="https://github.com/frostime/sy-query-view/blob/main/public/types.d.ts" target="_blank">frostime/sy-query-view/public/types.d.ts</a>`,
+        key: 'apiDoc',
+        value: '',
+    });
+    settingUtils.addItem({
         type: 'textinput',
         title: i18n.src_setting_indexts.open_local_editor,
         description: i18n.src_setting_indexts.local_command_desc,
         key: 'codeEditor',
         value: defaultSetting.codeEditor,
+        direction: 'row'
+    });
+    settingUtils.addItem({
+        type: 'textinput',
+        title: i18n.src_setting_indexts.table_default_columns,
+        description: i18n.src_setting_indexts.defaultcolumnsofdataviewtable,
+        key: 'defaultTableColumns',
+        value: defaultSetting.defaultTableColumns,
         direction: 'row'
     });
     const configs = await settingUtils.load();
@@ -61,8 +77,9 @@ export const load = async (plugin: Plugin) => {
 };
 
 export const setting = new Proxy(defaultSetting, {
-    get: (target, key) => {
-        return target[key];
+    get: (target, key: string) => {
+        // return target[key];
+        return settingUtils.get(key);
     },
     set: (target, key, value) => {
         console.warn('禁止外部修改插件配置变量');

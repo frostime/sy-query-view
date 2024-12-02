@@ -9,7 +9,7 @@ import { addScript, matchIDFormat } from "./utils";
 import './index.css';
 
 import { i18n } from "@/index";
-import { deprecate } from "util";
+import { setting } from "@/setting";
 
 
 /**
@@ -145,7 +145,8 @@ class BlockList {
 }
 
 
-const DEFAULT_COLS = ['type', 'content', 'hpath', 'box'];
+// const DEFAULT_COLS = ['type', 'content', 'hpath', 'box'];
+const DEFAULT_COLS = () => setting.defaultTableColumns.split(',').map(c => c.trim());
 
 class BlockTable {
     element: HTMLElement;
@@ -204,13 +205,13 @@ class BlockTable {
      * @returns 
      */
     private fallbckColumns(blocks: Block[]) {
-        if (blocks.length === 0) return DEFAULT_COLS; //反正空表格，返回什么都无所谓
+        if (blocks.length === 0) return DEFAULT_COLS(); //反正空表格，返回什么都无所谓
         const firstRow: Record<string | number, ScalarValue> = blocks[0];
         const keys = Object.keys(firstRow);
         // 计算交集
-        const intersect = DEFAULT_COLS.filter(c => keys.includes(c));
+        const intersect = DEFAULT_COLS().filter(c => keys.includes(c));
         // 如果包含了所有的默认列，则返回默认列
-        if (intersect.length === DEFAULT_COLS.length) return intersect;
+        if (intersect.length === DEFAULT_COLS().length) return intersect;
         // 否则返回所有 keys
         return keys;
     }

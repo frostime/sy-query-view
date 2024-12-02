@@ -3,7 +3,12 @@ src_dataquery_componentsts:
 src_dataquery_editorts:
   onlydesktop: Only supported to open in the code editor in the desktop environment
 src_setting_indexts:
+  api_interface: 📃 API interface
+  apitypedefinition: 'The type definition of the API interface, please refer to:'
+  defaultcolumnsofdataviewtable: When calling DataView.table, the default columns
+    to be displayed, separated by commas; leaving it blank means showing all columns
   local_command_desc: The local command used to open the code editor, by default it
     is "code {{filepath}}" which represents opening with VSCode, where {{filepath}}
     will be replaced with the actual code file at runtime
-  open_local_editor: Open Local Editor
+  open_local_editor: ✒️ Open Local Editor
+  table_default_columns: 🔑 Default columns displayed in table view
