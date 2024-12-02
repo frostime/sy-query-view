@@ -8,5 +8,3 @@ node_modules
 dev
 dist
 build
-tmp
-types

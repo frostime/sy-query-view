@@ -54,6 +54,9 @@ const query = readFile('./types/core/query.d.ts');
 writer.append(query);
 writer.append('\n');
 
+const dataviewdts = readFile('./src/types/data-view.d.ts');
+writer.append(dataviewdts);
+writer.append('\n');
 
 let dataview = readFile('./types/core/data-view.d.ts');
 dataview = removeLine(dataview, 'import { IProtyle } from "siyuan";');

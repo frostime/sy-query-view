@@ -170,8 +170,8 @@ declare const Query: {
     }) => Promise<IWrappedList<IWrappedBlock>>;
 };
 
-export interface IHasChildren {
-    children?: IHasChildren[];
+interface IHasChildren<T> {
+    children?: IHasChildren<T>[];
 }
 
 /**
@@ -180,7 +180,8 @@ export interface IHasChildren {
  * @extends Block
  * @extends IHasChildren
  */
-export interface IBlockWithChilds extends Block, IHasChildren {
+interface IBlockWithChilds extends Block, IHasChildren<Block> {
+
 }
 
 /**
@@ -190,7 +191,7 @@ export interface IBlockWithChilds extends Block, IHasChildren {
  * @property {number} columns - Number of columns to display
  * @property {(b: T) => string | number | undefined | null} renderer - Custom function to render each list item; if not provided or return null, the default renderer will be used
  */
-export interface IListOptions<T> {
+interface IListOptions<T> {
     type?: 'u' | 'o';
     columns?: number;
     renderer?: (b: T) => string | number | undefined | null;
@@ -204,35 +205,34 @@ export interface IListOptions<T> {
  * @property {boolean} index - Show row indices
  * @property {(b: Block, attr: keyof Block) => string | number | undefined | null} renderer - Custom function to render each table cell; it is only effective when the table is a BlockTable; if not provided or return null, the default renderer will be used
  */
-export interface ITableOptions {
+interface ITableOptions {
     center?: boolean;
     fullwidth?: boolean;
     index?: boolean;
-    renderer?: (b: Block, attr: keyof Block) => string | number | undefined | null;
+    renderer?: (b: Block, attr: keyof Block) => string | number | undefined | null; //仅对BlockTable有效
 }
 
-export interface ITreeNode {
+interface ITreeNode extends IHasChildren<ITreeNode> {
     id?: string;
     name?: string;
     content?: string;
-    children?: ITreeNode[];
-    [key: string]: any;
+    [key: string]: any;  // 允许其他自定义属性
 }
 
-export interface IGraphNode {
+interface IGraphNode {
     id: string;
     name?: string;
     content?: string;
-    value?: number;
-    category?: number;
-    [key: string]: any;
+    value?: number;      // 可用于控制节点大小或其他属性
+    category?: number;   // 可用于节点分组
+    [key: string]: any;  // 允许其他自定义属性
 }
 
-export interface IGraphLink {
-    source: string;
-    target: string;
-    value?: number;
-    label?: {
+interface IGraphLink {
+    source: string;      // 源节点ID
+    target: string;      // 目标节点ID
+    value?: number;      // 用于控制连线粗细或其他属性
+    label?: {            // 连线标签
         show?: boolean;
         formatter?: string;
     };
@@ -240,14 +240,14 @@ export interface IGraphLink {
         color?: string;
         width?: number;
     };
+    [key: string]: any;  // 允许其他自定义属性
+}
+
+interface IEchartsSeriesOption {
     [key: string]: any;
 }
 
-export interface IEchartsSeriesOption {
-    [key: string]: any;
-}
-
-export interface IEchartsOption {
+interface IEchartsOption {
     [key: string]: any;
     series?: IEchartsSeriesOption[];
 }
