@@ -7,6 +7,8 @@ import { formatDateTime } from "@/utils/time";
 import { DataView } from "./data-view";
 import { getNotebook } from "@/utils";
 
+import { renderAttr } from "./components";
+
 
 /**
  * Filter blocks in sql search scenario to eliminate duplicate blocks
@@ -177,21 +179,21 @@ const Query = {
          * @param b - Block to convert
          * @returns String in markdown link format
          */
-        aslink: (b: Block) => `[${b.fcontent || b.content}](siyuan://blocks/${b.id})`,
+        asLink: (b: Block) => `[${b.fcontent || b.content}](siyuan://blocks/${b.id})`,
 
         /**
          * Converts a block to a SiYuan reference format
          * @param b - Block to convert
          * @returns String in reference format ((id 'content'))
          */
-        asref: (b: Block) => `((${b.id} '${b.fcontent || b.content}'))`,
+        asRef: (b: Block) => `((${b.id} '${b.fcontent || b.content}'))`,
 
         /**
          * Converts SiYuan timestamp string to Date object
          * @param timestr - SiYuan timestamp (yyyyMMddHHmmss)
          * @returns Date object
          */
-        asdate: (timestr: string) => {
+        asDate: (timestr: string) => {
             const year = parseInt(timestr.slice(0, 4), 10);
             const month = parseInt(timestr.slice(4, 6), 10) - 1;
             const day = parseInt(timestr.slice(6, 8), 10);
@@ -207,7 +209,7 @@ const Query = {
          * @param date - Date to convert
          * @returns Timestamp string in yyyyMMddHHmmss format
          */
-        astimestr: (date: Date) => formatDateTime('yyyyMMddHHmmss', date),
+        asTimestr: (date: Date) => formatDateTime('yyyyMMddHHmmss', date),
 
         /**
          * Gets notebook information from block or notebook ID
@@ -217,7 +219,19 @@ const Query = {
         notebook: (input: Block | NotebookId) => {
             const boxid = typeof input === 'string' ? input : input.box;
             return getNotebook(boxid);
-        }
+        },
+        /**
+         * Gets the name of a notebook by its ID; equivalent to `notebook(boxid).name`
+         * @param boxid - Notebook ID
+         * @returns Notebook name
+         */
+        boxname: (boxid: NotebookId) => {
+            return getNotebook(boxid).name;
+        },
+        /**
+         * Renders the value of a block attribute as markdown format
+         */
+        renderAttr: renderAttr
     },
 
     /**

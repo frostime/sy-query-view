@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-12-02 10:15:04
  * @FilePath     : /src/core/data-view.ts
- * @LastEditTime : 2024-12-02 14:55:46
+ * @LastEditTime : 2024-12-02 20:20:35
  * @Description  : 
  */
 import {
@@ -12,7 +12,7 @@ import {
     Lute
 } from "siyuan";
 import { getLute } from "./lute";
-import { List, Table, BlockTable, Mermaid, BlockNodes, Echarts } from './components';
+import { BlockList, BlockTable, Mermaid, EmbedNodes, Echarts } from './components';
 import { registerProtyleGC } from "./gc";
 
 const getCSSVar = (name: string) => getComputedStyle(document.documentElement).getPropertyValue(name);
@@ -52,6 +52,20 @@ const newDivWrapper = (tag: string = 'div') => {
 
 const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
 
+
+export interface IHasChildren {
+    children?: IHasChildren[];
+}
+
+/**
+ * Extends the block, enable children property
+ * @interface IBlockWithChilds
+ * @extends Block
+ * @extends IHasChildren
+ */
+export interface IBlockWithChilds extends Block, IHasChildren {
+
+}
 
 /**
  * List Options
@@ -247,8 +261,8 @@ export class DataView {
         this.register(this.markdown, { aliases: ['md'] });
         this.register(this.details, { aliases: ['Details', 'Detail'] });
         this.register(this.list, { aliases: ['BlockList'] });
-        this.register(this.table);
-        this.register(this.blockTable);
+        this.register(this.table, { aliases: ['BlockTable'] });
+        // this.register(this.blockTable);
         this.register(this.columns, { aliases: ['Cols'] });
         this.register(this.rows);
         this.register(this.mermaid);
@@ -344,99 +358,73 @@ export class DataView {
     }
 
     /**
-     * Creates a list view from an array of data
-     * @param data - Array of items to display in the list
+     * Creates a markdown list view for displaying blocks
+     * @param data - Array of blocks to display in the list, see {@link IBlockWithChilds}
+     *              Can also be scalar values, or block with children property
      * @param options - Configuration options, see {@link IListOptions}
+     * @param options.renderer - Custom function to render list items, the return will be used as markdown code
      * @returns HTMLElement containing the list
      */
-    list(data: Block[], options: IListOptions<Block> = {}) {
+    list(data: (IBlockWithChilds | ScalarValue)[], options: IListOptions<Block> = {}) {
         let defaultRenderer = (x: any) => {
             if (typeof x === 'object') {
-                return JSON.stringify(x);
+                if (x.id && x.content) {
+                    return `[${x?.fcontent || x.content}](siyuan://blocks/${x.id})`;
+                } else {
+                    return JSON.stringify(x);
+                }
             }
             return x.toString();
         };
-        if (data.length > 0 && data[0].id && data[0].content) {
-            defaultRenderer = (b: Block) => `[${b.fcontent || b.content}](siyuan://blocks/${b.id})`;
+
+        const renderer = (val: any) => {
+            return options?.renderer?.(val) ?? defaultRenderer(val);
         }
 
-        defaultRenderer = options.renderer ?? defaultRenderer;
+        // Recursive function to convert blocks to ListItem format
+        const convertToListItem = (block: IBlockWithChilds) => ({
+            name: renderer(block),
+            children: block?.children?.map(convertToListItem)
+        });
 
-        data = data.map(defaultRenderer);
-
+        // Convert blocks to ListItem format
+        const listData = data.map(convertToListItem);
 
         let listContainer = newDivWrapper();
-        const list = new List({
+        const list = new BlockList({
             target: listContainer,
-            dataList: data,
+            dataList: listData,
             type: options.type ?? 'u'
         });
         if (options.columns) {
             list.element.style.columnCount = options.columns.toString();
         }
-        const result = listContainer;
-        return result;
+        return listContainer;
     }
 
     /**
-     * Creates a table view from an array of data
-     * @param data - Array of objects or arrays to display in table format
-     * @param options - Configuration options, see {@link ITableOptions}
-     * @returns HTMLElement containing the table
-     */
-    table(data: (Object | any[])[], options: ITableOptions = {}) {
-        let tableContainer = newDivWrapper();
-        if (data.length == 0) return;
-
-        let first = data[0];
-        let table: Table;
-        //如果是 Array
-        if (Array.isArray(first)) {
-            table = new Table({
-                target: tableContainer,
-                tableData: data as any[],
-                center: options.center ?? false,
-                indices: options.index ?? false
-            });
-        }
-        //如果是 Object
-        else if (typeof first === 'object') {
-            let cols = Object.keys(first);
-            let tableData = [cols];
-            data.forEach(obj => {
-                let row = cols.map(col => obj[col]);
-                tableData.push(row);
-            });
-            table = new Table({
-                target: tableContainer,
-                tableData: tableData as any[],
-                center: options.center ?? false,
-                indices: options.index ?? false
-            });
-        }
-        if (options.fullwidth) {
-            table.element.querySelector('table').style.width = '100%';
-        }
-
-        return tableContainer;
-    }
-
-    /**
-     * Creates a table view specifically for Block objects
+     * Creates a markdown table view for displaying blocks
      * @param blocks - Array of Block objects to display
      * @param options - Configuration options, see {@link ITableOptions}
-     * @param options.cols - Array of Block properties to show as columns, default as ['type', 'content', 'root_id', 'box', 'created']
+     * @param options.cols - Array of Block properties to show as columns;
+     *     - if `undefined`, the default columns `['type', 'content', 'hpath', 'box']` will be used;
+     *       but if the blocks don't have these properties, all properties of the first block will be used;
+     *     - Can also be:
+     *       - Record<string, string> to specify the column name, like `{type: 'Type', content: 'Content', 'root_id': 'Document'}`
+     *       - Mixed array, like `['type', {content: 'Content'}, 'hpath']`
+     *       - `null`, in this case, all columns will be shown
+     * @param options.renderer - Custom function to render table cells, the return will be used as markdown code
      * @returns HTMLElement containing the block table
      */
-    blockTable(blocks: Block[], options?: ITableOptions & {
-        cols?: (keyof Block)[] | null
+    table(blocks: Block[], options?: ITableOptions & {
+        cols?: (string | Record<string, string>)[] | Record<string, string>
     }) {
         let tableContainer = newDivWrapper();
         options = options ?? {};
         const table = new BlockTable({
             target: tableContainer,
             blocks,
-            col: options?.cols,
+            cols: options?.cols,
             center: options.center ?? false,
             indices: options.index ?? false,
             renderer: options.renderer
@@ -520,6 +508,7 @@ export class DataView {
      * @param options.renderer - Custom function to render node content
      * @returns HTMLElement containing the Mermaid diagram
      */
+    //TODO 更改为 IHasChildren
     mermaid(map: Record<BlockId, BlockId | BlockId[]>, options: {
         blocks?: Block[],
         type?: "flowchart" | "mindmap",
@@ -563,7 +552,7 @@ export class DataView {
             blocks = [blocks];
         }
 
-        new BlockNodes({
+        new EmbedNodes({
             target: container, blocks,
             embedBlockID: this.EMBED_BLOCK_ID,
             ...options
@@ -616,7 +605,7 @@ export class DataView {
      * @param options.echartsOption - Additional ECharts configuration
      * @returns HTMLElement containing the line chart
      */
-    echartsLine(x: any[], y: any[] | any[][], options: {
+    echartsLine(x: number[], y: number[] | number[][], options: {
         height?: string,
         width?: string,
         title?: string,
@@ -673,7 +662,7 @@ export class DataView {
      * @param options.echartsOption - Additional ECharts configuration
      * @returns HTMLElement containing the bar chart
      */
-    echartsBar(x: any[], y: any[] | any[][], options: {
+    echartsBar(x: string[], y: number[] | number[][], options: {
         height?: string,
         width?: string,
         title?: string,

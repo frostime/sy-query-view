@@ -64,31 +64,44 @@ declare const Query: {
          * @param b - Block to convert
          * @returns String in markdown link format
          */
-        aslink: (b: Block) => string;
+        asLink: (b: Block) => string;
         /**
          * Converts a block to a SiYuan reference format
          * @param b - Block to convert
          * @returns String in reference format ((id 'content'))
          */
-        asref: (b: Block) => string;
+        asRef: (b: Block) => string;
         /**
          * Converts SiYuan timestamp string to Date object
          * @param timestr - SiYuan timestamp (yyyyMMddHHmmss)
          * @returns Date object
          */
-        asdate: (timestr: string) => Date;
+        asDate: (timestr: string) => Date;
         /**
          * Converts Date object to SiYuan timestamp format
          * @param date - Date to convert
          * @returns Timestamp string in yyyyMMddHHmmss format
          */
-        astimestr: (date: Date) => string;
+        asTimestr: (date: Date) => string;
         /**
          * Gets notebook information from block or notebook ID
          * @param input - Block object or notebook ID
          * @returns Notebook information
          */
         notebook: (input: Block | NotebookId) => Notebook;
+        /**
+         * Gets the name of a notebook by its ID; equivalent to `notebook(boxid).name`
+         * @param boxid - Notebook ID
+         * @returns Notebook name
+         */
+        boxname: (boxid: NotebookId) => string;
+        /**
+         * Renders the value of a block attribute as markdown format
+         */
+        renderAttr: (b: Block, attr: keyof Block, options?: {
+            onlyDate?: boolean;
+            onlyTime?: boolean;
+        }) => string;
     };
     /**
      * Wraps blocks with additional functionality
@@ -127,7 +140,7 @@ declare const Query: {
      * @param limit - Maximum number of results
      * @returns Array of blocks linking to the specified block
      */
-    backlink: (id: BlockId, limit?: number) => Promise<any>;
+    backlink: (id: BlockId, limit?: number) => Promise<any[]>;
     /**
      * Finds blocks with specific attributes
      * @param name - Attribute name
@@ -136,7 +149,7 @@ declare const Query: {
      * @param limit - Maximum number of results
      * @returns Array of matching blocks
      */
-    attr: (name: string, val?: string, valMatch?: "=" | "like", limit?: number) => Promise<any>;
+    attr: (name: string, val?: string, valMatch?: "=" | "like", limit?: number) => Promise<any[]>;
     /**
      * Gets child documents of a block
      * @param b - Parent block or block ID
@@ -156,6 +169,19 @@ declare const Query: {
         doc?: boolean;
     }) => Promise<IWrappedList<IWrappedBlock>>;
 };
+
+export interface IHasChildren {
+    children?: IHasChildren[];
+}
+
+/**
+ * Extends the block, enable children property
+ * @interface IBlockWithChilds
+ * @extends Block
+ * @extends IHasChildren
+ */
+export interface IBlockWithChilds extends Block, IHasChildren {
+}
 
 /**
  * List Options
@@ -274,27 +300,31 @@ export declare class DataView {
     markdown(md: string): HTMLElement;
     details(summary: string, content: string | HTMLElement): HTMLDetailsElement;
     /**
-     * Creates a list view from an array of data
-     * @param data - Array of items to display in the list
+     * Creates a markdown list view for displaying blocks
+     * @param data - Array of blocks to display in the list, see {@link IBlockWithChilds}
+     *              Can also be scalar values, or block with children property
      * @param options - Configuration options, see {@link IListOptions}
+     * @param options.renderer - Custom function to render list items, the return will be used as markdown code
      * @returns HTMLElement containing the list
      */
-    list(data: Block[], options?: IListOptions<Block>): HTMLElement;
+    list(data: (IBlockWithChilds | ScalarValue)[], options?: IListOptions<Block>): HTMLElement;
     /**
-     * Creates a table view from an array of data
-     * @param data - Array of objects or arrays to display in table format
-     * @param options - Configuration options, see {@link ITableOptions}
-     * @returns HTMLElement containing the table
-     */
-    table(data: (Object | any[])[], options?: ITableOptions): HTMLElement;
-    /**
-     * Creates a table view specifically for Block objects
+     * Creates a markdown table view for displaying blocks
      * @param blocks - Array of Block objects to display
-     * @param cols - Array of Block properties to show as columns, can be null
      * @param options - Configuration options, see {@link ITableOptions}
+     * @param options.cols - Array of Block properties to show as columns;
+     *     - if `undefined`, the default columns `['type', 'content', 'hpath', 'box']` will be used;
+     *       but if the blocks don't have these properties, all properties of the first block will be used;
+     *     - Can also be:
+     *       - Record<string, string> to specify the column name, like `{type: 'Type', content: 'Content', 'root_id': 'Document'}`
+     *       - Mixed array, like `['type', {content: 'Content'}, 'hpath']`
+     *       - `null`, in this case, all columns will be shown
+     * @param options.renderer - Custom function to render table cells, the return will be used as markdown code
      * @returns HTMLElement containing the block table
      */
-    blockTable(blocks: Block[], cols: (keyof Block)[] | null, options?: ITableOptions): HTMLElement;
+    table(blocks: Block[], options?: ITableOptions & {
+        cols?: (string | Record<string, string>)[] | Record<string, string>;
+    }): HTMLElement;
     /**
      * Arranges elements in columns
      * @param elements - Array of HTMLElements to arrange
@@ -381,7 +411,7 @@ export declare class DataView {
      * @param options.echartsOption - Additional ECharts configuration
      * @returns HTMLElement containing the line chart
      */
-    echartsLine(x: any[], y: any[] | any[][], options?: {
+    echartsLine(x: number[], y: number[] | number[][], options?: {
         height?: string;
         width?: string;
         title?: string;
@@ -405,7 +435,7 @@ export declare class DataView {
      * @param options.echartsOption - Additional ECharts configuration
      * @returns HTMLElement containing the bar chart
      */
-    echartsBar(x: any[], y: any[] | any[][], options?: {
+    echartsBar(x: string[], y: number[] | number[][], options?: {
         height?: string;
         width?: string;
         title?: string;
@@ -554,17 +584,16 @@ export interface IWrappedList<T> extends Array<T> {
  * @Author       : frostime
  * @Date         : 2023-08-15 10:28:10
  * @FilePath     : /src/types/index.d.ts
- * @LastEditTime : 2024-12-02 14:05:58
+ * @LastEditTime : 2024-12-01 22:54:38
  * @Description  : Frequently used data structures in SiYuan
  */
 
+type ScalarValue = string | number | boolean;
 
 type DocumentId = string;
 type BlockId = string;
 type NotebookId = string;
-/** @internal */
 type PreviousID = BlockId;
-/** @internal */
 type ParentID = BlockId | DocumentId;
 
 type Notebook = {
@@ -575,7 +604,6 @@ type Notebook = {
     closed: boolean;
 }
 
-/** @internal */
 type NotebookConf = {
     name: string;
     closed: boolean;
@@ -646,7 +674,6 @@ type Block = {
 
 type PartialBlock = Partial<Block>;
 
-/** @internal */
 type doOperation = {
     action: string;
     data: string;

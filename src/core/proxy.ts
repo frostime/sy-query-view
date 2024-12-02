@@ -100,7 +100,7 @@ export interface IWrappedList<T> extends Array<T> {
  */
 export const wrapBlock = (block: Block): IWrappedBlock => {
     // If it's already a Proxy, return directly
-    if (block instanceof Proxy) {
+    if (block?.['unwrapped']) {
         return block as IWrappedBlock;
     }
 
@@ -200,7 +200,7 @@ export const wrapBlock = (block: Block): IWrappedBlock => {
  * @returns 
  */
 export const wrapList = (list: Block[], useWrapBlock: boolean = true): IWrappedList<IWrappedBlock> => {
-    if (list instanceof Proxy) {
+    if (list?.['unwrapped']) {
         return list as IWrappedList<IWrappedBlock>;
     }
 
@@ -228,6 +228,12 @@ export const wrapList = (list: Block[], useWrapBlock: boolean = true): IWrappedL
                      */
                     return (...attrs: (keyof Block)[]) => {
                         if (attrs.length === 1) {
+                            //适配 attrs 为单个数组的情况（虽然这是错误的用法）
+                            if (Array.isArray(attrs[0])) {
+                                attrs = attrs[0];
+                                //@ts-ignore
+                                return proxy.pick(...attrs);
+                            }
                             let picked = target.map(b => b[attrs[0]]);
                             //@ts-ignore
                             return wrapList(picked, false);

@@ -9,7 +9,15 @@ import { addScript, matchIDFormat } from "./utils";
 import './index.css';
 
 import { i18n } from "@/index";
+import { deprecate } from "util";
 
+
+/**
+ * Renders the value of a block attribute as markdown format
+ * @param b - Block object
+ * @param attr - Attribute name
+ * @returns Rendered attribute value
+ */
 const renderAttr = (b: Block, attr: keyof Block, options?: {
     onlyDate?: boolean;
     onlyTime?: boolean;
@@ -82,55 +90,165 @@ const errorMessage = (element: HTMLElement, message: string) => {
 }
 
 
-class List {
+type ListItem = string | number | {
+    name: string | number;
+    children?: ListItem[];
+}
+
+/**
+ * Markdown 列表组件
+ */
+class BlockList {
     element: HTMLElement;
-    //嵌套列表
-    dataList: any[];
+    dataList: ListItem[];
     type: 'u' | 'o' = 'u';
 
-    constructor(options: { target: HTMLElement, dataList: any[], type?: 'u' | 'o' }) {
+    constructor(options: { target: HTMLElement, dataList: ListItem[], type?: 'u' | 'o' }) {
         this.element = options.target;
         this.dataList = options.dataList;
         this.type = options.type ?? 'u';
         this.render();
     }
 
+    private itemToString(item: ListItem, depth: number = 0, index: number = 1): string[] {
+        const indent = "    ".repeat(depth); // 4 spaces per level
+        const prefix = this.type === 'u' ? "*" : `${index}.`;
+
+        if (typeof item === 'string' || typeof item === 'number' || !item.name) {
+            return [`${indent}${prefix} ${item.toString()}`];
+        }
+
+        const lines: string[] = [`${indent}${prefix} ${item.name.toString()}`];
+
+        if (item.children?.length) {
+            item.children.forEach((child, idx) => {
+                lines.push(...this.itemToString(child, depth + 1, idx + 1));
+            });
+        }
+
+        return lines;
+    }
+
     render() {
         const lute = getLute();
-        const dataList = this.dataList;
-        let trimList: string[];
-        if (this.type === 'u') {
-            trimList = dataList.map(x => "* " + x.toString());
-        } else {
-            trimList = dataList.map((x, idx) => `${idx + 1}. ${x.toString()}`);
-        }
-        const mdStr = trimList.join("\n");
+        let lines: string[] = [];
+
+        this.dataList.forEach((item, idx) => {
+            lines.push(...this.itemToString(item, 0, idx + 1));
+        });
+
+        const mdStr = lines.join("\n");
         const html = lute.Md2BlockDOM(mdStr);
 
         this.element.innerHTML = `<div>${html}</div>`;
     }
 }
 
-class Table {
+
+const DEFAULT_COLS = ['type', 'content', 'hpath', 'box'];
+
+class BlockTable {
     element: HTMLElement;
-    tableData: any[][];
+    tableData: ScalarValue[][];
     private center: boolean;
     private indices: boolean;
+
+    private adaptColumnInput(options: { cols?: any, blocks: Block[] }) {
+        const { cols, blocks } = options;
+        let colKey: any[] = [];
+        let colName: string[] = [];
+        if (cols === undefined) {
+            /**未指定 columns 时, 使用默认的 columns */
+            colKey = this.fallbckColumns(blocks);
+            colName = colKey;
+            return { key: colKey, name: colName };
+        } else if (cols === null && blocks.length > 0) {
+            // 如果 col 为 null，则使用 blocks 里面的所有 key
+            const firstBlock = blocks[0];
+            colKey = Object.keys(firstBlock);
+            colName = colKey;
+            return { key: colKey, name: colName };
+        }
+        else if (Array.isArray(options.cols)) {
+            colKey = [];
+            options.cols.forEach((c, index) => {
+                if (typeof c === 'string') {
+                    colKey.push(c);
+                    colName.push(c);
+                } else {
+                    // 只有一个的情况 { colkey: colname}
+                    if (Object.keys(c).length === 1) {
+                        colKey.push(Object.keys(c)[0]);
+                        //@ts-ignore
+                        colName.push(Object.values(c)[0]);
+                    } else {
+                        errorMessage(this.element, 'Invalid column definition');
+                        return;
+                    }
+                }
+            });
+        } else if (typeof options.cols === 'object') {
+            colKey = Object.keys(options.cols);
+            colName = Object.values(options.cols);
+        } else {
+            errorMessage(this.element, 'Invalid column definition');
+            return;
+        }
+        return { key: colKey, name: colName };
+    }
+
+    /**
+     * 输入的不一定是完整的 Block，甚至可能都不是 block
+     * @param columns 
+     * @param blocks 
+     * @returns 
+     */
+    private fallbckColumns(blocks: Block[]) {
+        if (blocks.length === 0) return DEFAULT_COLS; //反正空表格，返回什么都无所谓
+        const firstRow: Record<string | number, ScalarValue> = blocks[0];
+        const keys = Object.keys(firstRow);
+        // 计算交集
+        const intersect = DEFAULT_COLS.filter(c => keys.includes(c));
+        // 如果包含了所有的默认列，则返回默认列
+        if (intersect.length === DEFAULT_COLS.length) return intersect;
+        // 否则返回所有 keys
+        return keys;
+    }
+
     constructor(options: {
-        target: HTMLElement, tableData: any[][], center?: boolean,
-        indices?: boolean
+        target: HTMLElement, blocks: Block[], center?: boolean,
+        cols?: (string | Record<string, string>)[] | Record<string, string>, indices?: boolean,
+        renderer?: (b: Block, attr: keyof Block) => string | number | undefined | null,
     }) {
+        const columns = this.adaptColumnInput(options);
+        if (!columns) return;
+
+        const render = (b: Block, c: keyof Block) => {
+            if (options?.renderer) {
+                return options.renderer(b, c) ?? renderAttr(b, c);
+            } else {
+                return renderAttr(b, c);
+            }
+        }
+
+        let tables: ScalarValue[][] = [columns.name];
+        options.blocks.forEach((b: Block) => {
+            let rows = columns.key.map(c => render(b, c) ?? '');
+            tables.push(rows);
+        });
+
         this.element = options.target;
 
         this.center = options?.center ?? false;
         this.indices = options?.indices ?? false;
+        // 如果需要, 在头部加上行号
         if (this.indices) {
-            this.tableData = options.tableData.map((row, idx) => [idx, ...row]);
+            this.tableData = tables.map((row, idx) => [idx, ...row]);
             if (this.tableData[0]?.length > 1) {
                 this.tableData[0][0] = '#';
             }
         } else {
-            this.tableData = options.tableData;
+            this.tableData = tables;
         }
         this.render();
     }
@@ -156,30 +274,6 @@ class Table {
         `;
 
         this.element.innerHTML = tableHtml;
-    }
-}
-
-
-class BlockTable extends Table {
-    constructor(options: {
-        target: HTMLElement, blocks: Block[], center?: boolean,
-        col?: (keyof Block)[], indices?: boolean,
-        renderer?: (b: Block, attr: keyof Block) => string | number | undefined | null,
-    }) {
-        let cols: any[] = options?.col ?? ['type', 'content', 'root_id', 'box', 'created'];
-        let tables: ((string | number)[])[] = [cols];
-        const render = (b: Block, c: keyof Block) => {
-            if (options?.renderer) {
-                return options.renderer(b, c) ?? renderAttr(b, c);
-            } else {
-                return renderAttr(b, c);
-            }
-        }
-        options.blocks.forEach((b: Block) => {
-            let rows = cols.map(c => render(b, c) ?? '');
-            tables.push(rows);
-        });
-        super({ ...options, tableData: tables })
     }
 }
 
@@ -672,7 +766,7 @@ class Echarts {
 
     private async render() {
         try {
-            // 确保容器有足够的高度和宽度
+            // 确��容器有足够的高度和宽度
             if (!this.element.style.height) {
                 this.element.style.height = this.height ?? '300px';  // 设置默认高度
             }
@@ -777,11 +871,11 @@ class Echarts {
 }
 
 export {
-    List,
-    Table,
+    BlockList,
+    // Table,
     BlockTable,
     Mermaid,
-    EmbedNodes as BlockNodes,
+    EmbedNodes,
     renderAttr,
     Echarts
 }

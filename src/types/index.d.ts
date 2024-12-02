@@ -7,6 +7,7 @@
  * @Description  : Frequently used data structures in SiYuan
  */
 
+type ScalarValue = string | number | boolean;
 
 type DocumentId = string;
 type BlockId = string;
