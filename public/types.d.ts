@@ -237,17 +237,6 @@ export interface IEchartsOption {
  * - Mermaid diagrams
  */
 export declare class DataView {
-    private protyle;
-    private thisEmbedNode;
-    private top;
-    private lute;
-    private disposers;
-    private ROOT_ID;
-    private EMBED_BLOCK_ID;
-    _element: HTMLElement;
-    private PROHIBIT_METHOD_NAMES;
-    private observer;
-    private disposed;
     /**
      * 注册组件 View
      * @param method: `(...args: any[]) => HTMLElement`, 一个返回 HTMLElement 的方法
@@ -262,7 +251,6 @@ export declare class DataView {
     constructor(protyle: IProtyle, embedNode: HTMLElement, top: number | null);
     get element(): HTMLElement;
     dispose(): void;
-    private cleanup;
     /**
      * Register a disposer function to be called when the DataView is disposed.
      * Only when you need to add some extra cleanup logic, you should use this method.
@@ -312,20 +300,24 @@ export declare class DataView {
      * @param elements - Array of HTMLElements to arrange
      * @param options - Configuration options
      * @param options.gap - Style of gap between columns; default is '5px'
+     * @param options.flex - Flex ratio of each column; default is [1, 1, 1, ...]
      * @returns HTMLElement containing the column layout
      */
     columns(elements: HTMLElement[], options?: {
         gap?: string;
+        flex?: number[];
     }): HTMLDivElement;
     /**
      * Arranges elements in rows
      * @param elements - Array of HTMLElements to arrange
      * @param options - Configuration options
      * @param options.gap - Style of gap between rows; default is '5px'
+     * @param options.flex - Flex ratio of each row; default is [1, 1, 1, ...]
      * @returns HTMLElement containing the row layout
      */
     rows(elements: HTMLElement[], options?: {
         gap?: string;
+        flex?: number[];
     }): HTMLDivElement;
     /**
      * Creates a Mermaid diagram from block relationships
@@ -480,10 +472,6 @@ export declare class DataView {
      * Renders the DataView and sets up event handlers and cleanup
      */
     render(): void;
-    /**
-     * 注册内部的垃圾回收, 在嵌入块刷新的时候触发
-     */
-    private registerInternalGC;
 }
 
 /** Wrapped Block interface with extended convenient properties and methods */
@@ -561,25 +549,12 @@ export interface IWrappedList<T> extends Array<T> {
     filter(predicate: (value: T, index: number, array: T[]) => boolean): IWrappedList<T>;
 }
 
-/**
- * Add some helper properties to the Block for direct use
- * @param block
- * @returns
- */
-export declare const wrapBlock: (block: Block) => IWrappedBlock;
-/**
- * Add a Proxy layer to the list of SQL query results to attach some convenient methods
- * @param list
- * @returns
- */
-export declare const wrapList: (list: Block[], useWrapBlock?: boolean) => IWrappedList<IWrappedBlock>;
-
 /*
  * Copyright (c) 2024 by frostime. All Rights Reserved.
  * @Author       : frostime
  * @Date         : 2023-08-15 10:28:10
  * @FilePath     : /src/types/index.d.ts
- * @LastEditTime : 2024-12-01 22:54:38
+ * @LastEditTime : 2024-12-02 14:05:58
  * @Description  : Frequently used data structures in SiYuan
  */
 
@@ -587,7 +562,9 @@ export declare const wrapList: (list: Block[], useWrapBlock?: boolean) => IWrapp
 type DocumentId = string;
 type BlockId = string;
 type NotebookId = string;
+/** @internal */
 type PreviousID = BlockId;
+/** @internal */
 type ParentID = BlockId | DocumentId;
 
 type Notebook = {
@@ -598,6 +575,7 @@ type Notebook = {
     closed: boolean;
 }
 
+/** @internal */
 type NotebookConf = {
     name: string;
     closed: boolean;
@@ -668,6 +646,7 @@ type Block = {
 
 type PartialBlock = Partial<Block>;
 
+/** @internal */
 type doOperation = {
     action: string;
     data: string;

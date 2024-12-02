@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-12-02 10:15:04
  * @FilePath     : /src/core/data-view.ts
- * @LastEditTime : 2024-12-02 12:55:47
+ * @LastEditTime : 2024-12-02 14:55:46
  * @Description  : 
  */
 import {
@@ -133,20 +133,37 @@ export interface IEchartsOption {
  * - Mermaid diagrams
  */
 export class DataView {
+    /** @internal */
     private protyle: IProtyle;
+
+    /** @internal */
     private thisEmbedNode: HTMLElement;
+
+    /** @internal */
     private top: number | null;
+
+    /** @internal */
     private lute: Lute;
+
+    /** @internal */
     private disposers: (() => void)[] = [];
 
+    /** @internal */
     private ROOT_ID: DocumentId;
+
+    /** @internal */
     private EMBED_BLOCK_ID: BlockId;
 
+    /** @internal */
     _element: HTMLElement;
 
+    /** @internal */
     private PROHIBIT_METHOD_NAMES = ['register', 'element', 'ele', 'render'];
+
+    /** @internal */
     private observer: MutationObserver;
 
+    /** @internal */
     private disposed = false;
 
     /**
@@ -261,6 +278,7 @@ export class DataView {
         }
     }
 
+    /** @internal */
     private cleanup() {
         // 清理所有引用
         this.protyle = null;
@@ -406,16 +424,19 @@ export class DataView {
     /**
      * Creates a table view specifically for Block objects
      * @param blocks - Array of Block objects to display
-     * @param cols - Array of Block properties to show as columns, can be null
      * @param options - Configuration options, see {@link ITableOptions}
+     * @param options.cols - Array of Block properties to show as columns, default as ['type', 'content', 'root_id', 'box', 'created']
      * @returns HTMLElement containing the block table
      */
-    blockTable(blocks: Block[], cols: (keyof Block)[] | null, options: ITableOptions = {}) {
+    blockTable(blocks: Block[], options?: ITableOptions & {
+        cols?: (keyof Block)[] | null
+    }) {
         let tableContainer = newDivWrapper();
+        options = options ?? {};
         const table = new BlockTable({
             target: tableContainer,
             blocks,
-            col: cols,
+            col: options?.cols,
             center: options.center ?? false,
             indices: options.index ?? false,
             renderer: options.renderer
@@ -431,10 +452,12 @@ export class DataView {
      * @param elements - Array of HTMLElements to arrange
      * @param options - Configuration options
      * @param options.gap - Style of gap between columns; default is '5px'
+     * @param options.flex - Flex ratio of each column; default is [1, 1, 1, ...]
      * @returns HTMLElement containing the column layout
      */
     columns(elements: HTMLElement[], options: {
         gap?: string;
+        flex?: number[];
     } = {}) {
         let columns = document.createElement("div");
         Object.assign(columns.style, {
@@ -442,10 +465,11 @@ export class DataView {
             flexDirection: "row",
             gap: options.gap ?? '5px'
         });
-        const column = (ele: HTMLElement) => {
+        const flex = options.flex ?? Array(elements.length).fill(1);
+        const column = (ele: HTMLElement, i: number) => {
             const div = document.createElement("div");
             Object.assign(div.style, {
-                flex: "1",
+                flex: flex[i]?.toString(),
                 overflow: "hidden",
                 textOverflow: "ellipsis",
                 whiteSpace: "nowrap",
@@ -456,7 +480,7 @@ export class DataView {
             return div;
         }
 
-        elements.forEach(e => columns.append(column(e)));
+        elements.forEach((e, i) => columns.append(column(e, i)));
         return columns;
     }
 
@@ -465,10 +489,12 @@ export class DataView {
      * @param elements - Array of HTMLElements to arrange
      * @param options - Configuration options
      * @param options.gap - Style of gap between rows; default is '5px'
+     * @param options.flex - Flex ratio of each row; default is [1, 1, 1, ...]
      * @returns HTMLElement containing the row layout
      */
     rows(elements: HTMLElement[], options: {
         gap?: string;
+        flex?: number[];
     } = {}) {
         let rows = document.createElement("div");
         Object.assign(rows.style, {
@@ -476,7 +502,11 @@ export class DataView {
             flexDirection: "column",
             gap: options.gap ?? '5px'
         });
-        elements.forEach(e => rows.append(e));
+        const flex = options.flex ?? Array(elements.length).fill(1);
+        elements.forEach((e, i) => {
+            e.style.flex = flex[i].toString();
+            rows.append(e);
+        });
         return rows;
     }
 
@@ -936,6 +966,7 @@ export class DataView {
     }
 
     /**
+     * @internal
      * 注册内部的垃圾回收, 在嵌入块刷新的时候触发
      */
     private registerInternalGC(): void {
@@ -946,8 +977,7 @@ export class DataView {
                 this.observer.disconnect();
                 this.observer = null;
             }
-        });
-        // Triggered on rerendered
+        });        // Triggered on rerendered
         this.observer = new MutationObserver((mutations) => {
             mutations.forEach((mutation) => {
                 mutation.removedNodes.forEach((node) => {

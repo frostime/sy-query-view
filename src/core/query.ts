@@ -269,6 +269,7 @@ const Query = {
     sql: async (fmt: string, wrap: boolean = true) => {
         fmt = fmt.trim();
         let data = await sql(fmt);
+        if (data === null || data === undefined) return [];
         // return wrap ? data.map(wrapBlock) : data;
         return wrap ? wrapList(data) : data;
     },
@@ -280,7 +281,7 @@ const Query = {
      * @returns Array of blocks linking to the specified block
      */
     backlink: async (id: BlockId, limit?: number) => {
-        return globalThis.Query.sql(`
+        return Query.sql(`
         select * from blocks where id in (
             select block_id from refs where def_block_id = '${id}'
         ) order by updated desc ${limit ? `limit ${limit}` : ''};
@@ -296,7 +297,7 @@ const Query = {
      * @returns Array of matching blocks
      */
     attr: async (name: string, val?: string, valMatch: '=' | 'like' = '=', limit?: number) => {
-        return globalThis.Query.sql(`
+        return Query.sql(`
         SELECT B.*
         FROM blocks AS B
         WHERE B.id IN (

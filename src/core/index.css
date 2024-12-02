@@ -21,8 +21,8 @@
         font-size: 0.85rem;
         text-decoration: none;
 
-        height: 1.5em;
-        width: 1.5em;
+        height: 2em;
+        width: 2em;
 
         &>svg {
             width: 100%;

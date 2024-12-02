@@ -93,6 +93,7 @@ export interface IWrappedList<T> extends Array<T> {
 
 
 /**
+ * @internal
  * Add some helper properties to the Block for direct use
  * @param block 
  * @returns 
@@ -193,6 +194,7 @@ export const wrapBlock = (block: Block): IWrappedBlock => {
 
 
 /**
+ * @internal
  * Add a Proxy layer to the list of SQL query results to attach some convenient methods
  * @param list 
  * @returns 
