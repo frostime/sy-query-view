@@ -170,20 +170,6 @@ declare const Query: {
     }) => Promise<IWrappedList<IWrappedBlock>>;
 };
 
-interface IHasChildren<T> {
-    children?: IHasChildren<T>[];
-}
-
-/**
- * Extends the block, enable children property
- * @interface IBlockWithChilds
- * @extends Block
- * @extends IHasChildren
- */
-interface IBlockWithChilds extends Block, IHasChildren<Block> {
-
-}
-
 /**
  * List Options
  * @interface IListOptions
@@ -212,11 +198,31 @@ interface ITableOptions {
     renderer?: (b: Block, attr: keyof Block) => string | number | undefined | null; //仅对BlockTable有效
 }
 
+interface IHasChildren<T> {
+    children?: IHasChildren<T>[];
+}
+
 interface ITreeNode extends IHasChildren<ITreeNode> {
     id?: string;
-    name?: string;
+    name: string;
     content?: string;
+    children?: ITreeNode[];
     [key: string]: any;  // 允许其他自定义属性
+}
+
+/**
+ * Extends the block, enable children property
+ * Block has id, name and content properties, so it is also a tree node
+ * @interface IBlockWithChilds
+ * @extends Block
+ * @extends IHasChildren
+ * @extends ITreeNode
+ */
+interface IBlockWithChilds extends Block, IHasChildren<Block>, ITreeNode {
+    id: string;
+    name: string;
+    content: string;
+    children?: IBlockWithChilds[];
 }
 
 interface IGraphNode {
@@ -350,19 +356,43 @@ export declare class DataView {
         flex?: number[];
     }): HTMLDivElement;
     /**
+     * Creates a Mermaid diagram from Mermaid code
+     * @param code - Mermaid code
+     * @returns HTMLElement containing the Mermaid diagram
+     */
+    mermaid(code: string): HTMLElement;
+    /**
      * Creates a Mermaid diagram from block relationships
-     * @param map - Object mapping block IDs to their connected blocks
+     * @param tree - Object mapping block IDs to their connected blocks
      * @param options - Configuration options
      * @param options.blocks - Array of Block objects
      * @param options.type - Diagram type: "flowchart" or "mindmap"
      * @param options.flowchart - Flow direction: 'TD' or 'LR'
      * @param options.renderer - Custom function to render node content
      * @returns HTMLElement containing the Mermaid diagram
+     * @example
+     * ```js
+     * const children = await Query.childdoc(block);
+     * dv.mermaidRelation({...block, children});
+     * ```
      */
-    mermaid(map: Record<BlockId, BlockId | BlockId[]>, options?: {
-        blocks?: Block[];
+    mermaidRelation(tree: IBlockWithChilds, options?: {
         type?: "flowchart" | "mindmap";
         flowchart?: 'TD' | 'LR';
+        renderer?: (b: Block) => string;
+    }): HTMLElement;
+    /**
+     * Creates a Mermaid flowchart from block relationships
+     * @description Equivalent to `dv.mermaidRelation(tree, { type: 'flowchart' })`
+     */
+    flowchart(tree: IBlockWithChilds, options?: {
+        renderer?: (b: Block) => string;
+    }): HTMLElement;
+    /**
+     * Creates a Mermaid mindmap from block relationships
+     * @description Equivalent to `dv.mermaidRelation(tree, { type: 'mindmap' })`
+     */
+    mindmap(tree: IBlockWithChilds, options?: {
         renderer?: (b: Block) => string;
     }): HTMLElement;
     /**

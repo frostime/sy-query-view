@@ -5,7 +5,7 @@ import { initLute } from "./lute";
 import { wrapBlock, wrapList } from "./proxy";
 import { formatDateTime } from "@/utils/time";
 import { DataView } from "./data-view";
-import { getNotebook } from "@/utils";
+import { getNotebook, openBlock } from "@/utils";
 
 import { renderAttr } from "./components";
 
@@ -231,7 +231,8 @@ const Query = {
         /**
          * Renders the value of a block attribute as markdown format
          */
-        renderAttr: renderAttr
+        renderAttr: renderAttr,
+        openBlock: openBlock
     },
 
     /**

@@ -281,293 +281,17 @@ const oneline = (text: string) => {
     return text.split('\n').map(line => line.trim()).join(' ');
 }
 
-class Mermaid {
+class MermaidBase {
     element: HTMLElement;
-    type: 'flowchart' | 'mindmap';
-    code: string;
-    map: Record<BlockId, BlockId | BlockId[]>;
-    blocks?: Record<BlockId, Block>;
+    protected disposeCb: (() => void)[] = [];
+    protected code: string;
 
-    private blockSet: Set<BlockId>; //在 mermaid 中定义的节点
-    private renderer: (b: Block) => string | null;
-    private direction: 'TD' | 'LR';
-    // private lute: Lute = getLute();
-
-    private disposeCb: (() => void)[] = [];
-
-    private DEFAULT_RENDERER = (b: Block | string) => {
-        if (typeof b === 'string') {
-            return oneline(b);
-        }
-        if ((b as Block)?.type === 'query_embed') {
-            return 'Query Embed';
-        }
-        if ((b as Block)?.type === 'c') {
-            return 'Code Block';
-        }
-
-        const text = ((b?.fcontent || b?.content) || b?.id) || 'empty';
-        let str = oneline(text);
-        str = window.Lute.EscapeHTMLStr(str);
-        return str;
-    }
-    constructor(options: {
-        target: HTMLElement,
-        type: 'flowchart' | 'mindmap',
-        map: Record<BlockId, BlockId | BlockId[]>,
-        blocks?: Block[],
-        renderer?: (b: Block) => string | null,
-        flowchart?: 'TD' | 'LR',
-    }) {
-        // this.lute = getLute();
-        this.element = options.target;
-        this.type = options.type;
-        this.code = '';
-        this.map = options.map;  // 关联图关联关系
-        const blocks = options.blocks ?? [];
-        this.blocks = blocks.reduce((acc, b) => {
-            acc[b.id] = b;
-            return acc;
-        }, {} as Record<BlockId, Block>);
-
-        this.renderer = options.renderer;
-        this.direction = options.flowchart ?? 'LR';
-        this.checkRelationMap().then(() => {
-            this.render();
-        });
+    constructor(element: HTMLElement, code: string = "") {
+        this.element = element;
+        this.code = code;
     }
 
-    private async render() {
-        let success = false;
-        if (this.type === 'flowchart') {
-            success = this.buildFlowchartCode();
-        } else if (this.type === 'mindmap') {
-            success = this.buildMindmapCode();
-        }
-
-        if (!success) return;
-        await this.checkMermaid();
-        console.groupCollapsed('JS Query DataView Mermaid Code:');
-        console.debug(this.code);
-        console.groupEnd();
-        const id = "mermaid" + window.Lute.NewNodeID();
-        try {
-            const mermaidData = await window.mermaid.render(id, this.code);
-            this.element.innerHTML = mermaidData.svg;
-
-        } catch (e) {
-            // 如果渲染失败，会在 body 中生成一个 div#dmermaid{id} 的元素，需要手动删掉
-            showMessage(i18n.src_dataquery_componentsts.mermaid_render_failed, 3000, 'error');
-            console.error(e);
-            console.groupCollapsed('Mermaid failed to render code:');
-            console.debug(this.code);
-            console.groupEnd();
-            const ele: HTMLElement = document.querySelector(`body>div#d${id}`);
-            if (ele) {
-                ele.style.position = 'absolute';
-                ele.style.bottom = '0';
-                ele.classList.add('remove-mermaid');
-                ele.style.opacity = '0';
-                ele.style.transform = 'translateY(50px)';
-                setTimeout(() => {
-                    ele.remove();
-                }, 1000);
-            }
-            errorMessage(this.element, 'Failed to render mermaid, something wrong with mermaid code');
-        }
-
-        this.postProcess();
-    }
-
-
-    private async checkRelationMap() {
-        // 1. 遍历 this.map，检查所有出现的 blockId
-        const set = new Set<BlockId>();
-        const addID = (id: BlockId) => {
-            if (matchIDFormat(id)) {
-                set.add(id);
-            }
-        }
-        Object.entries(this.map).forEach(([k, v]) => {
-            addID(k);
-            if (!v) return;
-            if (Array.isArray(v)) {
-                v.forEach(id => addID(id));
-            } else {
-                addID(v);
-            }
-        });
-
-        //2. 检查 self.blocks 是否包含所有 set 中的 blockId
-        const notfound = new Set<BlockId>();
-        set.forEach(id => {
-            if (!this.blocks?.[id]) {
-                notfound.add(id);
-            }
-        });
-        const notfoundList = Array.from(notfound);
-        const blocks = await globalThis.Query.getBlocksByIds(...notfoundList);
-
-        //3. 更新 self.blocks
-        if (blocks.length > 0) {
-            blocks.forEach(b => this.blocks[b.id] = b);
-        }
-        this.blockSet = set;
-    }
-
-    /**
-     * 根据 this.map 和 this.blocks 构建 mermaid 代码
-     */
-    private buildFlowchartCode() {
-        this.code = `flowchart ${this.direction}\n`;
-        const lines = [];
-        //1. 定义各个节点
-        this.blockSet.forEach(id => {
-            const b = this.blocks[id];
-            let content = this.renderer?.(b) || this.DEFAULT_RENDERER(b);
-            lines.push(`${id}["${content ?? id}"]`);
-            // 定义 click 事件
-            lines.push(`click ${id} "siyuan://blocks/${b.id}"`);
-        });
-        //2. 定义各个边
-        Object.entries(this.map).forEach(([k, v]) => {
-            // lines.push(`${k} --> ${v}`);
-            if (Array.isArray(v)) {
-                v.forEach(id => lines.push(`${k} --> ${id}`));
-            } else {
-                lines.push(`${k} --> ${v}`);
-            }
-        });
-        this.code += lines.map(l => `    ${l}`).join('\n');
-        return true;
-    }
-
-    private buildMindmapCode() {
-        this.code = 'mindmap\n';
-        const lines: string[] = [];
-
-        // Find root nodes (nodes that are not targets in the map)
-        const targetIds = new Set(
-            Object.values(this.map)
-                .flatMap(v => Array.isArray(v) ? v : [v])
-        );
-        const rootIds = Array.from(this.blockSet)
-            .filter(id => !targetIds.has(id));
-
-        if (rootIds.length === 0) {
-            errorMessage(this.element, 'No root nodes found, can not build mindmap');
-            return false;
-        }
-
-        // Recursive function to build mindmap branches
-        const buildBranch = (id: BlockId, depth: number = 1) => {
-            const b = this.blocks[id];
-            const content = this.renderer?.(b) || this.DEFAULT_RENDERER(b);
-            // Add current node
-            lines.push(`${'    '.repeat(depth)}${content}`);
-            lines.push(`${'    '.repeat(depth)}:::data-id-${id}`); // 添加 id 作为标注
-
-            // Process children
-            const children = this.map[id];
-            if (children) {
-                const childIds = Array.isArray(children) ? children : [children];
-                childIds.forEach(childId => buildBranch(childId, depth + 1));
-            }
-        };
-
-        // Build from each root node
-        rootIds.forEach(rootId => buildBranch(rootId));
-
-        this.code += lines.join('\n');
-        return true;
-    }
-
-    private postProcess() {
-        if (this.type === 'mindmap') {
-            const nodeId = (element: HTMLElement) => {
-                const node = element.closest('.mindmap-node') as HTMLElement;
-                if (!node) return;
-                let id = null;
-                node.classList.forEach(cls => {
-                    cls = cls.trim();
-                    if (cls.startsWith('data-id-')) {
-                        id = cls.split('data-id-')[1];
-                    }
-                });
-                node.classList.add('popover__block');
-                node.dataset.id = id;
-
-                if (!id || !matchIDFormat(id)) return;
-                return id;
-            }
-            // const overHandler = (event: MouseEvent) => {
-            //     let { x, y } = { x: event.pageX, y: event.pageY };
-
-            //     const element = event.target as HTMLElement;
-            //     const syNode = element.closest('.mindmap-node-siyuan') as HTMLElement;
-            //     if (!syNode) return;
-            //     const id = syNode.dataset.id;
-            //     const plugin = inject<FMiscPlugin>('plugin');
-            //     plugin.addFloatLayer({
-            //         ids: [id],
-            //         x,
-            //         y,
-            //     });
-            // }
-            const clickHandler = (event: MouseEvent) => {
-                const element = event.target as HTMLElement;
-                const syNode = element.closest('.mindmap-node-siyuan') as HTMLElement;
-                if (!syNode) return;
-                const id = syNode.dataset.id;
-                if (!id) return;
-                window.open(`siyuan://blocks/${id}`, '_blank');
-            }
-            // const debouncedHandler = debounce(overHandler, 750);
-            // this.element.addEventListener('mouseover', debouncedHandler);
-            this.element.addEventListener('click', clickHandler);
-
-            this.element.querySelectorAll('.mindmap-node').forEach((node: HTMLElement) => {
-                const id = nodeId(node);
-                if (!id) return;
-                node.dataset.id = id;
-                node.classList.add('mindmap-node-siyuan');  //绑定了某个思源块的节点
-            });
-
-            this.disposeCb.push(() => {
-                // this.element.removeEventListener('mouseover', debouncedHandler);
-                this.element.removeEventListener('click', clickHandler);
-            });
-
-        } else if (this.type === 'flowchart') {
-            this.element.querySelectorAll('a[data-id]').forEach(anchor => {
-                anchor.classList.add('popover__block');
-                // anchor.dataset.id = anchor.dataset.id;
-            });
-            // 添加悬浮事件
-            // const handler = (event: MouseEvent) => {
-            //     let { x, y } = { x: event.pageX, y: event.pageY };
-
-            //     const element = event.target as HTMLElement;
-            //     const anchor = element.closest('a[data-id]') as HTMLAnchorElement;
-            //     if (!anchor) return;
-            //     const id = anchor.dataset.id;
-            //     if (!id || !matchIDFormat(id)) return;
-            //     const plugin = inject<FMiscPlugin>('plugin');
-            //     plugin.addFloatLayer({
-            //         ids: [id],
-            //         x,
-            //         y,
-            //     });
-            // }
-            // const debouncedHandler = debounce(handler, 750);
-            // this.element.addEventListener('mouseover', debouncedHandler);
-            // this.disposeCb.push(() => {
-            //     this.element.removeEventListener('mouseover', debouncedHandler);
-            // });
-        }
-    }
-
-    private async checkMermaid() {
+    protected async checkMermaid() {
         if (window.mermaid) return;
         const CDN = Constants.PROTYLE_CDN;
         console.debug('Initializing mermaid...');
@@ -601,10 +325,221 @@ class Mermaid {
         window.mermaid.initialize(config);
     }
 
+    async render() {
+        await this.checkMermaid();
+        // console.groupCollapsed('JS Query DataView Mermaid Code:');
+        // console.debug(this.code);
+        // console.groupEnd();
+        const id = "mermaid" + window.Lute.NewNodeID();
+        try {
+            const mermaidData = await window.mermaid.render(id, this.code);
+            this.element.innerHTML = mermaidData.svg;
+
+        } catch (e) {
+            // 如果渲染失败，会在 body 中生成一个 div#dmermaid{id} 的元素，需要手动删掉
+            showMessage(i18n.src_dataquery_componentsts.mermaid_render_failed, 3000, 'error');
+            console.groupCollapsed('Mermaid failed to render code:');
+            console.warn(e);
+            console.warn(this.code);
+            console.groupEnd();
+            const ele: HTMLElement = document.querySelector(`body>div#d${id}`);
+            if (ele) {
+                ele.style.position = 'absolute';
+                ele.style.bottom = '0';
+                ele.classList.add('remove-mermaid');
+                ele.style.opacity = '0';
+                ele.style.transform = 'translateY(50px)';
+                setTimeout(() => {
+                    ele.remove();
+                }, 1000);
+            }
+            errorMessage(this.element, 'Failed to render mermaid, something wrong with mermaid code');
+        }
+    }
+
     dispose() {
         this.disposeCb.forEach(cb => cb());
         this.disposeCb = [];
     }
+}
+
+class MermaidRelation extends MermaidBase {
+    private type: 'flowchart' | 'mindmap';
+
+    private rootNode: ITreeNode;
+    private blocks?: Record<string, ITreeNode>;
+
+    private blockSet: Set<BlockId>; //在 mermaid 中定义的节点
+    private renderer: (b: Block) => string | null;
+    private direction: 'TD' | 'LR';
+
+
+    private DEFAULT_RENDERER = (b: Block | string) => {
+        if (typeof b === 'string') {
+            return oneline(b);
+        }
+        if ((b as Block)?.type === 'query_embed') {
+            return 'Query Embed';
+        }
+        if ((b as Block)?.type === 'c') {
+            return 'Code Block';
+        }
+
+        const text = b.name || ((b?.fcontent || b?.content) || b?.id) || 'empty';
+        let str = oneline(text);
+        str = window.Lute.EscapeHTMLStr(str);
+        return str;
+    }
+    constructor(options: {
+        target: HTMLElement,
+        type: 'flowchart' | 'mindmap',
+        rootNode: ITreeNode,
+        // blocks?: Block[],
+        renderer?: (b: Block) => string | null,
+        flowchart?: 'TD' | 'LR',
+    }) {
+        super(options.target, "");
+
+        this.type = options.type;
+        this.rootNode = options.rootNode;
+
+        this.renderer = options.renderer;
+        this.direction = options.flowchart ?? 'LR';
+        this.checkRelationTree().then(() => {
+            this.render();
+        });
+    }
+
+    async render() {
+        let success = false;
+        if (this.type === 'flowchart') {
+            success = this.buildFlowchartCode();
+        } else if (this.type === 'mindmap') {
+            success = this.buildMindmapCode();
+        }
+
+        if (!success) return;
+        await super.render();
+
+        this.postProcess();
+    }
+
+
+    private async checkRelationTree() {
+        //根据 this.rootNode 建立 this.blocks 的映射关系
+        this.blocks = {};
+        const traverseTree = (node: ITreeNode) => {
+            if (node.id && matchIDFormat(node.id)) {
+                this.blocks[node.id] = node;
+            }
+            node.children?.forEach(traverseTree);
+        };
+        traverseTree(this.rootNode);
+    }
+
+    private buildFlowchartCode() {
+        this.code = `flowchart ${this.direction}\n`;
+        const lines = [];
+
+        const traverseTree = (node: ITreeNode) => {
+            if (node.id) {
+                const b = this.blocks[node.id] as Block;
+                let content = this.renderer?.(b) || this.DEFAULT_RENDERER(b);
+                lines.push(`${node.id}["${content ?? node.id}"]`);
+                lines.push(`click ${node.id} "siyuan://blocks/${b.id}"`);
+            } else if (node.name) {
+                let content = node.content || node.name;
+                lines.push(`${node.name}["${content}"]`);
+            }
+            node.children?.forEach(child => {
+                const p = node.id || node.name;
+                const c = child.id || child.name;
+                if (p && c) {
+                    lines.push(`${p} --> ${c}`);
+                }
+                traverseTree(child);
+            });
+        };
+
+        traverseTree(this.rootNode);
+
+        this.code += lines.map(l => `    ${l}`).join('\n');
+        return true;
+    }
+
+    private buildMindmapCode() {
+        this.code = 'mindmap\n';
+        const lines: string[] = [];
+
+        const buildBranch = (node: ITreeNode, depth: number = 1) => {
+            if (node.id) {
+                const b = this.blocks[node.id] as Block;
+                const content = this.renderer?.(b) || this.DEFAULT_RENDERER(b);
+                lines.push(`${'    '.repeat(depth)}${content}`);
+                lines.push(`${'    '.repeat(depth)}:::data-id-${node.id}`);
+            } else if (node.name) {
+                let content = node.content || node.name;
+                lines.push(`${'    '.repeat(depth)}${content}`);
+            }
+            node.children?.forEach(child => buildBranch(child, depth + 1));
+        };
+
+        buildBranch(this.rootNode);
+
+        this.code += lines.join('\n');
+        return true;
+    }
+
+    private postProcess() {
+        if (this.type === 'mindmap') {
+            const nodeId = (element: HTMLElement) => {
+                const node = element.closest('.mindmap-node') as HTMLElement;
+                if (!node) return;
+                let id = null;
+                node.classList.forEach(cls => {
+                    cls = cls.trim();
+                    if (cls.startsWith('data-id-')) {
+                        id = cls.split('data-id-')[1];
+                    }
+                });
+                node.classList.add('popover__block');
+                node.dataset.id = id;
+
+                if (!id || !matchIDFormat(id)) return;
+                return id;
+            }
+
+            const clickHandler = (event: MouseEvent) => {
+                const element = event.target as HTMLElement;
+                const syNode = element.closest('.mindmap-node-siyuan') as HTMLElement;
+                if (!syNode) return;
+                const id = syNode.dataset.id;
+                if (!id) return;
+                window.open(`siyuan://blocks/${id}`, '_blank');
+            }
+
+            this.element.addEventListener('click', clickHandler);
+
+            this.element.querySelectorAll('.mindmap-node').forEach((node: HTMLElement) => {
+                const id = nodeId(node);
+                if (!id) return;
+                node.dataset.id = id;
+                node.classList.add('mindmap-node-siyuan');  //绑定了某个思源块的节点
+            });
+
+            this.disposeCb.push(() => {
+                // this.element.removeEventListener('mouseover', debouncedHandler);
+                this.element.removeEventListener('click', clickHandler);
+            });
+
+        } else if (this.type === 'flowchart') {
+            this.element.querySelectorAll('a[data-id]').forEach(anchor => {
+                anchor.classList.add('popover__block');
+                // anchor.dataset.id = anchor.dataset.id;
+            });
+        }
+    }
+
 }
 
 class EmbedNodes {
@@ -766,7 +701,7 @@ class Echarts {
 
     private async render() {
         try {
-            // 确��容器有足够的高度和宽度
+            // 确认容器有足够的高度和宽度
             if (!this.element.style.height) {
                 this.element.style.height = this.height ?? '300px';  // 设置默认高度
             }
@@ -874,7 +809,8 @@ export {
     BlockList,
     // Table,
     BlockTable,
-    Mermaid,
+    MermaidBase,
+    MermaidRelation,
     EmbedNodes,
     renderAttr,
     Echarts

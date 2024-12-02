@@ -1,17 +1,3 @@
-interface IHasChildren<T> {
-    children?: IHasChildren<T>[];
-}
-
-/**
- * Extends the block, enable children property
- * @interface IBlockWithChilds
- * @extends Block
- * @extends IHasChildren
- */
-interface IBlockWithChilds extends Block, IHasChildren<Block> {
-
-}
-
 /**
  * List Options
  * @interface IListOptions
@@ -40,11 +26,31 @@ interface ITableOptions {
     renderer?: (b: Block, attr: keyof Block) => string | number | undefined | null; //仅对BlockTable有效
 }
 
+interface IHasChildren<T> {
+    children?: IHasChildren<T>[];
+}
+
 interface ITreeNode extends IHasChildren<ITreeNode> {
     id?: string;
-    name?: string;
+    name: string;
     content?: string;
+    children?: ITreeNode[];
     [key: string]: any;  // 允许其他自定义属性
+}
+
+/**
+ * Extends the block, enable children property
+ * Block has id, name and content properties, so it is also a tree node
+ * @interface IBlockWithChilds
+ * @extends Block
+ * @extends IHasChildren
+ * @extends ITreeNode
+ */
+interface IBlockWithChilds extends Block, IHasChildren<Block>, ITreeNode {
+    id: string;
+    name: string;
+    content: string;
+    children?: IBlockWithChilds[];
 }
 
 interface IGraphNode {

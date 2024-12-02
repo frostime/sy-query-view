@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-12-02 10:15:04
  * @FilePath     : /src/core/data-view.ts
- * @LastEditTime : 2024-12-02 20:34:19
+ * @LastEditTime : 2024-12-02 22:17:54
  * @Description  : 
  */
 import {
@@ -12,8 +12,9 @@ import {
     Lute
 } from "siyuan";
 import { getLute } from "./lute";
-import { BlockList, BlockTable, Mermaid, EmbedNodes, Echarts } from './components';
+import { BlockList, BlockTable, MermaidRelation, EmbedNodes, Echarts, MermaidBase } from './components';
 import { registerProtyleGC } from "./gc";
+import { openBlock } from "@/utils";
 
 const getCSSVar = (name: string) => getComputedStyle(document.documentElement).getPropertyValue(name);
 
@@ -181,7 +182,10 @@ export class DataView {
         // this.register(this.blockTable);
         this.register(this.columns, { aliases: ['Cols'] });
         this.register(this.rows);
-        this.register(this.mermaid);
+        this.register(this.mermaid, { aliases: ['Mermaid'] });
+        this.register(this.mermaidRelation);
+        this.register(this.flowchart, { aliases: ['Flowchart'] });
+        this.register(this.mindmap, { aliases: ['Mindmap'] });
         this.register(this.embed);
         this.register(this.echarts);
         this.register(this.echartsLine, { aliases: ['Line'] });
@@ -256,6 +260,8 @@ export class DataView {
      * Adds markdown content to the DataView
      * @param md - Markdown text to be rendered
      * @returns HTMLElement containing the rendered markdown
+     * @example
+     * dv.addmd(`# Hello`);
      */
     markdown(md: string) {
         let elem = newDivWrapper();
@@ -280,6 +286,9 @@ export class DataView {
      * @param options - Configuration options, see {@link IListOptions}
      * @param options.renderer - Custom function to render list items, the return will be used as markdown code
      * @returns HTMLElement containing the list
+     * @example
+     * const children = await Query.childdoc(block);
+     * dv.addlist(children, { type: 'o' });
      */
     list(data: (IBlockWithChilds | ScalarValue)[], options: IListOptions<Block> = {}) {
         let defaultRenderer = (x: any) => {
@@ -331,6 +340,9 @@ export class DataView {
      *       - `null`, in this case, all columns will be shown
      * @param options.renderer - Custom function to render table cells, the return will be used as markdown code
      * @returns HTMLElement containing the block table
+     * @example
+     * const children = await Query.childdoc(block);
+     * dv.addtable(children, { cols: ['type', 'content'] , fullwidth: true });
      */
     table(blocks: Block[], options?: ITableOptions & {
         cols?: (string | Record<string, string>)[] | Record<string, string>
@@ -358,6 +370,8 @@ export class DataView {
      * @param options.gap - Style of gap between columns; default is '5px'
      * @param options.flex - Flex ratio of each column; default is [1, 1, 1, ...]
      * @returns HTMLElement containing the column layout
+     * @example
+     * dv.addcolumns([dv.md('# Hello'), dv.md('# World')], { gap: '10px', flex: [1, 2] });
      */
     columns(elements: HTMLElement[], options: {
         gap?: string;
@@ -415,35 +429,82 @@ export class DataView {
     }
 
     /**
+     * Creates a Mermaid diagram from Mermaid code
+     * @param code - Mermaid code
+     * @returns HTMLElement containing the Mermaid diagram
+     */
+    mermaid(code: string) {
+        let mermaidContainer = newDivWrapper();
+        const mermaid = new MermaidBase(
+            mermaidContainer,
+            code
+        );
+        mermaid.render();
+        this.disposers.push(() => mermaid.dispose());
+        return mermaidContainer;
+    }
+
+    /**
      * Creates a Mermaid diagram from block relationships
-     * @param map - Object mapping block IDs to their connected blocks
+     * @param tree - Object mapping block IDs to their connected blocks
      * @param options - Configuration options
      * @param options.blocks - Array of Block objects
      * @param options.type - Diagram type: "flowchart" or "mindmap"
      * @param options.flowchart - Flow direction: 'TD' or 'LR'
      * @param options.renderer - Custom function to render node content
      * @returns HTMLElement containing the Mermaid diagram
+     * @example
+     * const children = await Query.childdoc(block);
+     * dv.addMermaidRelation({...block, children }, { type: 'flowchart' });
+     * dv.addMermaidRelation({ 'Child': children, 'Backlink': backlinks }, { type: 'flowchart' });
      */
-    //TODO 更改为 IHasChildren
-    mermaid(map: Record<BlockId, BlockId | BlockId[]>, options: {
-        blocks?: Block[],
+    mermaidRelation(tree: IBlockWithChilds | Record<string, Block[]>, options: {
         type?: "flowchart" | "mindmap",
         flowchart?: 'TD' | 'LR',
         renderer?: (b: Block) => string;
     } = {}) {
         let mermaidContainer = newDivWrapper();
-        // 检查 map，防止出现 null 或者 undefined
-        map = Object.fromEntries(Object.entries(map).filter(([k, v]) => k && v));
-        const mermaid = new Mermaid({
+        if (!tree.id) {
+            // 如果没有 id, 将 tree 视为 { parentname: Block[] } 的格式
+            const oldTree = tree;
+            // 将 Record<string, Block[]> 转换为 [ { name: string, children: IBlockWithChilds[] } ]
+            const flattened = Object.entries(oldTree).map(([name, blocks]) => ({ name, children: blocks }));
+            if (flattened.length === 1) {
+                tree = flattened[0] as ITreeNode;
+            } else {
+                tree = { name: 'Root', children: flattened } as ITreeNode;
+            }
+        }
+
+        const mermaid = new MermaidRelation({
             target: mermaidContainer,
             type: options.type ?? "flowchart",
-            map,
-            blocks: options.blocks,
+            rootNode: tree as ITreeNode,
             renderer: options.renderer,  // undefined 也不要紧, 组件里有默认渲染方式
             flowchart: options.flowchart ?? 'LR'
         });
         this.disposers.push(() => mermaid.dispose());
         return mermaidContainer;
+    }
+
+    /**
+     * Creates a Mermaid flowchart from block relationships
+     * @description Equivalent to `dv.mermaidRelation(tree, { type: 'flowchart' })`
+     */
+    flowchart(tree: IBlockWithChilds, options: {
+        renderer?: (b: Block) => string;
+    } = {}) {
+        return this.mermaidRelation(tree, { ...options, type: 'flowchart' });
+    }
+
+    /**
+     * Creates a Mermaid mindmap from block relationships
+     * @description Equivalent to `dv.mermaidRelation(tree, { type: 'mindmap' })`
+     */
+    mindmap(tree: IBlockWithChilds, options: {
+        renderer?: (b: Block) => string;
+    } = {}) {
+        return this.mermaidRelation(tree, { ...options, type: 'mindmap' });
     }
 
     /**
@@ -455,6 +516,9 @@ export class DataView {
      * @param {number} options.columns - Number of columns to display
      * @param {number} options.zoom - Zoom factor, from 0 to 1
      * @returns HTMLElement containing the embedded blocks
+     * @example
+     * const children = await Query.childdoc(block);
+     * dv.addembed(children, { limit: 5 });
      */
     embed(blocks: Block[] | Block, options: {
         breadcrumb?: boolean;
@@ -824,6 +888,23 @@ export class DataView {
         this._element.oninput = (el) => { el.stopImmediatePropagation(); };
         this._element.onclick = (el) => {
             el.stopImmediatePropagation();
+            el.preventDefault();
+            const target = el.target as HTMLElement;
+            if (target.tagName === 'SPAN') {
+                if (target.dataset.type === 'a') {
+                    // 点击了链接、引用的时候跳转
+                    const href = target.dataset.href;
+                    if (href) {
+                        const id = href.split('/').pop();
+                        openBlock(id);
+                    }
+                } else if (target.dataset.type === 'block-ref') {
+                    const id = target.dataset.id;
+                    if (id) {
+                        openBlock(id);
+                    }
+                }
+            }
             const selection = window.getSelection();
             const length = selection.toString().length;
             if (length === 0 && (el.target as HTMLElement).tagName === "SPAN") {

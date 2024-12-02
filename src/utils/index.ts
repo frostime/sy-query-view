@@ -3,11 +3,12 @@
  * @Author       : frostime
  * @Date         : 2024-04-18 21:05:32
  * @FilePath     : /src/utils/index.ts
- * @LastEditTime : 2024-07-13 21:46:42
+ * @LastEditTime : 2024-12-02 22:03:35
  * @Description  : 
  */
 import * as api from '../api';
-import { type Plugin } from 'siyuan';
+import { getFrontend, openMobileFileById, openTab, type Plugin } from 'siyuan';
+import { app } from '@/index';
 
 export const getPlugin = (): Plugin => {
     let plugin = window.siyuan.ws.app.plugins.find(p => p.name === 'sy-f-misc');
@@ -21,6 +22,24 @@ export function debounce<F extends (...args: Parameters<F>) => ReturnType<F>>(fu
         timeout = setTimeout(() => func(...args), wait);
     };
 }
+
+export const isMobile = () => {
+    return getFrontend().endsWith('mobile');
+}
+
+export const openBlock = (id: BlockId) => {
+    if (isMobile()) {
+        openMobileFileById(app, id);
+    } else {
+        openTab({
+            app: app,
+            doc: {
+                id: id,
+                zoomIn: false,
+            },
+        });
+    }
+};
 
 
 export const getNotebook = (boxId: string): Notebook => {
