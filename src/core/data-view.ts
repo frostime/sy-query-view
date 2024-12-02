@@ -1,3 +1,11 @@
+/*
+ * Copyright (c) 2024 by frostime. All Rights Reserved.
+ * @Author       : frostime
+ * @Date         : 2024-12-02 10:15:04
+ * @FilePath     : /src/core/data-view.ts
+ * @LastEditTime : 2024-12-02 12:55:47
+ * @Description  : 
+ */
 import {
     IProtyle,
     fetchSyncPost,
@@ -44,12 +52,28 @@ const newDivWrapper = (tag: string = 'div') => {
 
 const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
 
-export interface IListOptions {
+
+/**
+ * List Options
+ * @interface IListOptions
+ * @property {string} type - List type: 'u' for unordered, 'o' for ordered
+ * @property {number} columns - Number of columns to display
+ * @property {(b: T) => string | number | undefined | null} renderer - Custom function to render each list item; if not provided or return null, the default renderer will be used
+ */
+export interface IListOptions<T> {
     type?: 'u' | 'o';
     columns?: number;
-    renderer?: (b: Block) => string | number | undefined | null;
+    renderer?: (b: T) => string | number | undefined | null;
 }
 
+/**
+ * Table Options
+ * @interface ITableOptions
+ * @property {boolean} center - Center align table contents
+ * @property {boolean} fullwidth - Make table full width
+ * @property {boolean} index - Show row indices
+ * @property {(b: Block, attr: keyof Block) => string | number | undefined | null} renderer - Custom function to render each table cell; it is only effective when the table is a BlockTable; if not provided or return null, the default renderer will be used
+ */
 export interface ITableOptions {
     center?: boolean;
     fullwidth?: boolean;
@@ -130,12 +154,18 @@ export class DataView {
      * @param method: `(...args: any[]) => HTMLElement`, 一个返回 HTMLElement 的方法
      * @param options: 其他配置
      *  - aliases: 组件的别名
-     *  - outsideMethod: 是否为外部方法，默认为 false，将会自动执行 `method.bind(this)`
+     *  - bindDataview: 是否绑定 DataView 实例，默认为 true，外部的 method 将会自动执行 `method.bind(this)`
      */
-    register(method: (...args: any[]) => HTMLElement, options: {
-        aliases?: string[],
-        outsideMethod?: boolean
-    } = {}) {
+    register(
+        method: (...args: any[]) => HTMLElement,
+        options: {
+            aliases?: string[],
+            bindDataview?: boolean
+        } = {}
+    ) {
+        if (options.bindDataview === undefined) {
+            options.bindDataview = true;
+        }
 
         const methodName = method.name;
         const aliasSet = new Set(options.aliases ?? []);
@@ -162,12 +192,12 @@ export class DataView {
 
         // Register base method and its aliases
         aliases.forEach(alias => {
-            this[alias] = options.outsideMethod ? method : method.bind(this);
-            this[alias.toLowerCase()] = options.outsideMethod ? method : method.bind(this);
+            this[alias] = options.bindDataview ? method.bind(this) : method;
+            this[alias.toLowerCase()] = options.bindDataview ? method.bind(this) : method;
         });
 
         const addViewFn = ((...args: any[]) => {
-            const result = options.outsideMethod ? method(args) : method.apply(this, args);
+            const result = options.bindDataview ? method.apply(this, args) : method(args);
             this._element.append(result);
             return result.firstElementChild || result;
         });
@@ -215,10 +245,6 @@ export class DataView {
 
     get element() {
         return this._element;
-    }
-
-    set element(ele: any) {
-        console.warn(`[${this.EMBED_BLOCK_ID}] DataView's element is read-only, don't try to set it!`);
     }
 
     dispose() {
@@ -302,13 +328,10 @@ export class DataView {
     /**
      * Creates a list view from an array of data
      * @param data - Array of items to display in the list
-     * @param options - Configuration options
-     * @param options.type - List type: 'u' for unordered, 'o' for ordered
-     * @param options.columns - Number of columns to display
-     * @param options.renderer - Custom function to render each list item
+     * @param options - Configuration options, see {@link IListOptions}
      * @returns HTMLElement containing the list
      */
-    list(data: any[], options: IListOptions = {}) {
+    list(data: Block[], options: IListOptions<Block> = {}) {
         let defaultRenderer = (x: any) => {
             if (typeof x === 'object') {
                 return JSON.stringify(x);
@@ -340,10 +363,7 @@ export class DataView {
     /**
      * Creates a table view from an array of data
      * @param data - Array of objects or arrays to display in table format
-     * @param options - Configuration options
-     * @param options.center - Center align table contents
-     * @param options.fullwidth - Make table full width
-     * @param options.index - Show row indices
+     * @param options - Configuration options, see {@link ITableOptions}
      * @returns HTMLElement containing the table
      */
     table(data: (Object | any[])[], options: ITableOptions = {}) {
@@ -387,11 +407,7 @@ export class DataView {
      * Creates a table view specifically for Block objects
      * @param blocks - Array of Block objects to display
      * @param cols - Array of Block properties to show as columns, can be null
-     * @param options - Configuration options
-     * @param options.center - Center align table contents
-     * @param options.fullwidth - Make table full width
-     * @param options.index - Show row indices
-     * @param options.renderer - Custom function to render cell contents
+     * @param options - Configuration options, see {@link ITableOptions}
      * @returns HTMLElement containing the block table
      */
     blockTable(blocks: Block[], cols: (keyof Block)[] | null, options: ITableOptions = {}) {
@@ -414,7 +430,7 @@ export class DataView {
      * Arranges elements in columns
      * @param elements - Array of HTMLElements to arrange
      * @param options - Configuration options
-     * @param options.gap - Gap between columns
+     * @param options.gap - Style of gap between columns; default is '5px'
      * @returns HTMLElement containing the column layout
      */
     columns(elements: HTMLElement[], options: {
@@ -448,7 +464,7 @@ export class DataView {
      * Arranges elements in rows
      * @param elements - Array of HTMLElements to arrange
      * @param options - Configuration options
-     * @param options.gap - Gap between rows
+     * @param options.gap - Style of gap between rows; default is '5px'
      * @returns HTMLElement containing the row layout
      */
     rows(elements: HTMLElement[], options: {
@@ -465,7 +481,7 @@ export class DataView {
     }
 
     /**
-     * Creates a Mermaid diagram
+     * Creates a Mermaid diagram from block relationships
      * @param map - Object mapping block IDs to their connected blocks
      * @param options - Configuration options
      * @param options.blocks - Array of Block objects
@@ -500,7 +516,7 @@ export class DataView {
      * @param blocks - Single Block or array of Blocks to embed
      * @param options - Configuration options
      * @param {boolean} options.breadcrumb - Whether to show breadcrumb navigation
-     * @param {number} options.limit - Maximum number of blocks to embed
+     * @param {number} options.limit - Maximum number of blocks to embed, if provided, only limited blocks will be embedded
      * @param {number} options.columns - Number of columns to display
      * @param {number} options.zoom - Zoom factor, from 0 to 1
      * @returns HTMLElement containing the embedded blocks
@@ -527,11 +543,11 @@ export class DataView {
 
     /**
      * Creates a custom ECharts visualization
-     * @param echartOption - ECharts configuration object
+     * @param echartOption - ECharts configuration object, see {@link https://echarts.apache.org/handbook/en/get-started/} for more details
      * @param options - Configuration options
-     * @param options.height - Chart height
-     * @param options.width - Chart width
-     * @param options.events - Event handlers for chart interactions
+     * @param options.height - The height of the container, default as 300px
+     * @param options.width - The width of the container, default as 100%
+     * @param options.events - Event handlers for chart interactions; see {@link https://echarts.apache.org/handbook/en/concepts/event/} for more details
      * @returns HTMLElement containing the chart
      */
     echarts(echartOption: IEchartsOption, options: {
@@ -559,10 +575,10 @@ export class DataView {
     /**
      * Creates a line chart
      * @param x - Array of x-axis values
-     * @param y - Array of y-axis values or array of arrays for multiple lines
+     * @param y - Array of y-axis values, or array of arrays for multiple lines
      * @param options - Configuration options
-     * @param options.height - Chart height
-     * @param options.width - Chart width
+     * @param options.height - The height of the container, default as 300px
+     * @param options.width - The width of the container, default as 100%
      * @param options.title - Chart title
      * @param options.xlabel - X-axis label
      * @param options.ylabel - Y-axis label
@@ -615,10 +631,10 @@ export class DataView {
     /**
      * Creates a bar chart
      * @param x - Array of x-axis values
-     * @param y - Array of y-axis values or array of arrays for multiple bars
+     * @param y - Array of y-axis values, or array of arrays for multiple bars
      * @param options - Configuration options
-     * @param options.height - Chart height
-     * @param options.width - Chart width
+     * @param options.height - The height of the container, default as 300px
+     * @param options.width - The width of the container, default as 100%
      * @param options.title - Chart title
      * @param options.xlabel - X-axis label
      * @param options.ylabel - Y-axis label
@@ -673,17 +689,17 @@ export class DataView {
 
     /**
      * Creates a tree visualization
-     * @param data - Tree structure data
+     * @param data - Tree structure data, see {@link ITreeNode} for more details
      * @param options - Configuration options
-     * @param options.height - Chart height
-     * @param options.width - Chart width
+     * @param options.height - The height of the container, default as 300px
+     * @param options.width - The width of the container, default as 100%
      * @param options.title - Chart title
      * @param options.orient - Tree orientation ('LR' for left-to-right, 'TB' for top-to-bottom)
      * @param options.nameRenderer - Custom function to render node names
      * @param options.valueRenderer - Custom function to render node values
      * @param options.symbolSize - Size of node symbols
-     * @param options.seriesOption - Additional series configuration
-     * @param options.echartsOption - Additional ECharts configuration
+     * @param options.seriesOption - Additional series configuration; this will be merged within each series option
+     * @param options.echartsOption - Additional ECharts configuration, see {@link https://echarts.apache.org/handbook/en/get-started/} for more details
      * @returns HTMLElement containing the tree visualization
      */
     echartsTree(data: ITreeNode, options: {
@@ -756,18 +772,18 @@ export class DataView {
 
     /**
      * Creates a graph/network visualization
-     * @param nodes - Array of graph nodes
-     * @param links - Array of connections between nodes
+     * @param nodes - Array of graph nodes, see {@link IGraphNode} for more details
+     * @param links - Array of connections between nodes, see {@link IGraphLink} for more details
      * @param options - Configuration options
-     * @param options.height - Chart height
-     * @param options.width - Chart width
+     * @param options.height - The height of the container, default as 300px
+     * @param options.width - The width of the container, default as 100%
      * @param options.title - Chart title
      * @param options.symbolSize - Size of node symbols
      * @param options.renderer - Custom function to render nodes
      * @param options.nameRenderer - Custom function to render node names
      * @param options.valueRenderer - Custom function to render node values
      * @param options.seriesOption - Additional series configuration
-     * @param options.echartsOption - Additional ECharts configuration
+     * @param options.echartsOption - Additional ECharts configuration, see {@link https://echarts.apache.org/handbook/en/get-started/} for more details
      * @returns HTMLElement containing the graph visualization
      */
     echartsGraph(nodes: IGraphNode[], links: IGraphLink[], options: {

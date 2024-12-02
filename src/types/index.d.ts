@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2023-08-15 10:28:10
  * @FilePath     : /src/types/index.d.ts
- * @LastEditTime : 2024-12-01 16:21:35
+ * @LastEditTime : 2024-12-01 22:54:38
  * @Description  : Frequently used data structures in SiYuan
  */
 
@@ -64,20 +64,20 @@ type BlockSubType =
 
 
 type Block = {
-    id: BlockId;
-    parent_id?: BlockId;
-    root_id: DocumentId;
+    id: BlockId;  // ID of the block
+    parent_id?: BlockId;  // ID of the parent block
+    root_id: DocumentId;  // ID of the document
     hash: string;
-    box: string;
-    path: string;
-    hpath: string;
+    box: string;  // ID of the notebook
+    path: string;  // Path of the .sy file, like /20241201224713-q858585/20241201224713-1234567.sy
+    hpath: string;  // Human-readable path of the document, like /Test/Document
     name: string;
     alias: string;
     memo: string;
     tag: string;
-    content: string;
-    fcontent?: string;
-    markdown: string;
+    content: string;  // Content of the block, no md modifier
+    fcontent?: string;  // Content of the first block, when the block is a container block like list item
+    markdown: string;  // Markdown content of the block
     length: number;
     type: BlockType;
     subtype: BlockSubType;
@@ -86,8 +86,8 @@ type Block = {
      */
     ial?: string;
     sort: number;
-    created: string;
-    updated: string;
+    created: string;  // Time of creation, with format like 20241201224713
+    updated: string;  // Time of last update, with format like 20241201224713
 }
 
 type PartialBlock = Partial<Block>;
@@ -122,5 +122,5 @@ declare interface Window {
 
 // globalThis
 declare interface GlobalThis {
-    Query: Window['Query'];
+    Query: typeof import("@/core/query").default;
 }

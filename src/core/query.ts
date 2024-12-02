@@ -340,12 +340,12 @@ const Query = {
      * @param enable.doc - Whether to process document blocks
      * @returns Processed blocks or block IDs
      */
-    fb2p: async (inputs: BlockId[] | Block[], enable?: { heading?: boolean, doc?: boolean }) => {
+    fb2p: async (inputs: Block[], enable?: { heading?: boolean, doc?: boolean }) => {
         /**
          * 处理输入参数
          */
         let types = typeof inputs[0] === 'string' ? 'id' : 'block';
-        let ids = types === 'id' ? inputs as BlockId[] : (inputs as Block[]).map(b => b.id);
+        let ids = types === 'id' ? inputs : (inputs as Block[]).map(b => b.id);
         let blocks: Block[] = inputs as Block[];
         enable = { heading: true, doc: true, ...(enable ?? {}) };
 
@@ -431,7 +431,7 @@ const Query = {
             }
         }
         await ReplaceContentTask.run();
-        return types === 'block' ? wrapList(result) : result.map(b => b.id);
+        return wrapList(result);
     },
 }
 

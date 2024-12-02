@@ -90,7 +90,7 @@ const editJsCode = async (blockId: BlockId, code: string) => {
         });
 
         // 监听文件变化
-        watcher = fs.watch(filePath, (eventType, filename) => {
+        watcher = fs.watch(filePath, (eventType, _filename) => {
             if (eventType === 'change') {
                 try {
                     const updatedContent = fs.readFileSync(filePath, 'utf-8');

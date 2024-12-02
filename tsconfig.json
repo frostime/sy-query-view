@@ -6,21 +6,24 @@
         "lib": [
             "DOM",
             "DOM.Iterable",
-            "ES2021"
+            "ES2022",
+            "ESNext",
+            "ESNext.WeakRef"
         ],
         "skipLibCheck": true,
+        "noImplicitAny": false,
         /* Bundler mode */
         "moduleResolution": "Node",
         // "allowImportingTsExtensions": true,
         "allowSyntheticDefaultImports": true,
         "resolveJsonModule": true,
         "isolatedModules": true,
-        "noEmit": true,
+        // "noEmit": true,
         "jsx": "preserve",
         /* Linting */
         "strict": false,
-        "noUnusedLocals": true,
-        "noUnusedParameters": true,
+        "noUnusedLocals": false,
+        "noUnusedParameters": false,
         "noFallthroughCasesInSwitch": true,
         /* Svelte */
         /**
@@ -30,25 +33,26 @@
          * of JS in `.svelte` files.
         */
         "allowJs": true,
-        "checkJs": true,
+        // "checkJs": true,
         "types": [
             "node",
-            "vite/client",
-            "svelte"
+            // "vite/client",
+            // "svelte"
         ],
         // "baseUrl": "./src",
+        "typeRoots": [
+            "./src/types",
+            "./node_modules/@types"
+        ],
         "paths": {
             "@/*": ["./src/*"],
             "@/libs/*": ["./src/libs/*"],
-        }
+        },
+        "noEmitOnError": false,  // 强制生成文件
     },
     "include": [
-        "tools/**/*.ts",
-        "src/**/*.ts",
-        "src/**/*.d.ts",
-        "src/**/*.tsx",
-        "src/**/*.vue",
-        "src/**/*.svelte"
+       "src/**/*",
+       "src/types/**/*"
     ],
     "references": [
         {

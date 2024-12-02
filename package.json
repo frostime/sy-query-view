@@ -8,13 +8,14 @@
   "author": "frostime",
   "license": "MIT",
   "scripts": {
-    "dev": "cross-env NODE_ENV=development VITE_SOURCEMAP=inline vite build --watch",
-    "build": "cross-env NODE_ENV=production vite build",
+    "dev": "npm run export-types && cross-env NODE_ENV=development VITE_SOURCEMAP=inline vite build --watch && npm run replace-md-file ./dev",
+    "build": "npm run export-types && cross-env NODE_ENV=production vite build && npm run replace-md-file ./dist",
     "make-link": "npx make-link-win",
     "update-version": "npx update-version",
     "make-install": "vite build && npx make-installclear",
     "auto-i18n": "i18n extract && i18n translate && i18n export",
-    "gen-types": "node scripts/generate-types.js"
+    "export-types": "node scripts/export-types.js",
+    "replace-md-file": "node scripts/replace-md-file.js"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^3.1.0",

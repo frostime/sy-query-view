@@ -197,7 +197,7 @@ class Mermaid {
     private blockSet: Set<BlockId>; //在 mermaid 中定义的节点
     private renderer: (b: Block) => string | null;
     private direction: 'TD' | 'LR';
-    private lute: Lute = getLute();
+    // private lute: Lute = getLute();
 
     private disposeCb: (() => void)[] = [];
 
@@ -612,6 +612,7 @@ class EmbedNodes {
             this.element.style.columnCount = this.columns.toString();
             this.element.style.columnGap = '0px';
         }
+        //@ts-ignore
         this.element.style.zoom = `${this.zoom}`;
     }
 

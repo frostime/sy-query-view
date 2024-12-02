@@ -1,25 +1,114 @@
 import { renderAttr } from "./components";
 
+/** Wrapped Block interface with extended convenient properties and methods */
 export interface IWrappedBlock extends Block {
-    //TODO
+    /** Method to return the original Block object */
+    unwrap(): Block;
+
+    /** Original Block object */
+    unwrapped: Block;
+
+    /** Block's URI link in format: siyuan://blocks/xxx */
+    asuri: string;
+    /** Block's URI link in format: siyuan://blocks/xxx */
+    touri: string;
+
+    /** Block's Markdown format link */
+    aslink: string;
+    /** Block's Markdown format link */
+    tolink: string;
+
+    /** Block's SiYuan reference format text */
+    asref: string;
+    /** Block's SiYuan reference format text */
+    toref: string;
+
+    /**
+     * Returns a rendered SiYuan attribute
+     * @param attr - Attribute name
+     * @param renderer - Custom render function, uses default rendering when returns null
+     */
+    attr(attr: keyof Block, renderer?: (block: Block, attr: keyof Block) => string | null): string;
+
+    /** Update date in YYYY-MM-DD format */
+    updatedDate: string;
+    /** Creation date in YYYY-MM-DD format */
+    createdDate: string;
+    /** Update time in HH:mm:ss format */
+    updatedTime: string;
+    /** Creation time in HH:mm:ss format */
+    createdTime: string;
+    /** Update datetime in YYYY-MM-DD HH:mm:ss format */
+    updatedDatetime: string;
+    /** Creation datetime in YYYY-MM-DD HH:mm:ss format */
+    createdDatetime: string;
+
+    /** Get custom attribute value */
+    [key: `custom-${string}`]: string;
 }
 
-export interface IWrappedList extends Array<IWrappedBlock> {
-    //TODO
+/** Wrapped array interface with extended convenient methods */
+export interface IWrappedList<T> extends Array<T> {
+    /** Method to return the original array */
+    unwrap(): T[];
+
+    /** Original array */
+    unwrapped: T[];
+
+    /**
+     * Returns a new array containing only specified properties
+     * @param attrs - Property names to keep
+     */
+    pick(...attrs: (keyof T)[]): IWrappedList<Partial<T>>;
+
+    /**
+     * Returns a new array excluding specified properties
+     * @param attrs - Property names to exclude
+     */
+    omit(...attrs: (keyof T)[]): IWrappedList<T>;
+
+    /**
+     * Returns a new array sorted by specified property
+     * @param attr - Property to sort by
+     * @param order - Sort direction, defaults to 'asc'
+     */
+    sorton(attr: keyof T, order?: 'asc' | 'desc'): IWrappedList<T>;
+
+    /**
+     * Returns an object grouped by specified condition
+     * @param predicate - Grouping criteria, can be property name or function
+     * @param fnEach - Optional callback function for each group
+     */
+    groupby(
+        predicate: keyof T | ((item: T) => any),
+        fnEach?: (groupName: any, list: T[]) => unknown
+    ): Record<string, IWrappedList<T>>;
+
+    /**
+     * Returns a filtered new array, ensuring it's also an IWrappedList
+     * @param predicate - Filter condition function
+     */
+    filter(predicate: (value: T, index: number, array: T[]) => boolean): IWrappedList<T>;
 }
+
 
 /**
- * 为 Block 添加一些辅助属性，便于直接使用
+ * Add some helper properties to the Block for direct use
  * @param block 
  * @returns 
  */
-export const wrapBlock = (block: Block | any): IWrappedBlock => {
+export const wrapBlock = (block: Block): IWrappedBlock => {
+    // If it's already a Proxy, return directly
+    if (block instanceof Proxy) {
+        return block as IWrappedBlock;
+    }
+
     let proxy = new Proxy(block, {
         get(target: Block, prop: keyof Block | string) {
             if (prop in target) {
                 return target[prop];
             }
-            //增加一些方便的属性和方法
+            // Add some convenient properties and methods
             switch (prop) {
                 case 'unwrap':
                     /** @returns {Block} 返回原始 Block 对象 */
@@ -99,16 +188,20 @@ export const wrapBlock = (block: Block | any): IWrappedBlock => {
             return null;
         }
     });
-    return proxy;
+    return proxy as IWrappedBlock;
 }
 
 
 /**
- * 将 SQL 查询结果的列表添加一层 Proxy，以 attach 上层一些方便的方法
+ * Add a Proxy layer to the list of SQL query results to attach some convenient methods
  * @param list 
  * @returns 
  */
-export const wrapList = (list: (Partial<Block> | any)[], useWrapBlock: boolean = true): IWrappedList => {
+export const wrapList = (list: Block[], useWrapBlock: boolean = true): IWrappedList<IWrappedBlock> => {
+    if (list instanceof Proxy) {
+        return list as IWrappedList<IWrappedBlock>;
+    }
+
     // let wrappedBlocks = list.map(block => wrapBlock(block as Block));
     list = useWrapBlock ? list.map(block => wrapBlock(block as Block)) : list;
 
@@ -134,6 +227,7 @@ export const wrapList = (list: (Partial<Block> | any)[], useWrapBlock: boolean =
                     return (...attrs: (keyof Block)[]) => {
                         if (attrs.length === 1) {
                             let picked = target.map(b => b[attrs[0]]);
+                            //@ts-ignore
                             return wrapList(picked, false);
                         } else {
                             let picked = target.map(block => {
@@ -141,7 +235,7 @@ export const wrapList = (list: (Partial<Block> | any)[], useWrapBlock: boolean =
                                 attrs.forEach(attr => {
                                     obj[attr] = block[attr] ?? null;
                                 });
-                                return wrapBlock(obj);
+                                return obj;
                             });
                             return wrapList(picked);
                         }
@@ -188,7 +282,7 @@ export const wrapList = (list: (Partial<Block> | any)[], useWrapBlock: boolean =
                      * list.groupby('box')
                      * list.groupby(block => block.created.slice(0, 4))
                      */
-                    return (predicate: (keyof Block) | ((b: Partial<Block>) => any), fnEach?: (key: any, list: Block[]) => any) => {
+                    return (predicate: (keyof Block) | ((b: Partial<Block>) => any), fnEach?: (groupName: any, list: Block[]) => unknown) => {
                         const maps: Record<string, Block[]> = {};
                         const getKey = (b: Partial<Block>) => {
                             if (typeof predicate === 'function') {
@@ -222,5 +316,5 @@ export const wrapList = (list: (Partial<Block> | any)[], useWrapBlock: boolean =
             return null;
         }
     });
-    return proxy as IWrappedList;
+    return proxy as IWrappedList<IWrappedBlock>;
 }
