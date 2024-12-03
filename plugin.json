@@ -20,8 +20,8 @@
     "desktop-window"
   ],
   "displayName": {
-    "en_US": "JS Query and Dataview",
-    "zh_CN": "JS 查询与视图"
+    "en_US": "Query & View",
+    "zh_CN": "Query & View"
   },
   "description": {
     "en_US": "Use Javascript to query and render as Dataview view",

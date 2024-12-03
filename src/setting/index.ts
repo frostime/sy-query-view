@@ -3,14 +3,17 @@
  * @Author       : frostime
  * @Date         : 2024-12-01 16:25:57
  * @FilePath     : /src/setting/index.ts
- * @LastEditTime : 2024-12-02 22:48:08
+ * @LastEditTime : 2024-12-03 12:45:28
  * @Description  : 
  */
 
 import { i18n } from "@/index";
 
-import { Plugin } from "siyuan";
+import { Plugin, showMessage } from "siyuan";
 import { SettingUtils } from "@/libs/setting-utils";
+import { loadUserCustomView } from "@/core/custom-view";
+
+
 let defaultSetting = {
     codeEditor: 'code -w {{filepath}}',
     defaultTableColumns: ['type', 'content', 'hpath', 'box'].join(',')
@@ -51,7 +54,7 @@ export const load = async (plugin: Plugin) => {
     settingUtils.addItem({
         type: 'hint',
         title: i18n.src_setting_indexts.api_interface,
-        description: ((`API 接口的类型定义，请参考: `)) + `<a href="https://github.com/frostime/sy-query-view/blob/main/public/types.d.ts" target="_blank">frostime/sy-query-view/public/types.d.ts</a>`,
+        description: i18n.src_setting_indexts.apitypedefinition + `<a href="https://github.com/frostime/sy-query-view/blob/main/public/types.d.ts" target="_blank">frostime/sy-query-view/public/types.d.ts</a>`,
         key: 'apiDoc',
         value: '',
     });
@@ -70,6 +73,25 @@ export const load = async (plugin: Plugin) => {
         key: 'defaultTableColumns',
         value: defaultSetting.defaultTableColumns,
         direction: 'row'
+    });
+    settingUtils.addItem({
+        type: 'button',
+        title: ((`用户自定义视图`)),
+        description: ((`用户自行编写的 View 组件, 存放在 '/data/public/custom-query-view.js' 下`)),
+        key: 'userCustomView',
+        value: '',
+        button: {
+            label: '重新导入',
+            callback: async () => {
+                const result = await loadUserCustomView();
+                if (result.ok) {
+                    let cnt = Object.keys(result.custom).length;
+                    showMessage(((`导入成功, 共 {cnt} 个自定义视图`)).replace('{cnt}', `${cnt}`), 3000, 'info');
+                } else {
+                    showMessage(((`导入失败, 详细情况请检查控制台报错`)), 3000, 'error');
+                }
+            }
+        }
     });
     const configs = await settingUtils.load();
     delete configs.codeEditor;

@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-12-02 10:15:04
  * @FilePath     : /src/core/data-view.ts
- * @LastEditTime : 2024-12-02 22:17:54
+ * @LastEditTime : 2024-12-03 14:17:25
  * @Description  : 
  */
 import {
@@ -12,9 +12,10 @@ import {
     Lute
 } from "siyuan";
 import { getLute } from "./lute";
-import { BlockList, BlockTable, MermaidRelation, EmbedNodes, Echarts, MermaidBase } from './components';
+import { BlockList, BlockTable, MermaidRelation, EmbedNodes, Echarts, MermaidBase, errorMessage } from './components';
 import { registerProtyleGC } from "./gc";
 import { openBlock } from "@/utils";
+import { getCustomView } from "./custom-view";
 
 const getCSSVar = (name: string) => getComputedStyle(document.documentElement).getPropertyValue(name);
 
@@ -63,7 +64,7 @@ const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
  * - Block embeddings
  * - Mermaid diagrams
  */
-export class DataView {
+export class DataView implements IDataView {
     /** @internal */
     private protyle: IProtyle;
 
@@ -89,7 +90,7 @@ export class DataView {
     _element: HTMLElement;
 
     /** @internal */
-    private PROHIBIT_METHOD_NAMES = ['register', 'element', 'ele', 'render'];
+   static PROHIBIT_METHOD_NAMES = ['register', 'element', 'ele', 'render'];
 
     /** @internal */
     private observer: MutationObserver;
@@ -102,24 +103,20 @@ export class DataView {
      * @param method: `(...args: any[]) => HTMLElement`, 一个返回 HTMLElement 的方法
      * @param options: 其他配置
      *  - aliases: 组件的别名
-     *  - bindDataview: 是否绑定 DataView 实例，默认为 true，外部的 method 将会自动执行 `method.bind(this)`
      */
     register(
         method: (...args: any[]) => HTMLElement,
         options: {
+            name?: string,
             aliases?: string[],
-            bindDataview?: boolean
         } = {}
     ) {
-        if (options.bindDataview === undefined) {
-            options.bindDataview = true;
-        }
 
-        const methodName = method.name;
+        const methodName = options.name ?? method.name;
         const aliasSet = new Set(options.aliases ?? []);
         const newAliases = [];
 
-        if (this.PROHIBIT_METHOD_NAMES.includes(methodName)) {
+        if (DataView.PROHIBIT_METHOD_NAMES.includes(methodName)) {
             console.warn(`Method name ${methodName} is prohibited, please use another name.`);
             return;
         }
@@ -140,12 +137,12 @@ export class DataView {
 
         // Register base method and its aliases
         aliases.forEach(alias => {
-            this[alias] = options.bindDataview ? method.bind(this) : method;
-            this[alias.toLowerCase()] = options.bindDataview ? method.bind(this) : method;
+            this[alias] = method.bind(this);
+            this[alias.toLowerCase()] = method.bind(this);
         });
 
         const addViewFn = ((...args: any[]) => {
-            const result = options.bindDataview ? method.apply(this, args) : method(args);
+            const result = method.apply(this, args);
             this._element.append(result);
             return result.firstElementChild || result;
         });
@@ -192,6 +189,37 @@ export class DataView {
         this.register(this.echartsBar, { aliases: ['Bar'] });
         this.register(this.echartsTree, { aliases: ['Tree'] });
         this.register(this.echartsGraph, { aliases: ['Graph'] });
+
+        const customView = getCustomView();
+        if (!customView) return;
+
+        const useCustomView = (name, use: ICustomView['use']) => {
+            return (...args: any[]) => {
+                const { init, dispose } = use();
+                const container = newDivWrapper();
+
+                if (!init) {
+                    errorMessage(container, `Custom view ${name} should have an init method`);
+                } else {
+                    const ele = init(this, ...args)
+                    container.append(ele);
+                }
+                if (dispose) {
+                    this.addDisposer(() => dispose(this));
+                }
+                return container;
+            }
+        }
+        Object.entries(customView).forEach(([key, value]) => {
+            const name = key;
+            const { use, alias } = value;
+
+            this.register(useCustomView(name, use), {
+                name,
+                aliases: alias
+            });
+            console.debug(`Custom view ${name} registered`);
+        });
     }
 
     get element() {
@@ -979,3 +1007,5 @@ export class DataView {
         });
     }
 }
+
+export const PROHIBIT_METHOD_NAMES = DataView.PROHIBIT_METHOD_NAMES;

@@ -85,7 +85,7 @@ const renderAttr = (b: Block, attr: keyof Block, options?: {
 
 /**************************************** 重构几个默认显示组件 ****************************************/
 
-const errorMessage = (element: HTMLElement, message: string) => {
+export const errorMessage = (element: HTMLElement, message: string) => {
     element.innerHTML = `<span style="color: var(--b3-card-error-color);background-color: var(--b3-card-error-background);">${message}</span>`;
 }
 
