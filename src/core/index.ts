@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-05-08 15:00:37
  * @FilePath     : /src/core/index.ts
- * @LastEditTime : 2024-12-03 12:59:19
+ * @LastEditTime : 2024-12-03 18:06:19
  * @Description  :
  *      - Fork from project https://github.com/zxhd863943427/siyuan-plugin-data-query
  *      - 基于该项目的 v0.0.7 版本进行修改
@@ -18,6 +18,8 @@ import { embedBlockEvent } from "./editor";
 import Query from "./query";
 import { onProtyleDestroyed } from "./gc";
 import { loadUserCustomView } from "./custom-view";
+
+import { i18n } from '@/index';
 /**************************************** Func ****************************************/
 
 

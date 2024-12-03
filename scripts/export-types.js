@@ -1,4 +1,5 @@
-import { exec } from 'child_process';
+import { glob } from 'glob';
+import { exec, execSync } from 'child_process';
 import fs from 'fs';
 import path from 'path';
 
@@ -11,15 +12,22 @@ const __dirname = path.dirname(__filename);
 // chdir 到上层 plugin.json 所在的目录
 process.chdir(path.join(__dirname, '..'));
 console.log(process.cwd());
-// list current directory
-console.log(fs.readdirSync('./'));
+const dirname = process.cwd();
 
+const removeTypesDir = () => {
+    if (fs.existsSync('./types')) {
+        fs.rmSync('./types', { recursive: true, force: true });
+        console.debug('remove ./types');
+    }
+}
+
+removeTypesDir();
+
+let outputDir = './public';
 
 const tsc = `tsc --declaration --emitDeclarationOnly --skipLibCheck --target ES2022 --project tsconfig.json --outDir ./types --noEmitOnError false --stripInternal`;
 
-await exec(tsc);
-
-let outputDir = './public';
+execSync(tsc);
 
 
 const fileWriter = (filepath) => {
@@ -115,4 +123,6 @@ for (let i = 0; i < lines.length - 1; i++) {
         }
     }
 }
+
+// removeTypesDir();
 fs.writeFileSync(path.join(outputDir, 'types.d.ts'), lines.join('\n'));
