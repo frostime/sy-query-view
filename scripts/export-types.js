@@ -2,17 +2,24 @@ import { exec } from 'child_process';
 import fs from 'fs';
 import path from 'path';
 
-let outputDir = './public';
-
 import { fileURLToPath } from 'url';
 
+//定位当前 js 脚本所在的目录
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// chdir 到上层 plugin.json 所在的目录
 process.chdir(path.join(__dirname, '..'));
+console.log(process.cwd());
+// list current directory
+console.log(fs.readdirSync('./'));
+
 
 const tsc = `tsc --declaration --emitDeclarationOnly --skipLibCheck --target ES2022 --project tsconfig.json --outDir ./types --noEmitOnError false --stripInternal`;
 
 await exec(tsc);
+
+let outputDir = './public';
 
 
 const fileWriter = (filepath) => {
@@ -36,6 +43,7 @@ const fileWriter = (filepath) => {
 }
 
 const readFile = (filepath) => {
+    filepath = path.join(__dirname, '..', filepath);
     return fs.readFileSync(filepath, 'utf8');
 }
 

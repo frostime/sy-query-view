@@ -20,7 +20,7 @@ jobs:
           node-version: 20
           registry-url: "https://registry.npmjs.org"
 
-        # Install pnpm
+      # Install pnpm
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         id: pnpm-install
@@ -46,11 +46,25 @@ jobs:
 
       # Install dependencies
       - name: Install dependencies
-        run: pnpm install
+        run: |
+          pnpm install
+          # 检查 typescript 是否正确安装
+          pnpm list typescript
+          # 打印当前目录
+          pwd
+          # 显示当前工作目录结构
+          ls -la
 
-      # Build for production, 这一步会生成一个 package.zip
+      # Build for production
       - name: Build for production
-        run: pnpm build
+        run: |
+          # 显示 TypeScript 配置
+          cat tsconfig.json
+          # 执行构建并捕获所有输出
+          pnpm build || { echo "Build failed"; exit 1; }
+          # 检查构建后的文件
+          ls -la dist
+          ls -la types || true
 
       - name: Release
         uses: ncipollo/release-action@v1
