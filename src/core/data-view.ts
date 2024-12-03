@@ -246,6 +246,7 @@ export class DataView extends UseStateMixin implements IDataView {
         this.disposers.push(() => this.storeState());  // 在 DataView 销毁时，将 state 同步到块属性中
     }
 
+    /** @internal */
     dispose() {
         if (this.disposed) return;
         this.disposed = true;
@@ -260,6 +261,9 @@ export class DataView extends UseStateMixin implements IDataView {
         }
     }
 
+    /**
+     * Repaint the embed block, essentially merely click the refresh button
+     */
     repaint() {
         const button = this.thisEmbedNode.querySelector('div.protyle-icons > span.protyle-action__reload');
         if (button) {

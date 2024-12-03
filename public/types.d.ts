@@ -308,7 +308,10 @@ interface IState<T> {
  */
 export declare class DataView implements IDataView {
     constructor(protyle: IProtyle, embedNode: HTMLElement, top: number | null);
-    dispose(): void;
+    /**
+     * Repaint the embed block, essentially merely click the refresh button
+     */
+    repaint(): void;
     /**
      * Persist state across renders; it will store the state in the block attributes when disposing, and restore it when creating.
      * @param key - The key of the state
