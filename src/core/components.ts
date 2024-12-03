@@ -715,7 +715,8 @@ class Echarts {
             // 初始化图表
             this.chart = window.echarts.init(
                 this.element,
-                window.siyuan.config.appearance.mode === 1 ? "dark" : undefined
+                window.siyuan.config.appearance.mode === 1 ? "dark" : undefined,
+                { renderer: setting.echartsRenderer }
             );
 
             // 设置默认grid配置，确保图表有适当的边距

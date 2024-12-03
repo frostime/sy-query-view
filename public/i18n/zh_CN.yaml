@@ -15,10 +15,11 @@ src_setting_indexts:
   api_interface: 📃 API 接口
   apitypedefinition: 'API 接口的类型定义，请参考:'
   defaultcolumnsofdataviewtable: 当调用 DataView.table 时, 默认显示的列, 以逗号分隔; 留空则表示显示所有列
+  echarts_renderer: Echarts 渲染器
+  echarts_renderer_option: Echarts 渲染器，可以为 "canvas" 或 "svg", 默认 "svg"
   import_failed: 导入失败, 详细情况请检查控制台报错
   import_success: 导入成功, 共 {cnt} 个自定义视图
-  local_command_desc: 本地用于打开代码编辑器的命令, 默认为 "code {{filepath}}" 代表使用 VSCode 打开, 其中 {{filepath}}
-    在运行时会被替换为真实的代码文件
+  local_command_desc: 本地用于打开代码编辑器的命令, 默认为 "code -w {{filepath}}" 代表使用 VSCode 打开, 其中 {{filepath}} 在运行时会被替换为真实的代码文件
   open_local_editor: ✒️ 打开本地编辑器
   reload: 重新加载
   table_default_columns: 🔑 表格视图默认显示列

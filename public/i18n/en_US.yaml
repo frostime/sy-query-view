@@ -21,10 +21,12 @@ src_setting_indexts:
   apitypedefinition: 'The type definition of the API interface, please refer to:'
   defaultcolumnsofdataviewtable: When calling DataView.table, the default columns
     to be displayed, separated by commas; leaving it blank means showing all columns
+  echarts_renderer: Echarts renderer
+  echarts_renderer_option: 'Echarts renderer, which can be "canvas" or "svg", default "svg"'
   import_failed: Import failed. Please check the console error for details.
   import_success: Import succeeded. There are a total of {cnt} custom views.
   local_command_desc: The local command used to open the code editor, by default it
-    is "code {{filepath}}" which represents opening with VSCode, where {{filepath}}
+    is "code -w {{filepath}}" which represents opening with VSCode, where {{filepath}}
     will be replaced with the actual code file at runtime
   open_local_editor: ✒️ Open Local Editor
   reload: Reload

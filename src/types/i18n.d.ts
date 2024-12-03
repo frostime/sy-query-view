@@ -20,6 +20,8 @@ interface I18n {
         api_interface: string;
         apitypedefinition: string;
         defaultcolumnsofdataviewtable: string;
+        echarts_renderer: string;
+        echarts_renderer_option: string;
         import_failed: string;
         import_success: string;
         local_command_desc: string;

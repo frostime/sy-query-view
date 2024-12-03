@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-12-01 16:25:57
  * @FilePath     : /src/setting/index.ts
- * @LastEditTime : 2024-12-03 15:43:15
+ * @LastEditTime : 2024-12-03 22:17:51
  * @Description  : 
  */
 
@@ -16,7 +16,8 @@ import { loadUserCustomView } from "@/core/custom-view";
 
 let defaultSetting = {
     codeEditor: 'code -w {{filepath}}',
-    defaultTableColumns: ['type', 'content', 'hpath', 'box'].join(',')
+    defaultTableColumns: ['type', 'content', 'hpath', 'box'].join(','),
+    echartsRenderer: 'svg'
 };
 
 let settingUtils: SettingUtils;
@@ -91,6 +92,17 @@ export const load = async (plugin: Plugin) => {
                     showMessage(i18n.src_setting_indexts.import_failed, 3000, 'error');
                 }
             }
+        }
+    });
+    settingUtils.addItem({
+        type: 'select',
+        title: i18n.src_setting_indexts.echarts_renderer,
+        key: 'echartsRenderer',
+        description: i18n.src_setting_indexts.echarts_renderer_option,
+        value: defaultSetting.echartsRenderer,
+        options: {
+            canvas: 'canvas',
+            svg: 'svg'
         }
     });
     const configs = await settingUtils.load();
