@@ -85,3 +85,30 @@ interface IEchartsOption {
     [key: string]: any;
     series?: IEchartsSeriesOption[];
 }
+
+/**
+ * Implemented by class DataView
+ */
+interface IDataView {
+    render: () => void;
+}
+
+/**
+ * User customized view. If registered, you can use it inside DataView by `dv.xxx()` or `dv.addxxx()`
+ */
+interface ICustomView {
+    /**
+     * Use the custom view
+     * @param dv - DataView instance, might be empty while validating process
+     */
+    use: (dv?: IDataView) => {
+        render: (container: HTMLElement, ...args: any[]) => void | string | HTMLElement; //Create the user custom view.
+        dispose?: () => void;  // Unmount hook for the user custom view.
+    },
+    alias?: string[]; // Alias name for the custom view
+}
+
+interface IUserCustom {
+    [key: string]: ICustomView;
+}
+

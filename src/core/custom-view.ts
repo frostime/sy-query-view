@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-12-02 22:54:07
  * @FilePath     : /src/core/custom-view.ts
- * @LastEditTime : 2024-12-03 14:25:59
+ * @LastEditTime : 2024-12-03 14:43:59
  * @Description  : 
  */
 
@@ -15,15 +15,11 @@ const blankContent = `
 This script is used for sy-query-view plugin to define user's customized view components. Type declarations as follows:
 
 interface ICustomView {
-    use: () => {
-        init: (dv: IDataView, ...args: any[]) => HTMLElement; //Create the user custom view.
-        dispose?: (dv: IDataView) => void;  // Unmount hook for the user custom view.
+    use: (dv: IDataView) => {
+        render: (container: HTMLElement, ...args: any[]) => HTMLElement; //Create the user custom view.
+        dispose?: () => void;  // Unmount hook for the user custom view.
     },
-    alias?: string[]; // alias name for the custom view
-}
-
-interface IUserCustom {
-    [key: string]: ICustomView;
+    alias?: string[]; // Alias name for the custom view
 }
 
 Once correctly registerd, you can use the custom view like this:
@@ -37,10 +33,10 @@ const custom = {
         use: () => {
             let state;
             return {
-                init: (dv, id) => {
-                    console.log('init example custom view inside DataView:', dv);
+                render: (element, id) => {
+                    console.log('init example custom view with id:', id);
                     state = id;
-                    return 'This is a example custom view ' + id;
+                    element.innerHTML = 'This is a example custom view ' + id;
                 },
                 dispose: () => {
                     console.log('dispose example custom view ' + state);
@@ -85,9 +81,9 @@ const validateCustomView = (module: IUserCustom) => {
             console.warn(`Invalid custom query-view module format, ${key} should have a use method`);
             return false;
         }
-        const { init, dispose } = view.use();
-        if (typeof init !== 'function') {
-            console.warn(`Invalid custom query-view module format, ${key} init should be a function`);
+        const { render, dispose } = view.use(null);
+        if (typeof render !== 'function') {
+            console.warn(`Invalid custom query-view module format, ${key} render should be a function`);
             return false;
         }
         if (dispose && typeof dispose !== 'function') {

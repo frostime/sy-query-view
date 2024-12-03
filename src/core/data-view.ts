@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-12-02 10:15:04
  * @FilePath     : /src/core/data-view.ts
- * @LastEditTime : 2024-12-03 14:17:25
+ * @LastEditTime : 2024-12-03 15:02:36
  * @Description  : 
  */
 import {
@@ -195,17 +195,28 @@ export class DataView implements IDataView {
 
         const useCustomView = (name, use: ICustomView['use']) => {
             return (...args: any[]) => {
-                const { init, dispose } = use();
+                const { render, dispose } = use(this);
                 const container = newDivWrapper();
 
-                if (!init) {
+                if (!render) {
                     errorMessage(container, `Custom view ${name} should have an init method`);
                 } else {
-                    const ele = init(this, ...args)
-                    container.append(ele);
+                    const ans = render(container, ...args);
+                    if (ans) {
+                        //原则上不支持 Promise，但为了兼容性，还是做了处理
+                        if (ans instanceof Promise) {
+                            ans.then(ele => container.append(ele)).catch(err => {
+                                const span = document.createElement('span');
+                                errorMessage(span, err.message);
+                                container.append(span);
+                            });
+                        } else if (ans) {
+                            container.append(ans);
+                        }
+                    }
                 }
                 if (dispose) {
-                    this.addDisposer(() => dispose(this));
+                    this.addDisposer(() => dispose());
                 }
                 return container;
             }

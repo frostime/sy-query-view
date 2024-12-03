@@ -102,6 +102,7 @@ declare const Query: {
             onlyDate?: boolean;
             onlyTime?: boolean;
         }) => string;
+        openBlock: (id: BlockId) => void;
     };
     /**
      * Wraps blocks with additional functionality
@@ -259,6 +260,33 @@ interface IEchartsOption {
 }
 
 /**
+ * Implemented by class DataView
+ */
+interface IDataView {
+    render: () => void;
+}
+
+/**
+ * User customized view. If registered, you can use it inside DataView by `dv.xxx()` or `dv.addxxx()`
+ */
+interface ICustomView {
+    /**
+     * Use the custom view
+     * @param dv - DataView instance, might be empty while validating process
+     */
+    use: (dv?: IDataView) => {
+        render: (container: HTMLElement, ...args: any[]) => void; //Create the user custom view.
+        dispose?: () => void;  // Unmount hook for the user custom view.
+    },
+    alias?: string[]; // Alias name for the custom view
+}
+
+interface IUserCustom {
+    [key: string]: ICustomView;
+}
+
+
+/**
  * DataView class for creating and managing dynamic data visualizations
  * Provides various methods for rendering data in different formats including:
  * - Lists
@@ -268,17 +296,16 @@ interface IEchartsOption {
  * - Block embeddings
  * - Mermaid diagrams
  */
-export declare class DataView {
+export declare class DataView implements IDataView {
     /**
      * 注册组件 View
      * @param method: `(...args: any[]) => HTMLElement`, 一个返回 HTMLElement 的方法
      * @param options: 其他配置
      *  - aliases: 组件的别名
-     *  - bindDataview: 是否绑定 DataView 实例，默认为 true，外部的 method 将会自动执行 `method.bind(this)`
      */
     register(method: (...args: any[]) => HTMLElement, options?: {
+        name?: string;
         aliases?: string[];
-        bindDataview?: boolean;
     }): void;
     constructor(protyle: IProtyle, embedNode: HTMLElement, top: number | null);
     get element(): HTMLElement;
@@ -302,6 +329,8 @@ export declare class DataView {
      * Adds markdown content to the DataView
      * @param md - Markdown text to be rendered
      * @returns HTMLElement containing the rendered markdown
+     * @example
+     * dv.addmd(`# Hello`);
      */
     markdown(md: string): HTMLElement;
     details(summary: string, content: string | HTMLElement): HTMLDetailsElement;
@@ -312,6 +341,9 @@ export declare class DataView {
      * @param options - Configuration options, see {@link IListOptions}
      * @param options.renderer - Custom function to render list items, the return will be used as markdown code
      * @returns HTMLElement containing the list
+     * @example
+     * const children = await Query.childdoc(block);
+     * dv.addlist(children, { type: 'o' });
      */
     list(data: (IBlockWithChilds | ScalarValue)[], options?: IListOptions<Block>): HTMLElement;
     /**
@@ -327,6 +359,9 @@ export declare class DataView {
      *       - `null`, in this case, all columns will be shown
      * @param options.renderer - Custom function to render table cells, the return will be used as markdown code
      * @returns HTMLElement containing the block table
+     * @example
+     * const children = await Query.childdoc(block);
+     * dv.addtable(children, { cols: ['type', 'content'] , fullwidth: true });
      */
     table(blocks: Block[], options?: ITableOptions & {
         cols?: (string | Record<string, string>)[] | Record<string, string>;
@@ -338,6 +373,8 @@ export declare class DataView {
      * @param options.gap - Style of gap between columns; default is '5px'
      * @param options.flex - Flex ratio of each column; default is [1, 1, 1, ...]
      * @returns HTMLElement containing the column layout
+     * @example
+     * dv.addcolumns([dv.md('# Hello'), dv.md('# World')], { gap: '10px', flex: [1, 2] });
      */
     columns(elements: HTMLElement[], options?: {
         gap?: string;
@@ -371,12 +408,11 @@ export declare class DataView {
      * @param options.renderer - Custom function to render node content
      * @returns HTMLElement containing the Mermaid diagram
      * @example
-     * ```js
      * const children = await Query.childdoc(block);
-     * dv.mermaidRelation({...block, children});
-     * ```
+     * dv.addMermaidRelation({...block, children }, { type: 'flowchart' });
+     * dv.addMermaidRelation({ 'Child': children, 'Backlink': backlinks }, { type: 'flowchart' });
      */
-    mermaidRelation(tree: IBlockWithChilds, options?: {
+    mermaidRelation(tree: IBlockWithChilds | Record<string, Block[]>, options?: {
         type?: "flowchart" | "mindmap";
         flowchart?: 'TD' | 'LR';
         renderer?: (b: Block) => string;
@@ -404,6 +440,9 @@ export declare class DataView {
      * @param {number} options.columns - Number of columns to display
      * @param {number} options.zoom - Zoom factor, from 0 to 1
      * @returns HTMLElement containing the embedded blocks
+     * @example
+     * const children = await Query.childdoc(block);
+     * dv.addembed(children, { limit: 5 });
      */
     embed(blocks: Block[] | Block, options: {
         breadcrumb?: boolean;
@@ -533,6 +572,8 @@ export declare class DataView {
      */
     render(): void;
 }
+
+export declare const PROHIBIT_METHOD_NAMES: string[];
 
 /** Wrapped Block interface with extended convenient properties and methods */
 export interface IWrappedBlock extends Block {
