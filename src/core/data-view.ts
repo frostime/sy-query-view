@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-12-02 10:15:04
  * @FilePath     : /src/core/data-view.ts
- * @LastEditTime : 2024-12-03 20:41:00
+ * @LastEditTime : 2024-12-03 21:07:45
  * @Description  : 
  */
 import {
@@ -57,13 +57,7 @@ const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
 
 /**
  * DataView class for creating and managing dynamic data visualizations
- * Provides various methods for rendering data in different formats including:
- * - Lists
- * - Tables
- * - Charts (Line, Bar, Tree, Graph)
- * - Markdown content
- * - Block embeddings
- * - Mermaid diagrams
+ * Provides various methods for visualizing data.
  */
 export class DataView extends UseStateMixin implements IDataView {
     /** @internal */
@@ -231,14 +225,14 @@ export class DataView extends UseStateMixin implements IDataView {
         this.register(this.rows);
         this.register(this.mermaid, { aliases: ['Mermaid'] });
         this.register(this.mermaidRelation);
-        this.register(this.flowchart, { aliases: ['Flowchart'] });
-        this.register(this.mindmap, { aliases: ['Mindmap'] });
+        this.register(this.mermaidFlowchart, { aliases: ['mFlowchart'] });
+        this.register(this.mermaidMindmap, { aliases: ['mMindmap'] });
         this.register(this.embed);
         this.register(this.echarts);
-        this.register(this.echartsLine, { aliases: ['Line'] });
-        this.register(this.echartsBar, { aliases: ['Bar'] });
-        this.register(this.echartsTree, { aliases: ['Tree'] });
-        this.register(this.echartsGraph, { aliases: ['Graph'] });
+        this.register(this.echartsLine, { aliases: ['eLine'] });
+        this.register(this.echartsBar, { aliases: ['eBar'] });
+        this.register(this.echartsTree, { aliases: ['eTree'] });
+        this.register(this.echartsGraph, { aliases: ['eGraph'] });
 
         this.registerCustomViews();
 
@@ -566,8 +560,9 @@ export class DataView extends UseStateMixin implements IDataView {
     /**
      * Creates a Mermaid flowchart from block relationships
      * @description Equivalent to `dv.mermaidRelation(tree, { type: 'flowchart' })`
+     * @alias mflowchart
      */
-    flowchart(tree: IBlockWithChilds, options: {
+    mermaidFlowchart(tree: IBlockWithChilds, options: {
         renderer?: (b: Block) => string;
     } = {}) {
         return this.mermaidRelation(tree, { ...options, type: 'flowchart' });
@@ -576,8 +571,9 @@ export class DataView extends UseStateMixin implements IDataView {
     /**
      * Creates a Mermaid mindmap from block relationships
      * @description Equivalent to `dv.mermaidRelation(tree, { type: 'mindmap' })`
+     * @alias mmindmap
      */
-    mindmap(tree: IBlockWithChilds, options: {
+    mermaidMindmap(tree: IBlockWithChilds, options: {
         renderer?: (b: Block) => string;
     } = {}) {
         return this.mermaidRelation(tree, { ...options, type: 'mindmap' });
@@ -660,6 +656,7 @@ export class DataView extends UseStateMixin implements IDataView {
      * @param options.legends - Array of legend labels for multiple lines
      * @param options.echartsOption - Additional ECharts configuration
      * @returns HTMLElement containing the line chart
+     * @alias eline
      */
     echartsLine(x: number[], y: number[] | number[][], options: {
         height?: string,
@@ -717,6 +714,7 @@ export class DataView extends UseStateMixin implements IDataView {
      * @param options.stack - Whether to stack bars
      * @param options.echartsOption - Additional ECharts configuration
      * @returns HTMLElement containing the bar chart
+     * @alias ebar
      */
     echartsBar(x: string[], y: number[] | number[][], options: {
         height?: string,
@@ -776,6 +774,7 @@ export class DataView extends UseStateMixin implements IDataView {
      * @param options.seriesOption - Additional series configuration; this will be merged within each series option
      * @param options.echartsOption - Additional ECharts configuration, see {@link https://echarts.apache.org/handbook/en/get-started/} for more details
      * @returns HTMLElement containing the tree visualization
+     * @alias etree
      */
     echartsTree(data: ITreeNode, options: {
         height?: string,
@@ -860,6 +859,7 @@ export class DataView extends UseStateMixin implements IDataView {
      * @param options.seriesOption - Additional series configuration
      * @param options.echartsOption - Additional ECharts configuration, see {@link https://echarts.apache.org/handbook/en/get-started/} for more details
      * @returns HTMLElement containing the graph visualization
+     * @alias egraph
      */
     echartsGraph(nodes: IGraphNode[], links: IGraphLink[], options: {
         height?: string,

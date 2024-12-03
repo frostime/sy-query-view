@@ -23,7 +23,7 @@ interface ITableOptions {
     center?: boolean;
     fullwidth?: boolean;
     index?: boolean;
-    renderer?: (b: Block, attr: keyof Block) => string | number | undefined | null; //仅对BlockTable有效
+    renderer?: (b: Block, attr: keyof Block) => string | number | undefined | null;
 }
 
 interface IHasChildren<T> {
@@ -112,6 +112,15 @@ interface IUserCustom {
     [key: string]: ICustomView;
 }
 
+
+/**
+ * State object
+ * @interface IState
+ * @template T
+ * @property {() => T} - Get the state value
+ * @property {(value: T) => T} - Set the state value
+ * @property {T} - The state value, can be set or get
+ */
 interface IState<T> {
     (): T;
     (value: T): T;

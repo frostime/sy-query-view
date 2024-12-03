@@ -198,7 +198,7 @@ interface ITableOptions {
     center?: boolean;
     fullwidth?: boolean;
     index?: boolean;
-    renderer?: (b: Block, attr: keyof Block) => string | number | undefined | null; //仅对BlockTable有效
+    renderer?: (b: Block, attr: keyof Block) => string | number | undefined | null;
 }
 
 interface IHasChildren<T> {
@@ -287,6 +287,15 @@ interface IUserCustom {
     [key: string]: ICustomView;
 }
 
+
+/**
+ * State object
+ * @interface IState
+ * @template T
+ * @property {() => T} - Get the state value
+ * @property {(value: T) => T} - Set the state value
+ * @property {T} - The state value, can be set or get
+ */
 interface IState<T> {
     (): T;
     (value: T): T;
@@ -298,13 +307,7 @@ interface IState<T> {
 // ================== data-view.d.ts ==================
 /**
  * DataView class for creating and managing dynamic data visualizations
- * Provides various methods for rendering data in different formats including:
- * - Lists
- * - Tables
- * - Charts (Line, Bar, Tree, Graph)
- * - Markdown content
- * - Block embeddings
- * - Mermaid diagrams
+ * Provides various methods for visualizing data.
  */
 export declare class DataView implements IDataView {
     constructor(protyle: IProtyle, embedNode: HTMLElement, top: number | null);
@@ -435,15 +438,17 @@ export declare class DataView implements IDataView {
     /**
      * Creates a Mermaid flowchart from block relationships
      * @description Equivalent to `dv.mermaidRelation(tree, { type: 'flowchart' })`
+     * @alias mflowchart
      */
-    flowchart(tree: IBlockWithChilds, options?: {
+    mermaidFlowchart(tree: IBlockWithChilds, options?: {
         renderer?: (b: Block) => string;
     }): HTMLElement;
     /**
      * Creates a Mermaid mindmap from block relationships
      * @description Equivalent to `dv.mermaidRelation(tree, { type: 'mindmap' })`
+     * @alias mmindmap
      */
-    mindmap(tree: IBlockWithChilds, options?: {
+    mermaidMindmap(tree: IBlockWithChilds, options?: {
         renderer?: (b: Block) => string;
     }): HTMLElement;
     /**
@@ -494,6 +499,7 @@ export declare class DataView implements IDataView {
      * @param options.legends - Array of legend labels for multiple lines
      * @param options.echartsOption - Additional ECharts configuration
      * @returns HTMLElement containing the line chart
+     * @alias eline
      */
     echartsLine(x: number[], y: number[] | number[][], options?: {
         height?: string;
@@ -518,6 +524,7 @@ export declare class DataView implements IDataView {
      * @param options.stack - Whether to stack bars
      * @param options.echartsOption - Additional ECharts configuration
      * @returns HTMLElement containing the bar chart
+     * @alias ebar
      */
     echartsBar(x: string[], y: number[] | number[][], options?: {
         height?: string;
@@ -543,6 +550,7 @@ export declare class DataView implements IDataView {
      * @param options.seriesOption - Additional series configuration; this will be merged within each series option
      * @param options.echartsOption - Additional ECharts configuration, see {@link https://echarts.apache.org/handbook/en/get-started/} for more details
      * @returns HTMLElement containing the tree visualization
+     * @alias etree
      */
     echartsTree(data: ITreeNode, options?: {
         height?: string;
@@ -570,6 +578,7 @@ export declare class DataView implements IDataView {
      * @param options.seriesOption - Additional series configuration
      * @param options.echartsOption - Additional ECharts configuration, see {@link https://echarts.apache.org/handbook/en/get-started/} for more details
      * @returns HTMLElement containing the graph visualization
+     * @alias egraph
      */
     echartsGraph(nodes: IGraphNode[], links: IGraphLink[], options?: {
         height?: string;
