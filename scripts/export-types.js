@@ -4,6 +4,12 @@ import path from 'path';
 
 let outputDir = './public';
 
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+process.chdir(path.join(__dirname, '..'));
+
 const tsc = `tsc --declaration --emitDeclarationOnly --skipLibCheck --target ES2022 --project tsconfig.json --outDir ./types --noEmitOnError false --stripInternal`;
 
 await exec(tsc);
