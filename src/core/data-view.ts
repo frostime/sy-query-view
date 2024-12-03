@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-12-02 10:15:04
  * @FilePath     : /src/core/data-view.ts
- * @LastEditTime : 2024-12-03 15:19:13
+ * @LastEditTime : 2024-12-03 20:41:00
  * @Description  : 
  */
 import {
@@ -16,6 +16,7 @@ import { BlockList, BlockTable, MermaidRelation, EmbedNodes, Echarts, MermaidBas
 import { registerProtyleGC } from "./gc";
 import { openBlock } from "@/utils";
 import { getCustomView } from "./custom-view";
+import UseStateMixin from "./use-state";
 
 const getCSSVar = (name: string) => getComputedStyle(document.documentElement).getPropertyValue(name);
 
@@ -64,7 +65,7 @@ const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
  * - Block embeddings
  * - Mermaid diagrams
  */
-export class DataView implements IDataView {
+export class DataView extends UseStateMixin implements IDataView {
     /** @internal */
     private protyle: IProtyle;
 
@@ -99,12 +100,13 @@ export class DataView implements IDataView {
     private disposed = false;
 
     /**
+     * @internal
      * 注册组件 View
      * @param method: `(...args: any[]) => HTMLElement`, 一个返回 HTMLElement 的方法
      * @param options: 其他配置
      *  - aliases: 组件的别名
      */
-    register(
+    private register(
         method: (...args: any[]) => HTMLElement,
         options: {
             name?: string,
@@ -156,7 +158,55 @@ export class DataView implements IDataView {
         });
     }
 
+    /** @internal */
+    private registerCustomViews() {
+        const customView = getCustomView();
+        if (!customView) return;
+
+        const useCustomView = (name, use: ICustomView['use']) => {
+            return (...args: any[]) => {
+                const { render, dispose } = use(this);
+                const container = newDivWrapper();
+
+                if (!render) {
+                    errorMessage(container, `Custom view ${name} should have an init method`);
+                } else {
+                    const ans = render(container, ...args);
+                    if (ans) {
+                        //原则上不支持 Promise 返回，但为了兼容性，还是做了处理
+                        if (ans instanceof Promise) {
+                            ans.then(ele => ele && container.append(ele)).catch(err => {
+                                const span = document.createElement('span');
+                                errorMessage(span, err.message);
+                                container.append(span);
+                            });
+                        } else if (ans) {
+                            container.append(ans);
+                        }
+                    }
+                }
+                if (dispose) {
+                    this.addDisposer(() => dispose());
+                }
+                return container;
+            }
+        }
+
+        Object.entries(customView).forEach(([key, value]) => {
+            const name = key;
+            const { use, alias } = value;
+
+            this.register(useCustomView(name, use), {
+                name,
+                aliases: alias
+            });
+            console.debug(`Custom view ${name} registered`);
+        });
+    }
+
     constructor(protyle: IProtyle, embedNode: HTMLElement, top: number | null) {
+        super(embedNode);
+
         this.protyle = protyle;
         this.thisEmbedNode = embedNode;
         this.top = top;
@@ -190,51 +240,10 @@ export class DataView implements IDataView {
         this.register(this.echartsTree, { aliases: ['Tree'] });
         this.register(this.echartsGraph, { aliases: ['Graph'] });
 
-        const customView = getCustomView();
-        if (!customView) return;
+        this.registerCustomViews();
 
-        const useCustomView = (name, use: ICustomView['use']) => {
-            return (...args: any[]) => {
-                const { render, dispose } = use(this);
-                const container = newDivWrapper();
-
-                if (!render) {
-                    errorMessage(container, `Custom view ${name} should have an init method`);
-                } else {
-                    const ans = render(container, ...args);
-                    if (ans) {
-                        //原则上不支持 Promise，但为了兼容性，还是做了处理
-                        if (ans instanceof Promise) {
-                            ans.then(ele => container.append(ele)).catch(err => {
-                                const span = document.createElement('span');
-                                errorMessage(span, err.message);
-                                container.append(span);
-                            });
-                        } else if (ans) {
-                            container.append(ans);
-                        }
-                    }
-                }
-                if (dispose) {
-                    this.addDisposer(() => dispose());
-                }
-                return container;
-            }
-        }
-        Object.entries(customView).forEach(([key, value]) => {
-            const name = key;
-            const { use, alias } = value;
-
-            this.register(useCustomView(name, use), {
-                name,
-                aliases: alias
-            });
-            console.debug(`Custom view ${name} registered`);
-        });
-    }
-
-    get element() {
-        return this._element;
+        this.restoreState();  // 从块属性中恢复 state
+        this.disposers.push(() => this.storeState());  // 在 DataView 销毁时，将 state 同步到块属性中
     }
 
     dispose() {
@@ -249,6 +258,30 @@ export class DataView implements IDataView {
             this.disposers = [];
             this.cleanup();
         }
+    }
+
+    repaint() {
+        const button = this.thisEmbedNode.querySelector('div.protyle-icons > span.protyle-action__reload');
+        if (button) {
+            this.dispose();
+            (button as HTMLButtonElement).click();
+        }
+    }
+
+    /**
+     * Persist state across renders; it will store the state in the block attributes when disposing, and restore it when creating.
+     * @param key - The key of the state
+     * @param initialValue - The initial value of the state
+     * @returns An IState object -- see {@link IState}
+     * @example
+     * const count = dv.useState('count', 0);
+     * count(); // Access the value
+     * count.value; // Access the value, same as count()
+     * count(1); // Set the value
+     * count.value = 1; // Set the value, same as count(1)
+     */
+    useState<T>(key: string, initialValue?: T): IState<T> {
+        return super.useState(key, initialValue);
     }
 
     /** @internal */

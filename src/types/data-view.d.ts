@@ -112,3 +112,10 @@ interface IUserCustom {
     [key: string]: ICustomView;
 }
 
+interface IState<T> {
+    (): T;
+    (value: T): T;
+
+    value: T;
+}
+

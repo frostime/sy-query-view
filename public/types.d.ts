@@ -5,6 +5,7 @@ declare module 'siyuan' {
 
 }
 
+// ================== query.d.ts ==================
 import { IProtyle } from "siyuan";
 declare const Query: {
     /**
@@ -171,6 +172,7 @@ declare const Query: {
     }) => Promise<IWrappedList<IWrappedBlock>>;
 };
 
+// ================== data-view.d.ts ==================
 /**
  * List Options
  * @interface IListOptions
@@ -285,7 +287,15 @@ interface IUserCustom {
     [key: string]: ICustomView;
 }
 
+interface IState<T> {
+    (): T;
+    (value: T): T;
 
+    value: T;
+}
+
+
+// ================== data-view.d.ts ==================
 /**
  * DataView class for creating and managing dynamic data visualizations
  * Provides various methods for rendering data in different formats including:
@@ -297,19 +307,21 @@ interface IUserCustom {
  * - Mermaid diagrams
  */
 export declare class DataView implements IDataView {
-    /**
-     * 注册组件 View
-     * @param method: `(...args: any[]) => HTMLElement`, 一个返回 HTMLElement 的方法
-     * @param options: 其他配置
-     *  - aliases: 组件的别名
-     */
-    register(method: (...args: any[]) => HTMLElement, options?: {
-        name?: string;
-        aliases?: string[];
-    }): void;
     constructor(protyle: IProtyle, embedNode: HTMLElement, top: number | null);
-    get element(): HTMLElement;
     dispose(): void;
+    /**
+     * Persist state across renders; it will store the state in the block attributes when disposing, and restore it when creating.
+     * @param key - The key of the state
+     * @param initialValue - The initial value of the state
+     * @returns An IState object -- see {@link IState}
+     * @example
+     * const count = dv.useState('count', 0);
+     * count(); // Access the value
+     * count.value; // Access the value, same as count()
+     * count(1); // Set the value
+     * count.value = 1; // Set the value, same as count(1)
+     */
+    useState<T>(key: string, initialValue?: T): IState<T>;
     /**
      * Register a disposer function to be called when the DataView is disposed.
      * Only when you need to add some extra cleanup logic, you should use this method.
@@ -575,6 +587,7 @@ export declare class DataView implements IDataView {
 
 export declare const PROHIBIT_METHOD_NAMES: string[];
 
+// ================== proxy.d.ts ==================
 /** Wrapped Block interface with extended convenient properties and methods */
 export interface IWrappedBlock extends Block {
     /** Method to return the original Block object */
@@ -650,6 +663,7 @@ export interface IWrappedList<T> extends Array<T> {
     filter(predicate: (value: T, index: number, array: T[]) => boolean): IWrappedList<T>;
 }
 
+// ================== index.d.ts ==================
 /*
  * Copyright (c) 2024 by frostime. All Rights Reserved.
  * @Author       : frostime

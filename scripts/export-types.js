@@ -1,15 +1,15 @@
-import { glob } from 'glob';
-import { exec, execSync } from 'child_process';
+// import { glob } from 'glob';
+import { execSync } from 'child_process';
 import fs from 'fs';
 import path from 'path';
-
 import { fileURLToPath } from 'url';
+import process from 'process';
 
-//定位当前 js 脚本所在的目录
+// First define __filename and __dirname
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// chdir 到上层 plugin.json 所在的目录
+// Then use process
 process.chdir(path.join(__dirname, '..'));
 console.log(process.cwd());
 const dirname = process.cwd();
@@ -33,15 +33,8 @@ execSync(tsc);
 const fileWriter = (filepath) => {
     let fd = fs.openSync(filepath, 'w');
 
-    const process = (content) => {
-        content = content.replaceAll(`import("./proxy").`, '');
-        content = content.replaceAll(`import("@/core/query").default;`, 'Query');
-        return content;
-    }
-
     return {
         append: (content) => {
-            content = process(content);
             fs.writeSync(fd, content);
         },
         close: () => {
@@ -62,6 +55,11 @@ const removeLine = (content, line) => {
 }
 
 const writer = fileWriter(path.join(outputDir, 'types.d.ts'));
+const replaceSomething = (content) => {
+    content = content.replaceAll(`import("./proxy").`, '');
+    content = content.replaceAll(`import("@/core/query").default;`, 'Query');
+    return content;
+}
 
 writer.append(`
 declare module 'siyuan' {
@@ -72,24 +70,42 @@ declare module 'siyuan' {
 
 `.trimStart());
 
-const query = readFile('./types/core/query.d.ts');
+writer.append('// ================== query.d.ts ==================\n');
+let query = readFile('./types/core/query.d.ts');
+query = replaceSomething(query);
 writer.append(query);
 writer.append('\n');
 
-const dataviewdts = readFile('./src/types/data-view.d.ts');
+writer.append('// ================== data-view.d.ts ==================\n');
+let dataviewdts = readFile('./src/types/data-view.d.ts');
+dataviewdts = replaceSomething(dataviewdts);
 writer.append(dataviewdts);
 writer.append('\n');
 
+writer.append('// ================== data-view.d.ts ==================\n');
 let dataview = readFile('./types/core/data-view.d.ts');
 dataview = removeLine(dataview, 'import { IProtyle } from "siyuan";');
+dataview = replaceSomething(dataview);
+dataview = dataview.replaceAll('DataView extends UseStateMixin', 'DataView');
 writer.append(dataview);
 writer.append('\n');
 
-const proxy = readFile('./types/core/proxy.d.ts');
+// writer.append('// ================== use-state.d.ts ==================\n');
+// let useState = readFile('./types/core/use-state.d.ts');
+// useState = removeLine(useState, 'import { IProtyle } from "siyuan";');
+// useState = replaceSomething(useState);
+// writer.append(useState);
+// writer.append('\n');
+
+writer.append('// ================== proxy.d.ts ==================\n');
+let proxy = readFile('./types/core/proxy.d.ts');
+proxy = replaceSomething(proxy);
 writer.append(proxy);
 writer.append('\n');
 
-const indexdts = readFile('./src/types/index.d.ts');
+writer.append('// ================== index.d.ts ==================\n');
+let indexdts = readFile('./src/types/index.d.ts');
+indexdts = replaceSomething(indexdts);
 writer.append(indexdts);
 writer.append('\n');
 
@@ -108,6 +124,7 @@ let content = fs.readFileSync(path.join(outputDir, 'types.d.ts'), 'utf8');
 const ERASED_LINES = [
     'import { DataView } from "./data-view";',
     'export default Query;',
+    'import UseStateMixin from "./use-state";',
 ];
 
 for (const line of ERASED_LINES) {
