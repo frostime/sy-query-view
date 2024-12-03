@@ -459,6 +459,7 @@ const addAlias = (obj: any, attr: string, alias: string[]) => {
     });
 }
 
+addAlias(Query, 'DataView', ['Dataview']);
 addAlias(Query, 'Utils', ['utils']);
 addAlias(Query, 'getBlocksByIds', ['getBlocksByIDs']);
 addAlias(Query, 'docid', ['docId']);

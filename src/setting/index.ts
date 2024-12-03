@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-12-01 16:25:57
  * @FilePath     : /src/setting/index.ts
- * @LastEditTime : 2024-12-03 12:45:28
+ * @LastEditTime : 2024-12-03 15:43:15
  * @Description  : 
  */
 
@@ -76,19 +76,19 @@ export const load = async (plugin: Plugin) => {
     });
     settingUtils.addItem({
         type: 'button',
-        title: ((`用户自定义视图`)),
-        description: ((`用户自行编写的 View 组件, 存放在 '/data/public/custom-query-view.js' 下`)),
+        title: i18n.src_setting_indexts.user_custom_view,
+        description: i18n.src_setting_indexts.user_self_written_view,
         key: 'userCustomView',
         value: '',
         button: {
-            label: '重新导入',
+            label: i18n.src_setting_indexts.reload,
             callback: async () => {
                 const result = await loadUserCustomView();
                 if (result.ok) {
                     let cnt = Object.keys(result.custom).length;
-                    showMessage(((`导入成功, 共 {cnt} 个自定义视图`)).replace('{cnt}', `${cnt}`), 3000, 'info');
+                    showMessage(i18n.src_setting_indexts.import_success.replace('{cnt}', `${cnt}`), 3000, 'info');
                 } else {
-                    showMessage(((`导入失败, 详细情况请检查控制台报错`)), 3000, 'error');
+                    showMessage(i18n.src_setting_indexts.import_failed, 3000, 'error');
                 }
             }
         }

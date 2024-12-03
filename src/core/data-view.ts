@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-12-02 10:15:04
  * @FilePath     : /src/core/data-view.ts
- * @LastEditTime : 2024-12-03 15:02:36
+ * @LastEditTime : 2024-12-03 15:19:13
  * @Description  : 
  */
 import {
@@ -1002,7 +1002,8 @@ export class DataView implements IDataView {
                 this.observer.disconnect();
                 this.observer = null;
             }
-        });        // Triggered on rerendered
+        });
+        // Triggered on rerendered
         this.observer = new MutationObserver((mutations) => {
             mutations.forEach((mutation) => {
                 mutation.removedNodes.forEach((node) => {

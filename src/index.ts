@@ -9,6 +9,7 @@ import * as Setting from "./setting";
 let i18n: I18n;
 let app: App;
 
+
 export default class QueryView extends Plugin {
 
     async onload() {

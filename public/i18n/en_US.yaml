@@ -1,3 +1,17 @@
+src_core_editorts:
+  ext_code_editor_closed: The external code editor process {0} has been closed
+  show_as_template_format: Display as template format
+  show_embedded_block_code_in_siyuan_template_format: Display embedded block code
+    in SiYuan template format
+  unableto_use_ext_cmd: Unable to use the external editor command {0}, please check
+    the correctness of the command
+  unableto_use_external_editor_cmd: Unable to use the external editor command {0},
+    please check the correctness of the command
+  unusableexteditorcmd: Unable to use the external editor command {0}, please check
+    the correctness of the command
+src_core_indexts:
+  custom_queryview_error: 'Note: There is a problem with the format of the custom
+    QueryView script, and it cannot be imported normally!'
 src_dataquery_componentsts:
   mermaid_render_failed: Mermaid rendering failed, please check the code
 src_dataquery_editorts:
@@ -7,8 +21,13 @@ src_setting_indexts:
   apitypedefinition: 'The type definition of the API interface, please refer to:'
   defaultcolumnsofdataviewtable: When calling DataView.table, the default columns
     to be displayed, separated by commas; leaving it blank means showing all columns
+  import_failed: Import failed. Please check the console error for details.
+  import_success: Import succeeded. There are a total of {cnt} custom views.
   local_command_desc: The local command used to open the code editor, by default it
     is "code {{filepath}}" which represents opening with VSCode, where {{filepath}}
     will be replaced with the actual code file at runtime
   open_local_editor: ✒️ Open Local Editor
+  reload: Reload
   table_default_columns: 🔑 Default columns displayed in table view
+  user_custom_view: User custom view
+  user_self_written_view: User self-written View component, stored under '/data/public/custom-query-view.js'

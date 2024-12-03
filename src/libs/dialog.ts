@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-03-23 21:37:33
  * @FilePath     : /src/libs/dialog.ts
- * @LastEditTime : 2024-10-16 14:31:04
+ * @LastEditTime : 2024-12-03 15:35:47
  * @Description  : Kits about dialogs
  */
 import { Dialog } from "siyuan";
@@ -17,7 +17,7 @@ export const inputDialog = (args: {
     const dialog = new Dialog({
         title: args.title,
         content: `<div class="b3-dialog__content">
-    <div class="ft__breakword"><textarea class="b3-text-field fn__block" style="height: 100%;" placeholder=${args?.placeholder ?? ''}>${args?.defaultText ?? ''}</textarea></div>
+    <div class="ft__breakword" style="height: 100%;"><textarea class="b3-text-field fn__block" style="height: 100%;" placeholder=${args?.placeholder ?? ''}>${args?.defaultText ?? ''}</textarea></div>
 </div>
 <div class="b3-dialog__action">
     <button class="b3-button b3-button--cancel">${window.siyuan.languages.cancel}</button><div class="fn__space"></div>

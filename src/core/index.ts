@@ -33,7 +33,7 @@ export const load = (plugin: Plugin) => {
 
     loadUserCustomView().then(status => {
         if (status.exists && !status.valid) {
-            showMessage(((`注意: 自定义的 QueryView 脚本格式存在问题，无法正常导入!`)), 5000, 'error');
+            showMessage(i18n.src_core_indexts.custom_queryview_error, 5000, 'error');
             return;
         }
         if (status.ok) {

@@ -7,6 +7,7 @@ import { debounce } from "@/utils";
 import { setting } from "@/setting";
 
 import { i18n } from "@/index";
+import { inputDialog, simpleDialog } from "@/libs/dialog";
 
 const child_process = require("child_process");
 
@@ -33,16 +34,6 @@ const editJsCode = async (blockId: BlockId, code: string) => {
         updateBlock('markdown', embedBlock, blockId);
     }
     const updateBlockDataDebounced = debounce(updateBlockData, 1500);
-    // const update = (updatedContent: string) => {
-    //     const el = elementRef.deref();
-    //     if (el) {
-    //         // el.dataset.content = window.Lute.EscapeHTMLStr(updatedContent);
-    //         // const btn: HTMLElement | null = el.querySelector('span.protyle-action__reload');
-    //         // btn?.click();
-    //         //更新内核后会自动刷新, 所以不需要手动刷新
-    //         updateBlockDataDebounced(updatedContent);
-    //     }
-    // };
 
     //桌面环境, 可以访问 node 环境
     if (child_process) {
@@ -67,18 +58,36 @@ const editJsCode = async (blockId: BlockId, code: string) => {
 
         const codeEditor = setting.codeEditor;
         //codeEditor 为一个命令行, 其中 {{filepath}} 会被替换为真实的文件路径
-        const command = codeEditor.replace('{{filepath}}', filePath);
-        const commandArr = command.split(' ').map(item => item.trim()).filter(item => item !== '');
+        const input = codeEditor.replace('{{filepath}}', filePath);
+        const commandArr = input.split(' ').map(item => item.trim()).filter(item => item !== '');
+
+        // 添加调试信息
+        console.debug('About to execute command:', {
+            command: input,
+            commandArr,
+            codeEditor: setting.codeEditor
+        });
+        let command = commandArr[0];
 
         try {
-            editor = child_process.spawn(commandArr[0], commandArr.slice(1));
+            editor = child_process.spawn(command, commandArr.slice(1), {
+                shell: true
+            });
         } catch (e) {
             console.error('启动代码编辑器失败:', e);
+            showMessage(i18n.src_core_editorts.unusableexteditorcmd.replace('{0}', input), 5000, 'error');
             cleanUp();
             return;
         }
 
+        editor.on('error', (err: any) => {
+            console.error('代码编辑器错误:', err);
+            showMessage(i18n.src_core_editorts.unusableexteditorcmd.replace('{0}', input));
+            cleanUp();
+        });
+
         editor.on('exit', () => {
+            showMessage(i18n.src_core_editorts.ext_code_editor_closed.replace('{0}', commandArr[0]));
             console.log('代码编辑器已关闭');
             try {
                 const updatedContent = fs.readFileSync(filePath, 'utf-8');
@@ -123,6 +132,32 @@ export async function embedBlockEvent({ detail }: any) {
         label: "Edit Code",
         click: () => {
             editJsCode(id, ele.dataset.content);
+        }
+    });
+    menu.addItem({
+        icon: "iconMarkdown",
+        label: i18n.src_core_editorts.show_as_template_format,
+        click: () => {
+            let code = ele.dataset.content;
+            code = window.Lute.UnEscapeHTMLStr(code);
+            //换行符全部替换为 `_esc_newline_`
+            code = code.replace(/\n/g, '_esc_newline_');
+            const textarea = document.createElement('textarea');
+            textarea.value = `{{${code}}}`;
+            textarea.style.flex = "1";
+            textarea.style.fontSize = "16px";
+            textarea.style.margin = "15px 10px";
+            textarea.style.borderRadius = "5px";
+            textarea.style.resize = "none";
+            // 不可编辑
+            textarea.setAttribute("readonly", "true");
+
+            simpleDialog({
+                title: i18n.src_core_editorts.show_embedded_block_code_in_siyuan_template_format,
+                ele: textarea,
+                width: "700px",
+                height: "300px"
+            });
         }
     });
 }

@@ -2,8 +2,8 @@
  * Copyright (c) 2024 by frostime. All Rights Reserved.
  * @Author       : frostime
  * @Date         : 2024-11-28 21:29:40
- * @FilePath     : /src/func/data-query/utils.ts
- * @LastEditTime : 2024-11-30 16:18:55
+ * @FilePath     : /src/core/utils.ts
+ * @LastEditTime : 2024-12-03 15:52:14
  * @Description  : 
  */
 //https://github.com/siyuan-note/siyuan/blob/master/app/src/protyle/util/addScript.ts
