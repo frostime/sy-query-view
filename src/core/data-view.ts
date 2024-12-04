@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-12-02 10:15:04
  * @FilePath     : /src/core/data-view.ts
- * @LastEditTime : 2024-12-04 20:51:01
+ * @LastEditTime : 2024-12-04 22:55:19
  * @Description  : 
  */
 import {
@@ -18,6 +18,8 @@ import { openBlock } from "@/utils";
 import { getCustomView } from "./custom-view";
 import UseStateMixin from "./use-state";
 
+import styles from './index.module.scss';
+
 const getCSSVar = (name: string) => getComputedStyle(document.documentElement).getPropertyValue(name);
 
 /**************************************** ZX写的 DataView 类 ****************************************/
@@ -27,7 +29,7 @@ function cancelKeyEvent(el: KeyboardEvent) {
     if (!selection || selection.rangeCount === 0) return;
 
     let nodeElement: HTMLElement = selection.getRangeAt(0).startContainer.parentElement;
-    if (hasParentWithClass(nodeElement, "data-query-embed")) {
+    if (hasParentWithClass(nodeElement, styles["data-query-embed"])) {
         el.stopPropagation();
     }
 }
@@ -50,7 +52,7 @@ function hasParentWithClass(element: HTMLElement, className: string) {
 const newDivWrapper = (tag: string = 'div') => {
     let div = document.createElement(tag);
     div.style.overflowX = "auto";
-    div.className = "js-query-data-view";
+    div.className = styles["js-query-data-view"];
     div.style.paddingLeft = "0.5em";
     div.style.paddingRight = "0.5em";
     return div;
@@ -88,7 +90,7 @@ export class DataView extends UseStateMixin implements IDataView {
     _element: HTMLElement;
 
     /** @internal */
-   static PROHIBIT_METHOD_NAMES = ['register', 'element', 'ele', 'render'];
+    static PROHIBIT_METHOD_NAMES = ['register', 'element', 'ele', 'render'];
 
     /** @internal */
     private observer: MutationObserver;
@@ -218,10 +220,7 @@ export class DataView extends UseStateMixin implements IDataView {
         this.top = top;
         this._element = document.createElement("div");
 
-        this._element.classList.add('data-query-embed');
-        Object.assign(this._element.style, {
-            'cursor': 'default',
-        });
+        this._element.classList.add(styles["data-query-embed"]);
         this.thisEmbedNode.lastElementChild.insertAdjacentElement("beforebegin", this._element);
         this.lute = getLute();
 
@@ -973,23 +972,23 @@ export class DataView extends UseStateMixin implements IDataView {
         this._element.oninput = (el) => { el.stopImmediatePropagation(); };
         this._element.onclick = (el) => {
             el.stopImmediatePropagation();
-            el.preventDefault();
+            // el.preventDefault(); //去掉, 不然 siyuan 链接无法点击跳转
             const target = el.target as HTMLElement;
-            if (target.tagName === 'SPAN') {
-                if (target.dataset.type === 'a') {
-                    // 点击了链接、引用的时候跳转
-                    const href = target.dataset.href;
-                    if (href) {
-                        const id = href.split('/').pop();
-                        openBlock(id);
-                    }
-                } else if (target.dataset.type === 'block-ref') {
-                    const id = target.dataset.id;
-                    if (id) {
-                        openBlock(id);
-                    }
-                }
-            }
+            // if (target.tagName === 'SPAN') {
+            //     if (target.dataset.type === 'a') {
+            //         // 点击了链接、引用的时候跳转
+            //         const href = target.dataset.href;
+            //         if (href) {
+            //             const id = href.split('/').pop();
+            //             openBlock(id);
+            //         }
+            //     } else if (target.dataset.type === 'block-ref') {
+            //         const id = target.dataset.id;
+            //         if (id) {
+            //             openBlock(id);
+            //         }
+            //     }
+            // }
             const selection = window.getSelection();
             const length = selection.toString().length;
             if (length === 0 && (el.target as HTMLElement).tagName === "SPAN") {
@@ -1059,16 +1058,25 @@ export class DataView extends UseStateMixin implements IDataView {
         // Triggered on rerendered
         this.observer = new MutationObserver((mutations) => {
             mutations.forEach((mutation) => {
-                mutation.removedNodes.forEach((node) => {
-                    if (node === this._element) {
-                        this.dispose();
-                    }
-                });
+                if (mutation.type === 'childList') {
+                    mutation.removedNodes.forEach((node) => {
+                        if (node === this._element) {
+                            this.dispose();
+                        }
+                    });
+                } else if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+                    // Handle style changes here
+                    // 😠 不知道怎么回事，思源老是乱改嵌入块的 height 属性, 导致嵌入块经常内容溢出到容器外
+                    this.thisEmbedNode.style.height = "";
+                }
             });
         });
+
         this.observer.observe(this.thisEmbedNode, {
             childList: true,
-            subtree: false
+            subtree: false,
+            attributes: true,
+            attributeFilter: ['style']  // 只监听 style 属性的变化
         });
     }
 }

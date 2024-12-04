@@ -1,3 +1,7 @@
+.data-query-embed {
+    cursor: default;
+}
+
 .js-query-data-view {
     margin: 5px auto;
 }
@@ -52,8 +56,6 @@
         }
     }
 }
-
-
 
 .remove-mermaid {
     /* 缓慢删除, 向下移动退场 */

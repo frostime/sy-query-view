@@ -8,8 +8,10 @@
   "author": "frostime",
   "license": "MIT",
   "scripts": {
-    "dev": "npm run export-types && cross-env NODE_ENV=development VITE_SOURCEMAP=inline vite build --watch && npm run replace-md-file ./dev",
-    "build": "npm run export-types && cross-env NODE_ENV=production vite build && npm run replace-md-file ./dist",
+    "dev": "npm run export-types && npm run vite:dev && npm run replace-md-file ./dev",
+    "build": "npm run export-types && npm run vite:build && npm run replace-md-file ./dist",
+    "vite:dev": "cross-env NODE_ENV=development VITE_SOURCEMAP=inline vite build --watch",
+    "vite:build": "cross-env NODE_ENV=production vite build",
     "make-link": "npx make-link-win",
     "update-version": "npx update-version",
     "make-install": "vite build && npx make-install",

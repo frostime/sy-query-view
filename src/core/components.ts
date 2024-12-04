@@ -6,7 +6,8 @@ import { request } from "@/api";
 
 import { Constants, Lute, showMessage } from "siyuan";
 import { addScript, matchIDFormat } from "./utils";
-import './index.css';
+// import './index.css';
+import styles from './index.module.scss';
 
 import { i18n } from "@/index";
 import { setting } from "@/setting";
@@ -359,7 +360,7 @@ class MermaidBase {
             if (ele) {
                 ele.style.position = 'absolute';
                 ele.style.bottom = '0';
-                ele.classList.add('remove-mermaid');
+                ele.classList.add(styles['remove-mermaid']);
                 ele.style.opacity = '0';
                 ele.style.transform = 'translateY(50px)';
                 setTimeout(() => {
@@ -524,7 +525,7 @@ class MermaidRelation extends MermaidBase {
 
             const clickHandler = (event: MouseEvent) => {
                 const element = event.target as HTMLElement;
-                const syNode = element.closest('.mindmap-node-siyuan') as HTMLElement;
+                const syNode = element.closest(`.${styles['mindmap-node-siyuan']}`) as HTMLElement;
                 if (!syNode) return;
                 const id = syNode.dataset.id;
                 if (!id) return;
@@ -537,7 +538,7 @@ class MermaidRelation extends MermaidBase {
                 const id = nodeId(node);
                 if (!id) return;
                 node.dataset.id = id;
-                node.classList.add('mindmap-node-siyuan');  //绑定了某个思源块的节点
+                node.classList.add(styles['mindmap-node-siyuan']);  //绑定了某个思源块的节点
             });
 
             this.disposeCb.push(() => {
@@ -546,9 +547,17 @@ class MermaidRelation extends MermaidBase {
             });
 
         } else if (this.type === 'flowchart') {
-            this.element.querySelectorAll('a[data-id]').forEach(anchor => {
+            this.element.querySelectorAll('svg g.nodes g.node.clickable').forEach(g => {
+                // anchor.classList.add('popover__block');
+                const anchor = g.parentElement as HTMLAnchorElement;
+                if (anchor?.tagName?.toLocaleUpperCase() !== 'A') {
+                    return;
+                }
                 anchor.classList.add('popover__block');
-                // anchor.dataset.id = anchor.dataset.id;
+                let id = g.id;
+                id = id.replace('flowchart-', '');
+                id = id.split('-').slice(0, 2).join('-');
+                anchor.dataset.id = id;
             });
         }
     }
@@ -615,20 +624,20 @@ class EmbedNodes {
                 const svg = `<svg class="popover__block" data-id="${embed.block.id}"><use xlink:href="#${moreSvgSymbol}"></use></svg>`;
                 const more = document.createElement('div');
                 more.innerHTML = svg;
-                more.className = 'embed-more-svg';
+                more.className = styles['embed-more-svg'];
                 tempDiv.appendChild(more);
             }
 
             // Create final container and append processed content
             const container = document.createElement('div');
-            container.className = 'embed-container';
+            container.className = styles['embed-container'];
             container.dataset.nodeId = embed.block.id;
             container.append(...tempDiv.childNodes);
 
             // Add jump icon
             const jumpSvgSymbol = 'iconFocus';
             const jumpIcon = document.createElement('a');
-            jumpIcon.className = 'embed-jump-icon';
+            jumpIcon.className = styles['embed-jump-icon'];
             jumpIcon.innerHTML = `<svg class="popover__block" data-id="${embed.block.id}"><use xlink:href="#${jumpSvgSymbol}"></use></svg>`;
             jumpIcon.href = `siyuan://blocks/${embed.block.id}`;
             container.appendChild(jumpIcon);

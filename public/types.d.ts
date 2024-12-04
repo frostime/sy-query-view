@@ -331,14 +331,18 @@ interface IUserCustom {
  * @property {() => T} - Get the state value
  * @property {(value: T) => T} - Set the state value
  * @property {T} - The state value, can be set or get
+ * @property {(effect: (newValue: T, oldValue: T) => void) => void} - Register an effect to the state
+ * @property {(derive: (value: T) => T) => () => T} - Create a derived state
  */
 interface IState<T> {
     (): T;
     (value: T): T;
 
     value: T;
-}
 
+    effect: (effect: (newValue: T, oldValue: T) => void) => void;
+    derived: (derive: (value: T) => T) => () => T;
+}
 
 // ================== data-view.d.ts ==================
 /**
