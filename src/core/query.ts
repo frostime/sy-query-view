@@ -8,6 +8,7 @@ import { DataView } from "./data-view";
 import { getNotebook, openBlock } from "@/utils";
 
 import { renderAttr } from "./components";
+// import { getSessionStorageSize } from "./gc";
 
 
 /**

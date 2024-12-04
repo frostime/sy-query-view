@@ -288,12 +288,30 @@ export const wrapList = (list: Block[], useWrapBlock: boolean = true): IWrappedL
                     /**
                      * 返回排除指定属性的新数组
                      * @param {...(keyof Block)} attrs - 需要排除的属性名
-                     * @returns {ProxyList} 新的代理数组
-                     * @example list.omit('id', 'content')
+                     * @returns {IWrappedList} 新的代理数组
+                     * @example
+                     * list.omit('id', 'content') //返回的数组中的每个元素都排除 id 和 content 属性
                      */
                     return (...attrs: (keyof Block)[]) => {
-                        const ommited = target.filter(block => !attrs.some(attr => attr in block));
-                        return wrapList(ommited);
+                        //处理 attrs 为单个数组的情况（虽然这是错误的用法）
+                        if (attrs.length === 1 && Array.isArray(attrs[0])) {
+                            attrs = attrs[0];
+                            //@ts-ignore
+                            return proxy.omit(...attrs);
+                        }
+
+                        // 创建一个 Set 来存储要排除的属性，提高查找效率
+                        const attrSet = new Set(attrs);
+
+                        const newTarget = target.map(block => {
+                            // 创建一个新对象，只包含未被排除的属性
+                            return Object.fromEntries(
+                                Object.entries(block).filter(([key]) => !attrSet.has(key as keyof Block))
+                            );
+                        });
+
+                        //@ts-ignore
+                        return wrapList(newTarget);
                     }
                 case 'sorton':
                     /**
@@ -407,7 +425,7 @@ export const wrapList = (list: Block[], useWrapBlock: boolean = true): IWrappedL
                     ) => {
                         const length = target.length;
                         // Create a deep copy of the target array
-                        const newTarget = target.map(item => ({...item}));
+                        const newTarget = target.map(item => ({ ...item }));
 
                         // Handle function input
                         if (typeof newItems === 'function') {

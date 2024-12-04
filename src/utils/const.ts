@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-04-02 22:43:02
  * @FilePath     : /src/utils/const.ts
- * @LastEditTime : 2024-12-04 14:22:31
+ * @LastEditTime : 2024-12-04 18:31:20
  * @Description  : 
  */
 export const Href = {
@@ -57,7 +57,7 @@ const BlockTypeShort_EN = {
     'widget': 'Widget'
 }
 
-export const BlockTypeShort = window.siyuan.config.lang.startWith('zh') ? BlockTypeShort_ZH : BlockTypeShort_EN;
+export const BlockTypeShort = window.siyuan.config.lang.startsWith('zh') ? BlockTypeShort_ZH : BlockTypeShort_EN;
 
 export const BlockType2NodeType = {
     av: 'NodeAttributeView',

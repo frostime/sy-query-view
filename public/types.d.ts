@@ -55,27 +55,22 @@ declare const Query: {
          * Gets the timestamp for the start of next week
          * @returns Timestamp string in yyyyMMddHHmmss format
          */
-        nextWeek: (hms?: boolean) => any;
+        lastWeek: (hms?: boolean) => any;
         /**
          * Gets the timestamp for the start of current month
          * @returns Timestamp string in yyyyMMddHHmmss format
          */
         thisMonth: (hms?: boolean) => any;
         /**
-         * Gets the timestamp for the start of next month
+         * Gets the timestamp for the start of last month
          * @returns Timestamp string in yyyyMMddHHmmss format
          */
-        nextMonth: (hms?: boolean) => string;
+        lastMonth: (hms?: boolean) => string;
         /**
          * Gets the timestamp for the start of current year
          * @returns Timestamp string in yyyyMMddHHmmss format
          */
         thisYear: (hms?: boolean) => string;
-        /**
-         * Gets the timestamp for the end of current year
-         * @returns Timestamp string in yyyyMMddHHmmss format
-         */
-        nextYear: (hms?: boolean) => any;
         /**
          * Converts SiYuan timestamp string to Date object
          * @param timestr - SiYuan timestamp (yyyyMMddHHmmss)
@@ -351,6 +346,8 @@ interface IState<T> {
  * Provides various methods for visualizing data.
  */
 export declare class DataView implements IDataView {
+    get root_id(): string;
+    get embed_id(): string;
     constructor(protyle: IProtyle, embedNode: HTMLElement, top: number | null);
     /**
      * Repaint the embed block, essentially merely click the refresh button

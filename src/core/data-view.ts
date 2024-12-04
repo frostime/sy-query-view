@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-12-02 10:15:04
  * @FilePath     : /src/core/data-view.ts
- * @LastEditTime : 2024-12-03 21:07:45
+ * @LastEditTime : 2024-12-04 19:38:44
  * @Description  : 
  */
 import {
@@ -23,7 +23,10 @@ const getCSSVar = (name: string) => getComputedStyle(document.documentElement).g
 /**************************************** ZX写的 DataView 类 ****************************************/
 
 function cancelKeyEvent(el: KeyboardEvent) {
-    let nodeElement: HTMLElement = document.getSelection().getRangeAt(0).startContainer.parentElement;
+    const selection = document.getSelection();
+    if (!selection || selection.rangeCount === 0) return;
+
+    let nodeElement: HTMLElement = selection.getRangeAt(0).startContainer.parentElement;
     if (hasParentWithClass(nodeElement, "data-query-embed")) {
         el.stopPropagation();
     }
@@ -198,8 +201,17 @@ export class DataView extends UseStateMixin implements IDataView {
         });
     }
 
+    get root_id() {
+        return this.ROOT_ID;
+    }
+
+    get embed_id() {
+        return this.EMBED_BLOCK_ID;
+    }
+
     constructor(protyle: IProtyle, embedNode: HTMLElement, top: number | null) {
         super(embedNode);
+        this.disposers.push(() => this.storeState());  // 在 DataView 销毁时，将 state 同步到块属性中
 
         this.protyle = protyle;
         this.thisEmbedNode = embedNode;
@@ -235,9 +247,6 @@ export class DataView extends UseStateMixin implements IDataView {
         this.register(this.echartsGraph, { aliases: ['eGraph'] });
 
         this.registerCustomViews();
-
-        this.restoreState();  // 从块属性中恢复 state
-        this.disposers.push(() => this.storeState());  // 在 DataView 销毁时，将 state 同步到块属性中
     }
 
     /** @internal */

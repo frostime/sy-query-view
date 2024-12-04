@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-12-01 16:25:57
  * @FilePath     : /src/setting/index.ts
- * @LastEditTime : 2024-12-03 22:17:51
+ * @LastEditTime : 2024-12-04 19:24:56
  * @Description  : 
  */
 
@@ -12,6 +12,7 @@ import { i18n } from "@/index";
 import { Plugin, showMessage } from "siyuan";
 import { SettingUtils } from "@/libs/setting-utils";
 import { loadUserCustomView } from "@/core/custom-view";
+import { getSessionStorageSize } from "@/core/gc";
 
 
 let defaultSetting = {
@@ -103,6 +104,19 @@ export const load = async (plugin: Plugin) => {
         options: {
             canvas: 'canvas',
             svg: 'svg'
+        }
+    });
+    settingUtils.addItem({
+        type: 'hint',
+        title: 'Session Storage Size',
+        description: 'For debugging, please omit this item',
+        key: 'sessionStorageSize',
+        value: '',
+        createElement: () => {
+            let size = getSessionStorageSize();
+            let span = document.createElement('span');
+            span.innerText = size;
+            return span;
         }
     });
     const configs = await settingUtils.load();
