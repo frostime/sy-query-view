@@ -89,6 +89,42 @@ export interface IWrappedList<T> extends Array<T> {
      * @param predicate - Filter condition function
      */
     filter(predicate: (value: T, index: number, array: T[]) => boolean): IWrappedList<T>;
+    /**
+     * Returns a new array containing elements in the specified range
+     * @param start - Start index
+     * @param end - End index
+     */
+    slice(start: number, end: number): IWrappedList<T>;
+    /**
+     * Returns a new array with unique elements
+     * @param {keyof Block | Function} key - Unique criteria, can be property name or function
+     * @example
+     * list.unique('id')
+     * list.unique(b => b.updated.slice(0, 4))
+     */
+    unique(key?: keyof T | ((b: T) => string | number)): IWrappedList<T>;
+    /**
+     * Returns a new array with added rows
+     * @alias addrows
+     * @alias concat: modify the default method of Array
+     */
+    addrow(newItems: T[]): IWrappedList<T>;
+
+    /**
+     * Returns a new array with added columns
+     * @param {Record<string, ScalarValue | ScalarValue[]> | Record<string, ScalarValue>[] | Function} newItems - New columns to add
+     * @alias addcols
+     * @alias stack
+     * @example
+     * list.addcol({ col1: 1, col2: 2 }) // Add two columns, each with repeated elements
+     * list.addcol({ col1: [1, 2], col2: [4, 5] }) // Add two columns
+     * list.addcol([{ col1: 1, col2: 2 }, { col1: 3, col2: 4 }]) // Add two columns, each item in list corresponds to a row
+     * list.addcol((b, i) => ({ col1: i, col2: i * i })) // Add two columns, each with elements generated based on index
+     */
+    addcol(newItems: Record<string, ScalarValue | ScalarValue[]> |
+        Record<string, ScalarValue>[] |
+        ((b: T, index: number) => Record<string, ScalarValue> | Record<string, ScalarValue[]>)): IWrappedList<T>;
+
 }
 
 
@@ -319,6 +355,100 @@ export const wrapList = (list: Block[], useWrapBlock: boolean = true): IWrappedL
                      */
                     return (predicate: (value: Block, index: number, array: Block[]) => boolean) => {
                         return wrapList(target.filter(predicate));
+                    }
+                case 'slice':
+                    /**
+                     * 返回指定区间的子数组
+                     */
+                    return (start: number, end: number) => {
+                        return wrapList(target.slice(start, end));
+                    }
+                case 'unique':
+                    /**
+                     * 返回一个去重后的新数组
+                     * @param {keyof Block | Function} key - 去重依据，可以是属性名或函数
+                     * @returns {ProxyList} 去重后的新代理数组
+                     * @example list.unique('id')
+                     * @example list.unique(b => b.updated.slice(0, 4))
+                     */
+                    return (key?: keyof Block | ((b: Block) => string | number)) => {
+                        if (target.length === 0) return proxy;
+                        const map: Record<string, Block> = {};
+                        const defaultkey = target[0]?.id ? 'id' : (x => x);
+                        key = key ?? defaultkey;
+                        if (typeof key === 'function') {
+                            target.forEach(b => map[key(b)] = b);
+                        } else {
+                            target.forEach(b => map[b[key]] = b);
+                        }
+                        return wrapList(Object.values(map));
+                    }
+                case 'addrow':
+                case 'addrows':
+                case 'concat':
+                    /**
+                     * 返回连接多个数组的新数组
+                     */
+                    return (...lists: any[][]) => {
+                        return wrapList(target.concat(...lists));
+                    }
+                case 'addcol':
+                case 'addcols':
+                    /**
+                     * Returns a new array with merged elements for each item
+                     * @param {Record<string, ScalarValue | ScalarValue[]> | Record<string, ScalarValue>[] | Function} newItems - New columns to add
+                     * @returns {IWrappedList<Block>} New array with added columns
+                     */
+                    return (newItems: Record<string, ScalarValue | ScalarValue[]> |
+                        Record<string, ScalarValue>[] |
+                        ((b: Block, index: number) =>
+                            Record<string, ScalarValue> | Record<string, ScalarValue[]>
+                        )
+                    ) => {
+                        const length = target.length;
+                        // Create a deep copy of the target array
+                        const newTarget = target.map(item => ({...item}));
+
+                        // Handle function input
+                        if (typeof newItems === 'function') {
+                            for (let i = 0; i < length; i++) {
+                                const newValues = newItems(target[i], i);
+                                Object.entries(newValues).forEach(([key, value]) => {
+                                    const actualValue = Array.isArray(value) ? value[i] : value;
+                                    newTarget[i][key] = actualValue;
+                                });
+                            }
+                            return wrapList(newTarget);
+                        }
+
+                        // Handle array input
+                        if (Array.isArray(newItems)) {
+                            if (newItems.length !== length) {
+                                throw new Error('Input array length must match target array length');
+                            }
+                            for (let i = 0; i < length; i++) {
+                                Object.assign(newTarget[i], newItems[i]);
+                            }
+                            return wrapList(newTarget);
+                        }
+
+                        // Handle object input
+                        Object.entries(newItems).forEach(([key, value]) => {
+                            if (Array.isArray(value)) {
+                                if (value.length !== length) {
+                                    throw new Error(`Array length for key "${key}" must match target array length`);
+                                }
+                                for (let i = 0; i < length; i++) {
+                                    newTarget[i][key] = value[i];
+                                }
+                            } else {
+                                for (let i = 0; i < length; i++) {
+                                    newTarget[i][key] = value;
+                                }
+                            }
+                        });
+
+                        return wrapList(newTarget);
                     }
             };
             return null;

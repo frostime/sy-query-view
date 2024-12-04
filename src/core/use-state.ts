@@ -1,3 +1,11 @@
+/*
+ * Copyright (c) 2024 by frostime. All Rights Reserved.
+ * @Author       : frostime
+ * @Date         : 2024-12-03 19:49:52
+ * @FilePath     : /src/core/use-state.ts
+ * @LastEditTime : 2024-12-04 10:21:39
+ * @Description  : 
+ */
 import { setBlockAttrs } from "@/api";
 
 class UseStateMixin {
@@ -37,7 +45,7 @@ class UseStateMixin {
      * @internal
      * 将 state 同步到块属性中
      */
-    protected async storeState() {
+    protected storeState() {
         if (this.stateMap.size === 0) {
             return;
         }
@@ -51,7 +59,7 @@ class UseStateMixin {
                 ele.setAttribute(key, value);
             });
         }
-        await setBlockAttrs(this.blockId, stateObj);
+        setBlockAttrs(this.blockId, stateObj);
     }
 
     useState<T>(key: string, initialValue?: T): IState<T> {

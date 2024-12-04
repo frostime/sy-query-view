@@ -7,6 +7,18 @@ declare module 'siyuan' {
 
 // ================== query.d.ts ==================
 import { IProtyle } from "siyuan";
+/**
+ * Data class for SiYuan timestamp
+ * In SiYuan, the timestamp is in the format of yyyyMMddHHmmss
+ */
+declare class SiYuanDate extends Date {
+    beginOfDay(): SiYuanDate;
+    toString(hms?: boolean): string;
+    [Symbol.toPrimitive](hint: string): any;
+    static fromString(timestr: string): SiYuanDate;
+    add(days: number | string): SiYuanDate;
+}
+
 declare const Query: {
     /**
      * Creates a new DataView instance for rendering data visualizations
@@ -17,28 +29,38 @@ declare const Query: {
      */
     DataView: (protyle: IProtyle, item: HTMLElement, top: number | null) => DataView;
     Utils: {
+        Date: (value: string | number | Date) => SiYuanDate;
+        /**
+         * Gets timestamp for current time with optional day offset
+         * @param days - Number of days to offset (positive or negative)
+         * - {number} 直接使用数字
+         * - {string} 使用字符串，如 '1d' 表示 1 天，'2w' 表示 2 周，'3m' 表示 3 个月，'4y' 表示 4 年
+         * - 可以为负数
+         * @returns Timestamp string in yyyyMMddHHmmss format
+         */
+        now: (days?: number | string, hms?: boolean) => any;
         /**
          * Gets the timestamp for the start of today
          * @param {boolean} hms - Whether to include time, e.g today(false) returns 20241201, today(true) returns 20241201000000
          * @returns Timestamp string in yyyyMMddHHmmss format
          */
-        today: (hms?: boolean) => string;
+        today: (hms?: boolean) => any;
         /**
          * Gets the timestamp for the start of current week
          * @param {boolean} hms - Whether to include time, e.g thisWeek(false) returns 20241201, thisWeek(true) returns 20241201000000
          * @returns Timestamp string in yyyyMMddHHmmss format
          */
-        thisWeek: (hms?: boolean) => string;
+        thisWeek: (hms?: boolean) => any;
         /**
          * Gets the timestamp for the start of next week
          * @returns Timestamp string in yyyyMMddHHmmss format
          */
-        nextWeek: (hms?: boolean) => string;
+        nextWeek: (hms?: boolean) => any;
         /**
          * Gets the timestamp for the start of current month
          * @returns Timestamp string in yyyyMMddHHmmss format
          */
-        thisMonth: (hms?: boolean) => string;
+        thisMonth: (hms?: boolean) => any;
         /**
          * Gets the timestamp for the start of next month
          * @returns Timestamp string in yyyyMMddHHmmss format
@@ -53,37 +75,37 @@ declare const Query: {
          * Gets the timestamp for the end of current year
          * @returns Timestamp string in yyyyMMddHHmmss format
          */
-        nextYear: (hms?: boolean) => string;
+        nextYear: (hms?: boolean) => any;
         /**
-         * Gets timestamp for current time with optional day offset
-         * @param days - Number of days to offset (positive or negative)
+         * Converts SiYuan timestamp string to Date object
+         * @param timestr - SiYuan timestamp (yyyyMMddHHmmss)
+         * @returns Date object
+         */
+        asDate: (timestr: string) => SiYuanDate;
+        /**
+         * Converts Date object to SiYuan timestamp format
+         * @param date - Date to convert
          * @returns Timestamp string in yyyyMMddHHmmss format
          */
-        now: (days?: number, hms?: boolean) => string;
+        asTimestr: (date: Date) => any;
         /**
          * Converts a block to a SiYuan link format
          * @param b - Block to convert
          * @returns String in markdown link format
+         * @alias asRef
          */
         asLink: (b: Block) => string;
         /**
          * Converts a block to a SiYuan reference format
          * @param b - Block to convert
          * @returns String in reference format ((id 'content'))
+         * @alias asLink
          */
         asRef: (b: Block) => string;
-        /**
-         * Converts SiYuan timestamp string to Date object
-         * @param timestr - SiYuan timestamp (yyyyMMddHHmmss)
-         * @returns Date object
-         */
-        asDate: (timestr: string) => Date;
-        /**
-         * Converts Date object to SiYuan timestamp format
-         * @param date - Date to convert
-         * @returns Timestamp string in yyyyMMddHHmmss format
-         */
-        asTimestr: (date: Date) => string;
+        asMap: (blocks: Block[], key?: string) => {
+            [key: string]: Block;
+            [key: number]: Block;
+        };
         /**
          * Gets notebook information from block or notebook ID
          * @param input - Block object or notebook ID
@@ -152,6 +174,25 @@ declare const Query: {
      * @returns Array of matching blocks
      */
     attr: (name: string, val?: string, valMatch?: "=" | "like", limit?: number) => Promise<any[]>;
+    /**
+     * Find unsolved task blocks
+     * @param limit - Maximum number of results
+     * @returns Array of unsolved task blocks
+     */
+    task: (limit?: number) => Promise<any[]>;
+    /**
+     * Randomly roam blocks
+     * @param limit - Maximum number of results
+     * @param type - Block type
+     * @returns Array of randomly roamed blocks
+     */
+    random: (limit?: number, type?: BlockType) => Promise<any[]>;
+    /**
+     * Gets the daily notes document
+     * @param notebook - Notebook ID, if not specified, all daily notes documents will be returned
+     * @returns Array of daily notes document blocks
+     */
+    dailynote: (limit?: number, notebook?: NotebookId) => Promise<any[]>;
     /**
      * Gets child documents of a block
      * @param b - Parent block or block ID
@@ -673,6 +714,38 @@ export interface IWrappedList<T> extends Array<T> {
      * @param predicate - Filter condition function
      */
     filter(predicate: (value: T, index: number, array: T[]) => boolean): IWrappedList<T>;
+    /**
+     * Returns a new array containing elements in the specified range
+     * @param start - Start index
+     * @param end - End index
+     */
+    slice(start: number, end: number): IWrappedList<T>;
+    /**
+     * Returns a new array with unique elements
+     * @param {keyof Block | Function} key - Unique criteria, can be property name or function
+     * @example
+     * list.unique('id')
+     * list.unique(b => b.updated.slice(0, 4))
+     */
+    unique(key?: keyof T | ((b: T) => string | number)): IWrappedList<T>;
+    /**
+     * Returns a new array with added rows
+     * @alias addrows
+     * @alias concat: modify the default method of Array
+     */
+    addrow(newItems: T[]): IWrappedList<T>;
+    /**
+     * Returns a new array with added columns
+     * @param {Record<string, ScalarValue | ScalarValue[]> | Record<string, ScalarValue>[] | Function} newItems - New columns to add
+     * @alias addcols
+     * @alias stack
+     * @example
+     * list.addcol({ col1: 1, col2: 2 }) // Add two columns, each with repeated elements
+     * list.addcol({ col1: [1, 2], col2: [4, 5] }) // Add two columns
+     * list.addcol([{ col1: 1, col2: 2 }, { col1: 3, col2: 4 }]) // Add two columns, each item in list corresponds to a row
+     * list.addcol((b, i) => ({ col1: i, col2: i * i })) // Add two columns, each with elements generated based on index
+     */
+    addcol(newItems: Record<string, ScalarValue | ScalarValue[]> | Record<string, ScalarValue>[] | ((b: T, index: number) => Record<string, ScalarValue> | Record<string, ScalarValue[]>)): IWrappedList<T>;
 }
 
 // ================== index.d.ts ==================

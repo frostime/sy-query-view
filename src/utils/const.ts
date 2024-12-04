@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-04-02 22:43:02
  * @FilePath     : /src/utils/const.ts
- * @LastEditTime : 2024-06-22 19:14:01
+ * @LastEditTime : 2024-12-04 14:22:31
  * @Description  : 
  */
 export const Href = {
@@ -23,7 +23,7 @@ export const Svg = {
     Top: `<symbol id="iconTop" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" stroke-width="0.5"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <g> <path d="M2.5 2.5a.75.75 0 010-1.5H13a.75.75 0 010 1.5H2.5zM2.985 9.795a.75.75 0 001.06-.03L7 6.636v7.614a.75.75 0 001.5 0V6.636l2.955 3.129a.75.75 0 001.09-1.03l-4.25-4.5a.75.75 0 00-1.09 0l-4.25 4.5a.75.75 0 00.03 1.06z"></path> </g> </g></symbol>`
 };
 
-export const BlockTypeShort = {
+const BlockTypeShort_ZH = {
     "d": "文档块",
     "h": "标题块",
     "l": "列表块",
@@ -35,8 +35,29 @@ export const BlockTypeShort = {
     "s": "超级块",
     "p": "段落块",
     "html": "HTML块",
-    "query_embed": "嵌入块"
+    "query_embed": "嵌入块",
+    'av': '属性视图',
+    'widget': '挂件'
 }
+
+const BlockTypeShort_EN = {
+    "d": "Document",
+    "h": "Heading",
+    "l": "List",
+    "i": "ListItem",
+    "c": "Code",
+    "m": "Math",
+    "t": "Table",
+    "b": "Blockquote",
+    "s": "SuperBlock",
+    "p": "Paragraph",
+    "html": "HTML",
+    "query_embed": "Embed",
+    'av': 'Attribute View',
+    'widget': 'Widget'
+}
+
+export const BlockTypeShort = window.siyuan.config.lang.startWith('zh') ? BlockTypeShort_ZH : BlockTypeShort_EN;
 
 export const BlockType2NodeType = {
     av: 'NodeAttributeView',

@@ -45,7 +45,7 @@ const renderAttr = (b: Block, attr: keyof Block, options?: {
 
     switch (attr) {
         case 'type':
-            const type = BlockTypeShort[b.type].slice(0, -1);
+            const type = (BlockTypeShort[b.type] ?? b.type).slice(0, -1);
             v = link(type, b.id);
             break;
 
@@ -73,6 +73,18 @@ const renderAttr = (b: Block, attr: keyof Block, options?: {
         case 'updated':
         case 'created':
             v = parseTime(b[attr]);
+            break;
+
+        case 'ial':
+            // {: updated=\"20240511224835\" custom-reservation=\"20240512\" id=\"20240511224824-zj8q1jp\" memo=\"预约此块 20240512\ }"
+            let ial = b.ial;
+            ial = ial.replace('{:', '').replace('}', '').trim();
+            let ialObj: Record<string, string> = {};
+            ial.split(' ').forEach(item => {
+                let [key, value] = item.split('=');
+                ialObj[key] = value;
+            });
+            v = JSON.stringify(ialObj);
             break;
 
         default:
