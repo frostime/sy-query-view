@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-12-02 10:15:04
  * @FilePath     : /src/core/data-view.ts
- * @LastEditTime : 2024-12-04 19:38:44
+ * @LastEditTime : 2024-12-04 20:51:01
  * @Description  : 
  */
 import {
@@ -1034,6 +1034,13 @@ export class DataView extends UseStateMixin implements IDataView {
         // Garbage Collection on Document Closed
         registerProtyleGC(this.ROOT_ID, this);
         this.registerInternalGC();
+
+        // setTimeout(() => {
+        //     //不知道为啥嵌入块有时候在渲染完成后会被缩减高度
+        //     //通过 setTimeout 在宏任务中恢复高度
+        //     this.thisEmbedNode.style.height = "";
+        // }, 0);
+        //弃用, 后面再观察一下
     }
 
     /**

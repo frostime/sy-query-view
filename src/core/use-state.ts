@@ -3,10 +3,11 @@
  * @Author       : frostime
  * @Date         : 2024-12-03 19:49:52
  * @FilePath     : /src/core/use-state.ts
- * @LastEditTime : 2024-12-04 20:07:25
+ * @LastEditTime : 2024-12-04 21:50:10
  * @Description  : 
  */
 import { setBlockAttrs } from "@/api";
+import { debounce } from "@/utils";
 
 class UseStateMixin {
     /** @internal */
@@ -53,54 +54,54 @@ class UseStateMixin {
         }
     }
 
+    private saveToBlockAttrs() {
+        const stateObj: Record<string, string> = {};
+        this.stateMap.forEach((value, key) => {
+            stateObj[this.customStateKey(key)] = JSON.stringify(value);
+        });
+        console.debug('saveToBlockAttrs', this.blockId, stateObj);
+        setBlockAttrs(this.blockId, stateObj);
+    }
+
+    private saveToBlockDebounced = debounce(this.saveToBlockAttrs.bind(this), 1000);
+    // private saveToBlockThrottled = throttle(this.saveToBlockAttrs.bind(this), 1000);
+
+
+    private saveToSessionStorage() {
+        const storageObj: Record<string, string> = {};
+        this.stateMap.forEach((value, key) => {
+            storageObj[key] = value;
+        });
+        sessionStorage.setItem(this.sessionStorageKey(), JSON.stringify(storageObj));
+    }
+
     /**
      * @internal
      * 将 state 同步到块属性中
      */
-    storeState() {
+    protected storeState() {
         if (this.stateMap.size === 0) {
             return;
         }
-        const stateObj: Record<string, string> = {};
-        const storageObj: Record<string, string> = {};
-        this.stateMap.forEach((value, key) => {
-            stateObj[this.customStateKey(key)] = JSON.stringify(value);
-            storageObj[key] = value;
-        });
         // 同步到 sessionStorage 做临时缓存
-        sessionStorage.setItem(this.sessionStorageKey(), JSON.stringify(storageObj));
+        this.saveToSessionStorage();
         // 同步到块属性中, 做持久化保存
-        setBlockAttrs(this.blockId, stateObj);
+        this.saveToBlockDebounced();  //避免过度频繁地更新块属性
         //TODO 后面考虑在关闭 protyle 的时候清理 sessionStorage 中的数据
     }
 
     useState<T>(key: string, initialValue?: T): IState<T> {
-        let isNew = false;
         if (!this.stateMap.has(key)) {
-            isNew = true;
             this.setState(key, initialValue);
         }
+
+        const registeredEffects: ((newValue: T, oldValue: T) => void)[] = [];
 
         const state = (value?: any) => {
             if (value !== undefined) {
                 this.setState(key, value);
-                if (isNew) {
-                    this.storeState();
-                    /**
-                     * 如果是新创建的 state, 则第一次设置的时候就同步缓存中
-                     * 主要是考虑到有些 state 是 await 中获取到的
-                     * 如果不这么做, 可能会在第一次重绘完成之后，来不及获得缓存中的数据，而不得不重新 await 获取新的状态
-                     * @example
-                     * const state = useState('test');
-                     * if (state) {
-                     *     console.log(state())
-                     * } else {
-                     *     const data = await fetchData();
-                     *     state(data);
-                     * }
-                     */
-                    isNew = false;
-                }
+                this.storeState();
+                registeredEffects.forEach(effect => effect(value, this.getState(key)));
             }
             return this.getState(key);
         };
@@ -108,15 +109,25 @@ class UseStateMixin {
             get: state,
             set: (value: any) => state(value),
         });
+
+        Object.defineProperty(state, 'effect', {
+            value: (effect: (newValue: T, oldValue: T) => void) => {
+                registeredEffects.push(effect);
+            },
+        });
+        Object.defineProperty(state, 'derived', {
+            value: (derive: (value: T) => T) => {
+                return () => derive(state());
+            },
+        });
+
         /**
-         * 清理持久化的存储 (sessionStorage 和 block 属性)
+         * 清理当前的 state key
          */
         Object.defineProperty(state, 'purge', {
             value: () => {
-                sessionStorage.removeItem(this.sessionStorageKey());
-                setBlockAttrs(this.blockId, {
-                    [this.customStateKey(key)]: null,
-                });
+                this.stateMap.delete(key);
+                this.storeState();
             },
         });
 
