@@ -3,11 +3,21 @@
  * @Author       : frostime
  * @Date         : 2024-12-03 19:49:52
  * @FilePath     : /src/core/use-state.ts
- * @LastEditTime : 2024-12-05 00:46:05
+ * @LastEditTime : 2024-12-05 19:04:14
  * @Description  : 
  */
 import { setBlockAttrs } from "@/api";
 import { debounce } from "@/utils";
+import { isWriteBlockAllowed } from "./sync-control";
+
+export const purgeSessionStorage = () => {
+    const keys = new Array(sessionStorage.length).fill(0).map((_, i) => sessionStorage.key(i));
+    keys.forEach(key => {
+        if (key.startsWith('dv-state@')) {
+            sessionStorage.removeItem(key);
+        }
+    });
+}
 
 class UseStateMixin {
     /** @internal */
@@ -55,16 +65,34 @@ class UseStateMixin {
     }
 
     private saveToBlockAttrs() {
+        const allowance = isWriteBlockAllowed();
+        if (!allowance) {
+            console.debug('State.saveToBlockAttrs: During sync, disallowed');
+            return;
+        }
         const stateObj: Record<string, string> = {};
         this.stateMap.forEach((value, key) => {
             stateObj[UseStateMixin.customStateKey(key)] = JSON.stringify(value);
         });
-        console.debug('saveToBlockAttrs', this.blockId, stateObj);
+        console.log('State.saveToBlockAttrs', this.blockId, stateObj);
         setBlockAttrs(this.blockId, stateObj);
     }
 
-    private saveToBlockDebounced = debounce(this.saveToBlockAttrs.bind(this), 1000);
+    //debounce 参数设置的大一点, 尽量避免同步造成的数据冲突
+    private saveToBlockDebounced = debounce(this.saveToBlockAttrs.bind(this), 5000); //#TODO 改大一点
     // private saveToBlockThrottled = throttle(this.saveToBlockAttrs.bind(this), 1000);
+
+    private saveToBlockSafely() {
+        /**
+         * 防止出现在同步过程调用了 save，刚好在同步结束之后, protyle reload 之前调用，从而造成数据冲突
+         */
+        const allowance = isWriteBlockAllowed();
+        if (!allowance) {
+            console.debug('State.saveToBlockSafely: During sync, disallowed');
+            return;
+        }
+        this.saveToBlockAttrs();
+    }
 
 
     private saveToSessionStorage() {
@@ -83,10 +111,11 @@ class UseStateMixin {
         if (this.stateMap.size === 0) {
             return;
         }
+        console.debug('State.storeState', this.blockId);
         // 同步到 sessionStorage 做临时缓存
         this.saveToSessionStorage();
         // 同步到块属性中, 做持久化保存
-        this.saveToBlockDebounced();  //避免过度频繁地更新块属性
+        this.saveToBlockSafely();
         //TODO 后面考虑在关闭 protyle 的时候清理 sessionStorage 中的数据
     }
 

@@ -8,6 +8,7 @@ import { setting } from "@/setting";
 
 import { i18n } from "@/index";
 import { inputDialog, simpleDialog } from "@/libs/dialog";
+import { isWriteBlockAllowed } from "./sync-control";
 
 const child_process = require("child_process");
 

@@ -1,6 +1,7 @@
 interface I18n {
     src_core_editorts: {
         ext_code_editor_closed: string;
+        forbiddentoupdateblockdata: string;
         show_as_template_format: string;
         show_embedded_block_code_in_siyuan_template_format: string;
         unableto_use_ext_cmd: string;

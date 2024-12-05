@@ -13,7 +13,7 @@ import {
 } from "siyuan";
 import { getLute } from "./lute";
 import { BlockList, BlockTable, MermaidRelation, EmbedNodes, Echarts, MermaidBase, errorMessage } from './components';
-import { registerProtyleGC } from "./gc";
+import { registerProtyleGC } from "./finalize";
 import { openBlock } from "@/utils";
 import { getCustomView } from "./custom-view";
 import UseStateMixin from "./use-state";

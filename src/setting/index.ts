@@ -12,7 +12,7 @@ import { i18n } from "@/index";
 import { Plugin, showMessage } from "siyuan";
 import { SettingUtils } from "@/libs/setting-utils";
 import { loadUserCustomView } from "@/core/custom-view";
-import { getSessionStorageSize } from "@/core/gc";
+import { getSessionStorageSize } from "@/core/finalize";
 
 
 let defaultSetting = {

@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-12-01 11:21:44
  * @FilePath     : /src/core/gc.ts
- * @LastEditTime : 2024-12-04 19:34:56
+ * @LastEditTime : 2024-12-05 19:43:14
  * @Description  : 
  */
 import { DataView } from "./data-view";
@@ -83,6 +83,7 @@ export const registerSessionStorageKey = (docId: DocumentId, key: string) => {
 
 export const onProtyleDestroyed = ({ detail }) => {
     const rootID = detail.protyle.block.rootID;
+    // console.log('onProtyleDestroyed', rootID);
 
     if (!dataviews.has(rootID)) return;
 
@@ -100,4 +101,13 @@ export const onProtyleDestroyed = ({ detail }) => {
     if (keys) {
         keys.forEach(key => sessionStorage.removeItem(key));
     }
+}
+
+export const disposeAll = () => {
+    dataviews.forEach((views, docId) => {
+        views.forEach(view => {
+            const dataView = view.deref();
+            if (dataView) dataView.dispose();
+        });
+    });
 }

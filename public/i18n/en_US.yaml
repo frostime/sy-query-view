@@ -1,5 +1,6 @@
 src_core_editorts:
   ext_code_editor_closed: The external code editor process {0} has been closed
+  forbiddentoupdateblockdata: During Syncing, forbidden to update block data
   show_as_template_format: Display as template format
   show_embedded_block_code_in_siyuan_template_format: Display embedded block code
     in SiYuan template format
@@ -22,7 +23,8 @@ src_setting_indexts:
   defaultcolumnsofdataviewtable: When calling DataView.table, the default columns
     to be displayed, separated by commas; leaving it blank means showing all columns
   echarts_renderer: Echarts renderer
-  echarts_renderer_option: 'Echarts renderer, which can be "canvas" or "svg", default "svg"'
+  echarts_renderer_option: Echarts renderer, which can be "canvas" or "svg", default
+    "svg"
   import_failed: Import failed. Please check the console error for details.
   import_success: Import succeeded. There are a total of {cnt} custom views.
   local_command_desc: The local command used to open the code editor, by default it

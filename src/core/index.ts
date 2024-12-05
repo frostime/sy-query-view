@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-05-08 15:00:37
  * @FilePath     : /src/core/index.ts
- * @LastEditTime : 2024-12-03 18:06:19
+ * @LastEditTime : 2024-12-05 19:44:58
  * @Description  :
  *      - Fork from project https://github.com/zxhd863943427/siyuan-plugin-data-query
  *      - 基于该项目的 v0.0.7 版本进行修改
@@ -16,10 +16,11 @@ import {
 
 import { embedBlockEvent } from "./editor";
 import Query from "./query";
-import { onProtyleDestroyed } from "./gc";
+import { disposeAll, onProtyleDestroyed } from "./finalize";
 import { loadUserCustomView } from "./custom-view";
 
 import { i18n } from '@/index';
+import { onSyncStart, onSyncEnd, onSyncFail } from "./sync-control";
 /**************************************** Func ****************************************/
 
 
@@ -32,6 +33,9 @@ export const load = (plugin: Plugin) => {
 
     plugin.eventBus.on("click-blockicon", embedBlockEvent);
     plugin.eventBus.on("destroy-protyle", onProtyleDestroyed);
+    plugin.eventBus.on("sync-start", onSyncStart);
+    plugin.eventBus.on("sync-end", onSyncEnd);
+    plugin.eventBus.on("sync-fail", onSyncFail);
 
     loadUserCustomView().then(status => {
         if (status.exists && !status.valid) {
@@ -49,11 +53,16 @@ export const load = (plugin: Plugin) => {
 export const unload = (plugin: Plugin) => {
     if (!enabled) return;
 
+    disposeAll();
+
     delete globalThis.newDV;
     delete globalThis.Query;
 
     plugin.eventBus.off("click-blockicon", embedBlockEvent);
     plugin.eventBus.off("destroy-protyle", onProtyleDestroyed);
+    plugin.eventBus.off("sync-start", onSyncStart);
+    plugin.eventBus.off("sync-end", onSyncEnd);
+    plugin.eventBus.off("sync-fail", onSyncFail);
 
     enabled = false;
 }
