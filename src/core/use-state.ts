@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-12-03 19:49:52
  * @FilePath     : /src/core/use-state.ts
- * @LastEditTime : 2024-12-04 21:50:10
+ * @LastEditTime : 2024-12-05 00:46:05
  * @Description  : 
  */
 import { setBlockAttrs } from "@/api";
@@ -35,7 +35,7 @@ class UseStateMixin {
     }
 
     private sessionStorageKey = () => `dv-state@${this.blockId}`;
-    private customStateKey = (key: string) => `custom-dv-state-${key}`;
+    static customStateKey = (key: string) => `custom-dv-state-${key}`;
 
     /** @internal */
     protected restoreState() {
@@ -47,9 +47,9 @@ class UseStateMixin {
             //如果没有数据, 就从 element 的属性中查找恢复
             const customStateAttrs = Array.from(
                 this.node.deref()?.attributes ?? []
-            ).filter(attr => attr.name.startsWith(this.customStateKey('')));
+            ).filter(attr => attr.name.startsWith(UseStateMixin.customStateKey('')));
             customStateAttrs.forEach(attr => {
-                this.stateMap.set(attr.name.replace(this.customStateKey(''), ''), JSON.parse(attr.value));
+                this.stateMap.set(attr.name.replace(UseStateMixin.customStateKey(''), ''), JSON.parse(attr.value));
             });
         }
     }
@@ -57,7 +57,7 @@ class UseStateMixin {
     private saveToBlockAttrs() {
         const stateObj: Record<string, string> = {};
         this.stateMap.forEach((value, key) => {
-            stateObj[this.customStateKey(key)] = JSON.stringify(value);
+            stateObj[UseStateMixin.customStateKey(key)] = JSON.stringify(value);
         });
         console.debug('saveToBlockAttrs', this.blockId, stateObj);
         setBlockAttrs(this.blockId, stateObj);

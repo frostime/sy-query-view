@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-12-01 16:25:57
  * @FilePath     : /src/setting/index.ts
- * @LastEditTime : 2024-12-04 19:24:56
+ * @LastEditTime : 2024-12-05 00:59:26
  * @Description  : 
  */
 
@@ -115,8 +115,41 @@ export const load = async (plugin: Plugin) => {
         createElement: () => {
             let size = getSessionStorageSize();
             let span = document.createElement('span');
-            span.innerText = size;
-            return span;
+            const updateSize = (size) => {
+                span.innerText = size;
+                if (size.endsWith('MB')) {
+                    span.style.color = 'var(--b3-theme-error)';
+                    const num = parseFloat(size.replace('MB', ''));
+                    if (num >= 2.5) {
+                        span.style.fontWeight = 'bold';
+                    }
+                }
+            }
+            updateSize(size);
+            const button = document.createElement('button');
+            button.className = "b3-button b3-button--text";
+            button.innerText = 'Clear';
+            button.onclick = () => {
+                //iterate through all keys in sessionStorage and remove them
+                const keys = new Array(sessionStorage.length).fill(0).map((_, i) => sessionStorage.key(i));
+                keys.forEach(key => {
+                    if (key.startsWith('dv-state@')) {
+                        sessionStorage.removeItem(key);
+                    }
+                });
+                // span.innerText = getSessionStorageSize();
+                updateSize(getSessionStorageSize());
+            };
+            const div = document.createElement('div');
+            Object.assign(div.style, {
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                height: '100%'
+            });
+            div.appendChild(span);
+            div.appendChild(button);
+            return div;
         }
     });
     const configs = await settingUtils.load();

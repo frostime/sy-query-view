@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-12-02 10:15:04
  * @FilePath     : /src/core/data-view.ts
- * @LastEditTime : 2024-12-04 22:55:19
+ * @LastEditTime : 2024-12-05 17:14:03
  * @Description  : 
  */
 import {
@@ -49,12 +49,11 @@ function hasParentWithClass(element: HTMLElement, className: string) {
     return false;
 }
 
-const newDivWrapper = (tag: string = 'div') => {
+const newViewWrapper = (tag: string = 'div') => {
     let div = document.createElement(tag);
-    div.style.overflowX = "auto";
-    div.className = styles["js-query-data-view"];
-    div.style.paddingLeft = "0.5em";
-    div.style.paddingRight = "0.5em";
+    // 怀疑同步异常是 Lute 解析错误导致的，加一个 protyle-custom 不知道有没有用
+    // https://github.com/88250/lute/issues/206
+    div.classList.add(styles["data-view-component"], 'protyle-custom');
     return div;
 }
 
@@ -165,7 +164,7 @@ export class DataView extends UseStateMixin implements IDataView {
         const useCustomView = (name, use: ICustomView['use']) => {
             return (...args: any[]) => {
                 const { render, dispose } = use(this);
-                const container = newDivWrapper();
+                const container = newViewWrapper();
 
                 if (!render) {
                     errorMessage(container, `Custom view ${name} should have an init method`);
@@ -219,10 +218,12 @@ export class DataView extends UseStateMixin implements IDataView {
         this.thisEmbedNode = embedNode;
         this.top = top;
         this._element = document.createElement("div");
-
-        this._element.classList.add(styles["data-query-embed"]);
-        this.thisEmbedNode.lastElementChild.insertAdjacentElement("beforebegin", this._element);
         this.lute = getLute();
+
+        this._element.classList.add(styles["data-query-embed"], 'protyle-wysiwyg__embed');
+        this._element.dataset.id = window.Lute.NewNodeID();
+
+        this.thisEmbedNode.lastElementChild.insertAdjacentElement("beforebegin", this._element);
 
         this.ROOT_ID = this.protyle.block.rootID;
         this.EMBED_BLOCK_ID = embedNode.dataset.nodeId;
@@ -317,10 +318,10 @@ export class DataView extends UseStateMixin implements IDataView {
      * @returns 
      */
     addElement(customEle: HTMLElement | string) {
-        const customElem = newDivWrapper();
+        const customElem = newViewWrapper();
 
         if (typeof customEle === 'string') {
-            const html = `<div class="protyle-wysiwyg__embed">${customEle}</div>`;
+            const html = `<div class="data-view-element" style="display: contents;">${customEle}</div>`;
             customElem.innerHTML = html;
         }
         else if (customEle instanceof Element) {
@@ -342,13 +343,13 @@ export class DataView extends UseStateMixin implements IDataView {
      * dv.addmd(`# Hello`);
      */
     markdown(md: string) {
-        let elem = newDivWrapper();
+        let elem = newViewWrapper();
         elem.innerHTML = this.lute.Md2BlockDOM(md);
         return elem;
     }
 
     details(summary: string, content: string | HTMLElement) {
-        const details: HTMLDetailsElement = newDivWrapper('details') as HTMLDetailsElement;
+        const details: HTMLDetailsElement = newViewWrapper('details') as HTMLDetailsElement;
         details.innerHTML = `<summary>${summary}</summary>${typeof content === 'string' ? content : ''}`;
         if (content instanceof HTMLElement) {
             details.appendChild(content);
@@ -393,7 +394,7 @@ export class DataView extends UseStateMixin implements IDataView {
         // Convert blocks to ListItem format
         const listData = data.map(convertToListItem);
 
-        let listContainer = newDivWrapper();
+        let listContainer = newViewWrapper();
         const list = new BlockList({
             target: listContainer,
             dataList: listData,
@@ -425,7 +426,7 @@ export class DataView extends UseStateMixin implements IDataView {
     table(blocks: Block[], options?: ITableOptions & {
         cols?: (string | Record<string, string>)[] | Record<string, string>
     }) {
-        let tableContainer = newDivWrapper();
+        let tableContainer = newViewWrapper();
         options = options ?? {};
         const table = new BlockTable({
             target: tableContainer,
@@ -512,7 +513,7 @@ export class DataView extends UseStateMixin implements IDataView {
      * @returns HTMLElement containing the Mermaid diagram
      */
     mermaid(code: string) {
-        let mermaidContainer = newDivWrapper();
+        let mermaidContainer = newViewWrapper();
         const mermaid = new MermaidBase(
             mermaidContainer,
             code
@@ -541,7 +542,7 @@ export class DataView extends UseStateMixin implements IDataView {
         flowchart?: 'TD' | 'LR',
         renderer?: (b: Block) => string;
     } = {}) {
-        let mermaidContainer = newDivWrapper();
+        let mermaidContainer = newViewWrapper();
         if (!tree.id) {
             // 如果没有 id, 将 tree 视为 { parentname: Block[] } 的格式
             const oldTree = tree;
@@ -606,7 +607,7 @@ export class DataView extends UseStateMixin implements IDataView {
         columns?: number;
         zoom?: number;
     }) {
-        const container = newDivWrapper();
+        const container = newViewWrapper();
 
         if (!Array.isArray(blocks)) {
             blocks = [blocks];
@@ -636,7 +637,7 @@ export class DataView extends UseStateMixin implements IDataView {
             [eventName: string]: (params: any) => void;
         }
     } = {}) {
-        const container = newDivWrapper();
+        const container = newViewWrapper();
 
         const DEFAULT_COLOR = [getCSSVar('--b3-theme-primary'), '#5470c6', '#91cc75', '#fac858', '#ee6666', '#73c0de', '#3ba272', '#fc8452', '#9a60b4', '#ea7ccc'];
         echartOption.color = echartOption.color ?? DEFAULT_COLOR;
@@ -974,21 +975,21 @@ export class DataView extends UseStateMixin implements IDataView {
             el.stopImmediatePropagation();
             // el.preventDefault(); //去掉, 不然 siyuan 链接无法点击跳转
             const target = el.target as HTMLElement;
-            // if (target.tagName === 'SPAN') {
-            //     if (target.dataset.type === 'a') {
-            //         // 点击了链接、引用的时候跳转
-            //         const href = target.dataset.href;
-            //         if (href) {
-            //             const id = href.split('/').pop();
-            //             openBlock(id);
-            //         }
-            //     } else if (target.dataset.type === 'block-ref') {
-            //         const id = target.dataset.id;
-            //         if (id) {
-            //             openBlock(id);
-            //         }
-            //     }
-            // }
+            if (target.tagName === 'SPAN') {
+                if (target.dataset.type === 'a') {
+                    // 点击了链接、引用的时候跳转
+                    const href = target.dataset.href;
+                    if (href) {
+                        const id = href.split('/').pop();
+                        openBlock(id);
+                    }
+                } else if (target.dataset.type === 'block-ref') {
+                    const id = target.dataset.id;
+                    if (id) {
+                        openBlock(id);
+                    }
+                }
+            }
             const selection = window.getSelection();
             const length = selection.toString().length;
             if (length === 0 && (el.target as HTMLElement).tagName === "SPAN") {
@@ -999,6 +1000,7 @@ export class DataView extends UseStateMixin implements IDataView {
 
         if (this.top) {
             // 前进后退定位 https://ld246.com/article/1667652729995
+            // https://github.com/siyuan-note/siyuan/commit/5d736483ec80e1071b2f3eab4fcd64aac5856271
             this.protyle.contentElement.scrollTop = this.top;
         }
 
@@ -1009,11 +1011,15 @@ export class DataView extends UseStateMixin implements IDataView {
         });
 
         this.thisEmbedNode.style.height = "";
-        let content = this.lute.BlockDOM2Content(this._element.innerText).replaceAll('\n', ' ');
-        fetchSyncPost('/api/search/updateEmbedBlock', {
-            id: this.thisEmbedNode.getAttribute("data-node-id"),
-            content: content
-        });
+
+        /**
+         * 不确定这个到底会不会造成 BUG 问题，现暂时关闭 #TODO
+         */
+        // let content = this.lute.BlockDOM2Content(this._element.innerText).replaceAll('\n', ' ');
+        // fetchSyncPost('/api/search/updateEmbedBlock', {
+        //     id: this.thisEmbedNode.getAttribute("data-node-id"),
+        //     content: content
+        // });
 
         /**
          * Garbage Collection Callbacks
@@ -1067,7 +1073,9 @@ export class DataView extends UseStateMixin implements IDataView {
                 } else if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
                     // Handle style changes here
                     // 😠 不知道怎么回事，思源老是乱改嵌入块的 height 属性, 导致嵌入块经常内容溢出到容器外
-                    this.thisEmbedNode.style.height = "";
+                    if (this.thisEmbedNode?.style?.height) {
+                        this.thisEmbedNode.style.height = "";
+                    }
                 }
             });
         });

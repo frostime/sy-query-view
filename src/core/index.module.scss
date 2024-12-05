@@ -2,8 +2,11 @@
     cursor: default;
 }
 
-.js-query-data-view {
+.data-view-component {
     margin: 5px auto;
+    padding-left: 0.5em;
+    padding-right: 0.5em;
+    overflow-x: auto;
 }
 
 .embed-container[data-node-id] {

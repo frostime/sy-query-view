@@ -11,6 +11,7 @@ import vitePluginYamlI18n from './yaml-plugin';
 const env = process.env;
 const isSrcmap = env.VITE_SOURCEMAP === 'inline';
 const isDev = env.NODE_ENV === 'development';
+const minify = env.NO_MINIFY ? false : true;
 
 const outputDir = isDev ? "dev" : "dist";
 
@@ -52,7 +53,7 @@ export default defineConfig({
     build: {
         outDir: outputDir,
         emptyOutDir: false,
-        minify: true,
+        minify: minify ?? true,
         sourcemap: isSrcmap ? 'inline' : false,
 
         lib: {

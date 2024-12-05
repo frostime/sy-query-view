@@ -12,9 +12,10 @@
     "build": "npm run export-types && npm run vite:build && npm run replace-md-file ./dist",
     "vite:dev": "cross-env NODE_ENV=development VITE_SOURCEMAP=inline vite build --watch",
     "vite:build": "cross-env NODE_ENV=production vite build",
+    "vite:build-no-minify": "cross-env NODE_ENV=production NO_MINIFY=true vite build",
     "make-link": "npx make-link-win",
     "update-version": "npx update-version",
-    "make-install": "vite build && npx make-install",
+    "make-install": "pnpm run vite:build-no-minify && npx make-install",
     "auto-i18n": "i18n extract && i18n translate && i18n export",
     "export-types": "node scripts/export-types.js",
     "replace-md-file": "node scripts/replace-md-file.js"
