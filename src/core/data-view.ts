@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-12-02 10:15:04
  * @FilePath     : /src/core/data-view.ts
- * @LastEditTime : 2024-12-06 15:32:42
+ * @LastEditTime : 2024-12-06 22:19:28
  * @Description  : 
  */
 import {
@@ -198,7 +198,7 @@ export class DataView extends UseStateMixin implements IDataView {
                 name,
                 aliases: alias
             });
-            console.debug(`Custom view ${name} registered`);
+            // console.debug(`Custom view ${name} registered`);
         });
     }
 
@@ -213,7 +213,17 @@ export class DataView extends UseStateMixin implements IDataView {
     constructor(protyle: IProtyle, embedNode: HTMLElement, top: number | null) {
         super(embedNode);
         // 在 DataView 销毁时，将 state 缓存到 sessionStorage 中
-        this.disposers.push(() => this.saveToSessionStorage());
+        // 不知道为啥这个会导致写入旧的状态，搞不懂..先去掉吧
+        /**@example
+         * //!js
+            const dv = Query.DataView(protyle, item, top);
+            const cnt = dv.useState('counter', 1);
+            dv.addmd(`${cnt()} --> ${cnt() + 1}`);
+            cnt.value += 1;
+            dv.render();
+         */
+        //#NOTE 可能是 MutationObserver 引用了旧的闭包，使用了旧版的 this，所以就不再 dispose 里面保存状态了
+        // this.disposers.push(() => this.saveToSessionStorage());
 
         this.protyle = protyle;
         this.thisEmbedNode = embedNode;
@@ -246,6 +256,7 @@ export class DataView extends UseStateMixin implements IDataView {
         this.register(this.echartsBar, { aliases: ['eBar'] });
         this.register(this.echartsTree, { aliases: ['eTree'] });
         this.register(this.echartsGraph, { aliases: ['eGraph'] });
+        this.register(this.details, { aliases: ['Detail'] });
 
         this.registerCustomViews();
     }
@@ -438,9 +449,7 @@ export class DataView extends UseStateMixin implements IDataView {
      * const children = await Query.childdoc(block);
      * dv.addtable(children, { cols: ['type', 'content'] , fullwidth: true });
      */
-    table(blocks: Block[], options?: ITableOptions & {
-        cols?: (string | Record<string, string>)[] | Record<string, string>
-    }) {
+    table(blocks: Block[], options?: ITableOptions) {
         let tableContainer = newViewWrapper();
         options = options ?? {};
         const table = new BlockTable({
@@ -1076,12 +1085,14 @@ export class DataView extends UseStateMixin implements IDataView {
                 this.observer = null;
             }
         });
+
         // Triggered on rerendered
         this.observer = new MutationObserver((mutations) => {
             mutations.forEach((mutation) => {
                 if (mutation.type === 'childList') {
                     mutation.removedNodes.forEach((node) => {
-                        if (node === this._element) {
+                        if (node instanceof Element && 
+                            node.classList.contains(styles["data-query-embed"])) {
                             this.dispose();
                         }
                     });

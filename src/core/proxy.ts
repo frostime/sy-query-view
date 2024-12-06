@@ -154,8 +154,8 @@ export const wrapBlock = (block: Block): IWrappedBlock => {
                     /** @type {Block} 返回原始 Block 对象 */
                     return target;
 
-                case 'asuri':
-                case 'touri':
+                case 'asurl':
+                case 'tourl':
                     /** @returns {string} 块的 URI 链接，格式: siyuan://blocks/xxx */
                     return `siyuan://blocks/${block.id}`
 

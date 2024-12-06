@@ -3,28 +3,29 @@
  * @Author       : frostime
  * @Date         : 2024-12-01 11:21:44
  * @FilePath     : /src/core/finalize.ts
- * @LastEditTime : 2024-12-06 15:39:57
+ * @LastEditTime : 2024-12-06 22:13:22
  * @Description  : 
  */
 import { DataView } from "./data-view";
 
+// 其实用 WeakRef 也没啥必要的。。
 const dataviews = new Map<DocumentId, WeakRef<DataView>[]>();
 
 // const sessionStorageKeys = new Map<DocumentId, string[]>();
 
-const registry = new FinalizationRegistry((docId: string) => {
-    const views = dataviews.get(docId);
-    if (views) {
-        views.forEach(view => {
-            const dataView = view.deref();
-            if (dataView) {
-                console.debug(`FinalizationRegistry dispose dataView@${dataView.embed_id} under doc@${dataView.root_id}`);
-                dataView.dispose();
-            }
-        });
-        dataviews.delete(docId);
-    }
-});
+// const registry = new FinalizationRegistry((docId: string) => {
+//     const views = dataviews.get(docId);
+//     if (views) {
+//         views.forEach(view => {
+//             const dataView = view.deref();
+//             if (dataView) {
+//                 console.debug(`FinalizationRegistry dispose dataView@${dataView.embed_id} under doc@${dataView.root_id}`);
+//                 dataView.dispose();
+//             }
+//         });
+//         dataviews.delete(docId);
+//     }
+// });
 
 /**
  * 获取 sessionStorage 占用的大小
@@ -63,10 +64,20 @@ export const registerProtyleGC = (docId: DocumentId, dataView: DataView) => {
         dataviews.set(docId, []);
     }
     const views = dataviews.get(docId);
-    views.push(new WeakRef(dataView));
 
-    // 注册 dataView 到 FinalizationRegistry
-    registry.register(dataView, docId);
+    // 检查是否已经存在相同的 embed_id
+    const existingIndex = views.findIndex(ref => {
+        const view = ref.deref();
+        return view && view.embed_id === dataView.embed_id;
+    });
+
+    // 如果存在，替换旧的引用
+    if (existingIndex !== -1) {
+        views[existingIndex] = new WeakRef(dataView);
+    } else {
+        // 如果不存在，添加新的引用
+        views.push(new WeakRef(dataView));
+    }
 }
 
 const finalizeDataView = (dataView: DataView) => {
@@ -83,6 +94,8 @@ export const onProtyleDestroyed = ({ detail }) => {
     if (!dataviews.has(rootID)) return;
 
     const views = dataviews.get(rootID);
+    console.debug(`[finalize.ts] onProtyleDestroyed for doc@${rootID}, views count: ${views.length}`);
+
     views.forEach(view => {
         const dataView = view.deref();
         if (dataView) {
@@ -92,7 +105,7 @@ export const onProtyleDestroyed = ({ detail }) => {
     dataviews.delete(rootID);
 }
 
-export const onProtyleSwitch = ( { detail }) => {
+export const onProtyleSwitch = ({ detail }) => {
     //TODO 在 switch 的时候, 同样 finalize
 }
 
