@@ -2,7 +2,7 @@
   "name": "sy-query-view",
   "author": "frostime",
   "url": "https://github.com/frostime/sy-query-view",
-  "version": "1.0.0-beta4",
+  "version": "1.0.0-beta5",
   "minAppVersion": "3.1.14",
   "backends": [
     "windows",

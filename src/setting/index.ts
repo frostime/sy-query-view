@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-12-01 16:25:57
  * @FilePath     : /src/setting/index.ts
- * @LastEditTime : 2024-12-05 00:59:26
+ * @LastEditTime : 2024-12-05 21:43:39
  * @Description  : 
  */
 
@@ -12,7 +12,7 @@ import { i18n } from "@/index";
 import { Plugin, showMessage } from "siyuan";
 import { SettingUtils } from "@/libs/setting-utils";
 import { loadUserCustomView } from "@/core/custom-view";
-import { getSessionStorageSize } from "@/core/gc";
+import { getSessionStorageSize } from "@/core/finalize";
 
 
 let defaultSetting = {

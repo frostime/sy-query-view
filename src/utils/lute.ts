@@ -1,3 +1,11 @@
+/*
+ * Copyright (c) 2024 by frostime. All Rights Reserved.
+ * @Author       : frostime
+ * @Date         : 2024-12-01 16:16:53
+ * @FilePath     : /src/utils/lute.ts
+ * @LastEditTime : 2024-12-06 15:29:55
+ * @Description  : 
+ */
 //from https://github.com/zxhd863943427/siyuan-plugin-data-query/blob/main/src/libs/utils.ts
 
 import { Lute } from "siyuan";
@@ -7,6 +15,7 @@ export interface ILute extends Lute {
     InlineMd2BlockDOM: (md: string) => string;
     // HTML2Markdown: (html: string) => string;
     HTML2Md: (html: string) => string;
+    SetGitConflict: (args: boolean) => void;
 }
 
 export const setLute = (options) => {

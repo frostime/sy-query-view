@@ -3,15 +3,25 @@
  * @Author       : frostime
  * @Date         : 2024-12-03 19:49:52
  * @FilePath     : /src/core/use-state.ts
- * @LastEditTime : 2024-12-05 00:46:05
+ * @LastEditTime : 2024-12-06 15:27:08
  * @Description  : 
  */
 import { setBlockAttrs } from "@/api";
 import { debounce } from "@/utils";
+// import { debounce } from "@/utils";
+
+export const purgeSessionStorage = () => {
+    const keys = new Array(sessionStorage.length).fill(0).map((_, i) => sessionStorage.key(i));
+    keys.forEach(key => {
+        if (key.startsWith('dv-state@')) {
+            sessionStorage.removeItem(key);
+        }
+    });
+}
 
 class UseStateMixin {
     /** @internal */
-    private stateMap: Map<string, any> = new Map();
+    protected stateMap: Map<string, any> = new Map();
     /** @internal */
     private blockId: BlockId;
     /** @internal */
@@ -34,10 +44,12 @@ class UseStateMixin {
         this.stateMap.set(key, value);
     }
 
-    private sessionStorageKey = () => `dv-state@${this.blockId}`;
+    protected sessionStorageKey = () => `dv-state@${this.blockId}`;
     static customStateKey = (key: string) => `custom-dv-state-${key}`;
 
-    /** @internal */
+    /** @internal
+     * 首先尝试从 sessionStorage 中恢复 state, 如果 sessionStorage 中没有数据, 则从 element 的属性中查找恢复
+    */
     protected restoreState() {
         //先尝试从 sessionStorage 中恢复
         const storage = sessionStorage.getItem(this.sessionStorageKey());
@@ -54,7 +66,7 @@ class UseStateMixin {
         }
     }
 
-    private saveToBlockAttrs() {
+    protected saveToBlockAttrs() {
         const stateObj: Record<string, string> = {};
         this.stateMap.forEach((value, key) => {
             stateObj[UseStateMixin.customStateKey(key)] = JSON.stringify(value);
@@ -63,11 +75,18 @@ class UseStateMixin {
         setBlockAttrs(this.blockId, stateObj);
     }
 
-    private saveToBlockDebounced = debounce(this.saveToBlockAttrs.bind(this), 1000);
+    protected saveToBlockDebounced = debounce(this.saveToBlockAttrs.bind(this), 1000);
     // private saveToBlockThrottled = throttle(this.saveToBlockAttrs.bind(this), 1000);
 
+    public get hasState() {
+        return this.stateMap.size > 0;
+    }
 
-    private saveToSessionStorage() {
+
+    protected saveToSessionStorage() {
+        if (!this.hasState) {
+            return;
+        }
         const storageObj: Record<string, string> = {};
         this.stateMap.forEach((value, key) => {
             storageObj[key] = value;
@@ -75,19 +94,8 @@ class UseStateMixin {
         sessionStorage.setItem(this.sessionStorageKey(), JSON.stringify(storageObj));
     }
 
-    /**
-     * @internal
-     * 将 state 同步到块属性中
-     */
-    protected storeState() {
-        if (this.stateMap.size === 0) {
-            return;
-        }
-        // 同步到 sessionStorage 做临时缓存
-        this.saveToSessionStorage();
-        // 同步到块属性中, 做持久化保存
-        this.saveToBlockDebounced();  //避免过度频繁地更新块属性
-        //TODO 后面考虑在关闭 protyle 的时候清理 sessionStorage 中的数据
+    public removeFromSessionStorage() {
+        sessionStorage.removeItem(this.sessionStorageKey());
     }
 
     useState<T>(key: string, initialValue?: T): IState<T> {
@@ -100,7 +108,7 @@ class UseStateMixin {
         const state = (value?: any) => {
             if (value !== undefined) {
                 this.setState(key, value);
-                this.storeState();
+                this.saveToSessionStorage();
                 registeredEffects.forEach(effect => effect(value, this.getState(key)));
             }
             return this.getState(key);
@@ -121,15 +129,6 @@ class UseStateMixin {
             },
         });
 
-        /**
-         * 清理当前的 state key
-         */
-        Object.defineProperty(state, 'purge', {
-            value: () => {
-                this.stateMap.delete(key);
-                this.storeState();
-            },
-        });
 
         return state as IState<T>;
     }

@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-12-02 10:15:04
  * @FilePath     : /src/core/data-view.ts
- * @LastEditTime : 2024-12-05 17:14:03
+ * @LastEditTime : 2024-12-06 15:32:42
  * @Description  : 
  */
 import {
@@ -13,7 +13,7 @@ import {
 } from "siyuan";
 import { getLute } from "./lute";
 import { BlockList, BlockTable, MermaidRelation, EmbedNodes, Echarts, MermaidBase, errorMessage } from './components';
-import { registerProtyleGC } from "./gc";
+import { registerProtyleGC } from "./finalize";
 import { openBlock } from "@/utils";
 import { getCustomView } from "./custom-view";
 import UseStateMixin from "./use-state";
@@ -212,7 +212,8 @@ export class DataView extends UseStateMixin implements IDataView {
 
     constructor(protyle: IProtyle, embedNode: HTMLElement, top: number | null) {
         super(embedNode);
-        this.disposers.push(() => this.storeState());  // 在 DataView 销毁时，将 state 同步到块属性中
+        // 在 DataView 销毁时，将 state 缓存到 sessionStorage 中
+        this.disposers.push(() => this.saveToSessionStorage());
 
         this.protyle = protyle;
         this.thisEmbedNode = embedNode;
@@ -262,6 +263,20 @@ export class DataView extends UseStateMixin implements IDataView {
             this.disposers = [];
             this.cleanup();
         }
+    }
+
+    /**
+     * @internal
+     * 将 sessionStorage 中临时缓存的状态同步到块属性中
+     * 仅仅在 Protyle 销毁等完全关闭的情况先调用
+     */
+    flushStateIntoBlockAttr() {
+        if (!this.hasState) {
+            return;
+        }
+        console.debug(`Flushing state into block attrs for ${this.root_id}::${this.embed_id}`);
+        // this.removeFromSessionStorage(); //后面还可能调用 dispose, 所以 remove 方法就不放在这里, 单独调用好了
+        this.saveToBlockDebounced();
     }
 
     /**

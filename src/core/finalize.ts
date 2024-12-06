@@ -2,15 +2,15 @@
  * Copyright (c) 2024 by frostime. All Rights Reserved.
  * @Author       : frostime
  * @Date         : 2024-12-01 11:21:44
- * @FilePath     : /src/core/gc.ts
- * @LastEditTime : 2024-12-04 19:34:56
+ * @FilePath     : /src/core/finalize.ts
+ * @LastEditTime : 2024-12-06 15:39:57
  * @Description  : 
  */
 import { DataView } from "./data-view";
 
 const dataviews = new Map<DocumentId, WeakRef<DataView>[]>();
 
-const sessionStorageKeys = new Map<DocumentId, string[]>();
+// const sessionStorageKeys = new Map<DocumentId, string[]>();
 
 const registry = new FinalizationRegistry((docId: string) => {
     const views = dataviews.get(docId);
@@ -69,16 +69,12 @@ export const registerProtyleGC = (docId: DocumentId, dataView: DataView) => {
     registry.register(dataView, docId);
 }
 
-/**
- * TODO 后续考虑启用，目前暂时先测试一下看看不用这个会如何
- * @param docId 
- * @param key 
- */
-export const registerSessionStorageKey = (docId: DocumentId, key: string) => {
-    if (!sessionStorageKeys.has(docId)) {
-        sessionStorageKeys.set(docId, []);
-    }
-    sessionStorageKeys.get(docId).push(key);
+const finalizeDataView = (dataView: DataView) => {
+    console.debug(`[finalize.ts] Finalize dataView@${dataView.embed_id}`);
+    dataView.flushStateIntoBlockAttr();
+    dataView.dispose();
+    //保证之后如果有其他设备的数据同步给当前设备，则新打开的时候会从 element 而非 session 中读取
+    dataView.removeFromSessionStorage();
 }
 
 export const onProtyleDestroyed = ({ detail }) => {
@@ -90,14 +86,23 @@ export const onProtyleDestroyed = ({ detail }) => {
     views.forEach(view => {
         const dataView = view.deref();
         if (dataView) {
-            console.debug(`onProtyleDestroyed dispose dataView@${dataView.embed_id} under doc@${dataView.root_id}`);
-            dataView.dispose();
+            finalizeDataView(dataView);
         }
     });
     dataviews.delete(rootID);
+}
 
-    const keys = sessionStorageKeys.get(rootID);
-    if (keys) {
-        keys.forEach(key => sessionStorage.removeItem(key));
-    }
+export const onProtyleSwitch = ( { detail }) => {
+    //TODO 在 switch 的时候, 同样 finalize
+}
+
+export const finalizeAllDataviews = () => {
+    dataviews.forEach((views, docId) => {
+        views.forEach(view => {
+            const dataView = view.deref();
+            if (dataView) {
+                finalizeDataView(dataView);
+            }
+        });
+    });
 }
