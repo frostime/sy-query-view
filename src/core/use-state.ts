@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-12-03 19:49:52
  * @FilePath     : /src/core/use-state.ts
- * @LastEditTime : 2024-12-06 15:27:08
+ * @LastEditTime : 2024-12-07 19:36:42
  * @Description  : 
  */
 import { setBlockAttrs } from "@/api";
@@ -105,17 +105,22 @@ class UseStateMixin {
 
         const registeredEffects: ((newValue: T, oldValue: T) => void)[] = [];
 
+        const getter = () => this.getState(key);
+        const setter = (value: any) => {
+            this.setState(key, value);
+            this.saveToSessionStorage();
+            registeredEffects.forEach(effect => effect(value, this.getState(key)));
+        }
+
         const state = (value?: any) => {
             if (value !== undefined) {
-                this.setState(key, value);
-                this.saveToSessionStorage();
-                registeredEffects.forEach(effect => effect(value, this.getState(key)));
+                setter(value);
             }
-            return this.getState(key);
+            return getter();
         };
         Object.defineProperty(state, 'value', {
-            get: state,
-            set: (value: any) => state(value),
+            get: getter,
+            set: setter,
         });
 
         Object.defineProperty(state, 'effect', {

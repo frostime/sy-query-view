@@ -34,7 +34,7 @@ interface IHasChildren<T> {
 interface ITreeNode extends IHasChildren<ITreeNode> {
     name: string;
     children?: ITreeNode[];
-    [key: string]: any;  // 允许其他自定义属性
+    [key: string]: any;
 }
 
 /**
@@ -52,24 +52,30 @@ interface IBlockWithChilds extends Block, IHasChildren<Block>, ITreeNode {
     children?: IBlockWithChilds[];
 }
 
+/**
+ * Is actually the nodes type of Echart { type: 'graph' }
+ * @link https://echarts.apache.org/zh/option.html#series-graph.data
+ */
 interface IGraphNode {
     id: string;
     name?: string;
-    content?: string;
-    value?: number;      // 可用于控制节点大小或其他属性
-    category?: number;   // 可用于节点分组
-    [key: string]: any;  // 允许其他自定义属性
+    value?: string;
+    category?: number;
+    [key: string]: any;
 }
 
+/**
+ * Minimum link data structure for Echarts
+ * @link https://echarts.apache.org/zh/option.html#series-graph.links
+ * @property {string} source - Source node ID
+ * @property {string | string[]} target - Target node ID
+ *  NOT THAT, you can pass an array, which is more flexible than the original Echarts option
+ * @property {[key: string]: any} [key: string] - Allow other custom properties in link
+ */
 interface IGraphLink {
-    source: string;      // 源节点ID
-    target: string;      // 目标节点ID
-    value?: number;      // 用于控制连线粗细或其他属性
-    label?: {            // 连线标签
-        show?: boolean;
-        formatter?: string;
-    };
-    [key: string]: any;  // 允许其他自定义属性
+    source: string;
+    target: string | string[];
+    [key: string]: any;
 }
 
 interface IEchartsSeriesOption {
@@ -124,6 +130,11 @@ interface IState<T> {
 
     value: T;
 
+    /**
+     * @warn
+     * The effect function is not supposed to return anything!
+     * It is merely a callback function when setter is called, don't treat it powerful as in React or etc.
+     */
     effect: (effect: (newValue: T, oldValue: T) => void) => void;
     derived: (derive: (value: T) => T) => () => T;
 }

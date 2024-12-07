@@ -243,11 +243,9 @@ interface IHasChildren<T> {
 }
 
 interface ITreeNode extends IHasChildren<ITreeNode> {
-    id?: string;
     name: string;
-    content?: string;
     children?: ITreeNode[];
-    [key: string]: any;  // 允许其他自定义属性
+    [key: string]: any;
 }
 
 /**
@@ -265,24 +263,30 @@ interface IBlockWithChilds extends Block, IHasChildren<Block>, ITreeNode {
     children?: IBlockWithChilds[];
 }
 
+/**
+ * Is actually the nodes type of Echart { type: 'graph' }
+ * @link https://echarts.apache.org/zh/option.html#series-graph.data
+ */
 interface IGraphNode {
     id: string;
     name?: string;
-    content?: string;
-    value?: number;      // 可用于控制节点大小或其他属性
-    category?: number;   // 可用于节点分组
-    [key: string]: any;  // 允许其他自定义属性
+    value?: string;
+    category?: number;
+    [key: string]: any;
 }
 
+/**
+ * Minimum link data structure for Echarts
+ * @link https://echarts.apache.org/zh/option.html#series-graph.links
+ * @property {string} source - Source node ID
+ * @property {string | string[]} target - Target node ID
+ *  NOT THAT, you can pass an array, which is more flexible than the original Echarts option
+ * @property {[key: string]: any} [key: string] - Allow other custom properties in link
+ */
 interface IGraphLink {
-    source: string;      // 源节点ID
-    target: string;      // 目标节点ID
-    value?: number;      // 用于控制连线粗细或其他属性
-    label?: {            // 连线标签
-        show?: boolean;
-        formatter?: string;
-    };
-    [key: string]: any;  // 允许其他自定义属性
+    source: string;
+    target: string | string[];
+    [key: string]: any;
 }
 
 interface IEchartsSeriesOption {
@@ -337,6 +341,11 @@ interface IState<T> {
 
     value: T;
 
+    /**
+     * @warn
+     * The effect function is not supposed to return anything!
+     * It is merely a callback function when setter is called, don't treat it powerful as in React or etc.
+     */
     effect: (effect: (newValue: T, oldValue: T) => void) => void;
     derived: (derive: (value: T) => T) => () => T;
 }
@@ -347,11 +356,17 @@ interface IState<T> {
  * Provides various methods for visualizing data.
  */
 export declare class DataView implements IDataView {
+    /**
+     * The id of the root document
+     */
     get root_id(): string;
+    /**
+     * The id of the embed block
+     */
     get embed_id(): string;
     constructor(protyle: IProtyle, embedNode: HTMLElement, top: number | null);
     /**
-     * Repaint the embed block, essentially merely click the refresh button
+     * Repaint the embed block, essentially merely click the reload button
      */
     repaint(): void;
     /**
@@ -509,7 +524,7 @@ export declare class DataView implements IDataView {
     }): HTMLElement;
     /**
      * Creates a custom ECharts visualization
-     * @param echartOption - ECharts configuration object, see {@link https://echarts.apache.org/handbook/en/get-started/} for more details
+     * @param echartOption - ECharts configuration object, see {@link https://echarts.apache.org/zh/option.html#title} for more details
      * @param options - Configuration options
      * @param options.height - The height of the container, default as 300px
      * @param options.width - The width of the container, default as 100%
@@ -534,7 +549,8 @@ export declare class DataView implements IDataView {
      * @param options.xlabel - X-axis label
      * @param options.ylabel - Y-axis label
      * @param options.legends - Array of legend labels for multiple lines
-     * @param options.echartsOption - Additional ECharts configuration
+     * @param options.seriesOption - Additional series configuration. See {@link https://echarts.apache.org/zh/option.html#series-line} for more details
+     * @param options.echartsOption - Additional ECharts configuration. See {@link https://echarts.apache.org/zh/option.html#title} for more details
      * @returns HTMLElement containing the line chart
      * @alias eline
      */
@@ -545,6 +561,7 @@ export declare class DataView implements IDataView {
         xlabel?: string;
         ylabel?: string;
         legends?: string[];
+        seriesOption?: IEchartsSeriesOption | IEchartsSeriesOption[];
         echartsOption?: IEchartsOption;
     }): HTMLElement;
     /**
@@ -559,6 +576,7 @@ export declare class DataView implements IDataView {
      * @param options.ylabel - Y-axis label
      * @param options.legends - Array of legend labels for multiple bars
      * @param options.stack - Whether to stack bars
+     * @param options.seriesOption - Additional series configuration. See {@link https://echarts.apache.org/zh/option.html#series-bar} for more details
      * @param options.echartsOption - Additional ECharts configuration
      * @returns HTMLElement containing the bar chart
      * @alias ebar
@@ -571,22 +589,25 @@ export declare class DataView implements IDataView {
         ylabel?: string;
         legends?: string[];
         stack?: boolean;
-        serisOption?: IEchartsSeriesOption;
+        seriesOption?: IEchartsSeriesOption | IEchartsSeriesOption[];
         echartsOption?: IEchartsOption;
     }): HTMLElement;
     /**
      * Creates a tree visualization
-     * @param data - Tree structure data, see {@link ITreeNode} for more details
+     * @param data - Tree structure data, see {@link ITreeNode} and {@link https://echarts.apache.org/zh/option.html#series-tree.data} for more details
      * @param options - Configuration options
      * @param options.height - The height of the container, default as 300px
      * @param options.width - The width of the container, default as 100%
      * @param options.title - Chart title
      * @param options.orient - Tree orientation ('LR' for left-to-right, 'TB' for top-to-bottom)
-     * @param options.nameRenderer - Custom function to render node names
-     * @param options.valueRenderer - Custom function to render node values
-     * @param options.symbolSize - Size of node symbols
-     * @param options.seriesOption - Additional series configuration; this will be merged within each series option
-     * @param options.echartsOption - Additional ECharts configuration, see {@link https://echarts.apache.org/handbook/en/get-started/} for more details
+     * @param options.layout - Tree layout ('orthogonal' for orthogonal layout, 'radial' for radial layout)
+     * @param options.roam - Whether to enable roam, default as false
+     * @param options.symbolSize - Size of node symbols, default as 14
+     * @param options.labelFontSize - Font size of node labels, default as 16
+     * @param options.nodeRenderer - Custom function to render nodes. Mostly you don't need to provide this.
+     * @param options.tooltipFormatter - Custom function to render tooltip content. Mostly you don't need to provide this.
+     * @param options.seriesOption - Additional series configuration; this will be merged within each series option. See {@link https://echarts.apache.org/zh/option.html#series-tree} for more details
+     * @param options.echartsOption - Additional ECharts configuration, see {@link https://echarts.apache.org/zh/option.html#title} for more details
      * @returns HTMLElement containing the tree visualization
      * @alias etree
      */
@@ -595,37 +616,53 @@ export declare class DataView implements IDataView {
         width?: string;
         title?: string;
         orient?: 'LR' | 'TB';
-        nameRenderer?: (node: ITreeNode) => string;
-        valueRenderer?: (node: ITreeNode) => string;
+        layout?: 'orthogonal' | 'radial';
+        roam?: boolean | 'scale' | 'move';
         symbolSize?: number;
+        labelFontSize?: number;
+        nodeRenderer?: (node: IGraphNode) => {
+            name?: string;
+            value?: any;
+            [key: string]: any;
+        };
+        tooltipFormatter?: (node: ITreeNode) => string;
         seriesOption?: IEchartsSeriesOption;
         echartsOption?: IEchartsOption;
     }): HTMLElement;
     /**
      * Creates a graph/network visualization
-     * @param nodes - Array of graph nodes, see {@link IGraphNode} for more details
-     * @param links - Array of connections between nodes, see {@link IGraphLink} for more details
+     * @param nodes - Array of graph nodes, see {@link IGraphNode} and {@link https://echarts.apache.org/zh/option.html#series-graph.data} for more details
+     * @param links - Array of connections between nodes, see {@link IGraphLink} and {@link https://echarts.apache.org/zh/option.html#series-graph.links} for more details
      * @param options - Configuration options
      * @param options.height - The height of the container, default as 300px
      * @param options.width - The width of the container, default as 100%
      * @param options.title - Chart title
+     * @param options.layout - Layout type, default as 'force'
+     * @param options.roam - Whether to enable roam, default as true
      * @param options.symbolSize - Size of node symbols
-     * @param options.renderer - Custom function to render nodes
-     * @param options.nameRenderer - Custom function to render node names
-     * @param options.valueRenderer - Custom function to render node values
-     * @param options.seriesOption - Additional series configuration
-     * @param options.echartsOption - Additional ECharts configuration, see {@link https://echarts.apache.org/handbook/en/get-started/} for more details
+     * @param options.labelFontSize - Font size of node labels
+     * @param options.nodeRenderer - Custom function to render nodes, return Echarts node type. Mostly you don't need to provide this.
+     * @param options.tooltipFormatter - Custom function to render tooltip content. Mostly you don't need to provide this.
+     * @param options.seriesOption - Additional series configuration, see {@link https://echarts.apache.org/zh/option.html#series-graph} for more details
+     * @param options.echartsOption - Additional ECharts configuration, see {@link https://echarts.apache.org/zh/option.html#title} for more details
      * @returns HTMLElement containing the graph visualization
      * @alias egraph
      */
-    echartsGraph(nodes: IGraphNode[], links: IGraphLink[], options?: {
+    echartsGraph(nodes: (IGraphNode | Block)[], links: IGraphLink[], options?: {
         height?: string;
         width?: string;
         title?: string;
+        layout?: 'force' | 'circular';
+        roam?: boolean;
         symbolSize?: number;
-        renderer?: (node: IGraphNode) => string;
-        nameRenderer?: (node: IGraphNode) => string;
-        valueRenderer?: (node: IGraphNode) => string;
+        labelFontSize?: number;
+        nodeRenderer?: (node: IGraphNode) => {
+            name?: string;
+            value?: any;
+            category?: number;
+            [key: string]: any;
+        };
+        tooltipFormatter?: (node: IGraphNode) => string;
         seriesOption?: IEchartsSeriesOption;
         echartsOption?: IEchartsOption;
     }): HTMLElement;
