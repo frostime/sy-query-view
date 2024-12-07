@@ -7,6 +7,7 @@ declare module 'siyuan' {
 
 // ================== query.d.ts ==================
 import { IProtyle } from "siyuan";
+import { request } from "@/api";
 /**
  * Data class for SiYuan timestamp
  * In SiYuan, the timestamp is in the format of yyyyMMddHHmmss
@@ -129,6 +130,14 @@ declare const Query: {
      */
     wrapBlocks: (blocks: Block[] | Block) => IWrappedBlock | IWrappedList<IWrappedBlock>;
     /**
+     * SiYuan Kernel Request API
+     * @example
+     * await Query.request('/api/outline/getDocOutline', {
+     *     id: docId
+     * });
+     */
+    request: typeof request;
+    /**
      * Gets blocks by their IDs
      * @param ids - Block IDs to retrieve
      * @returns Array of wrapped blocks
@@ -206,6 +215,17 @@ declare const Query: {
         heading?: boolean;
         doc?: boolean;
     }) => Promise<IWrappedList<IWrappedBlock>>;
+    gpt: (prompt: string, options?: {
+        timeout?: number;
+        url?: string;
+        model?: string;
+        apiKey?: string;
+        returnRaw?: boolean;
+        history?: {
+            role: "user" | "assistant";
+            content: string;
+        }[];
+    }) => Promise<any>;
 };
 
 // ================== data-view.d.ts ==================

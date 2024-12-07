@@ -305,6 +305,15 @@ const Query = {
     },
 
     /**
+     * SiYuan Kernel Request API
+     * @example
+     * await Query.request('/api/outline/getDocOutline', {
+     *     id: docId
+     * });
+     */
+    request: request,
+
+    /**
      * Gets blocks by their IDs
      * @param ids - Block IDs to retrieve
      * @returns Array of wrapped blocks
@@ -554,6 +563,46 @@ const Query = {
         await ReplaceContentTask.run();
         return wrapList(result);
     },
+
+
+    gpt: async (prompt: string, options?: {
+        timeout?: number,
+        url?: string,
+        model?: string,
+        apiKey?: string,
+        returnRaw?: boolean,
+        history?: { role: 'user' | 'assistant', content: string }[]
+    }) => {
+        let { apiBaseURL, apiModel, apiKey } = window.siyuan.config.ai.openAI;
+        apiModel = options?.model ?? apiModel;
+        apiKey = options?.apiKey ?? apiKey;
+        let url;
+        if (options?.url) {
+            url = options.url;
+        } else {
+            url = `${apiBaseURL.endsWith('/') ? apiBaseURL : apiBaseURL + '/'}chat/completions`;
+        }
+        const result = await request('/api/network/forwardProxy', {
+            "url": url,
+            "method": "POST",
+            "contentType": "application/json",
+            "payload": {
+                "model": apiModel,
+                "messages": [{
+                    "role": "user",
+                    "content": prompt
+                }, ...(options?.history ?? [])],
+                "stream": false
+            },
+            "headers": [{
+                "Authorization": `Bearer ${apiKey}`
+            }],
+            "timeout": options?.timeout ?? 1000 * 12
+        });
+        let body = result.body;
+        let payload = JSON.parse(body);
+        return options?.returnRaw ? payload : payload.choices[0].message.content;
+    }
 }
 
 const addAlias = (obj: any, attr: string, alias: string[]) => {
