@@ -282,10 +282,6 @@ interface IGraphLink {
         show?: boolean;
         formatter?: string;
     };
-    lineStyle?: {
-        color?: string;
-        width?: number;
-    };
     [key: string]: any;  // 允许其他自定义属性
 }
 
@@ -575,6 +571,7 @@ export declare class DataView implements IDataView {
         ylabel?: string;
         legends?: string[];
         stack?: boolean;
+        serisOption?: IEchartsSeriesOption;
         echartsOption?: IEchartsOption;
     }): HTMLElement;
     /**

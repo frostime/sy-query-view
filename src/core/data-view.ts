@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-12-02 10:15:04
  * @FilePath     : /src/core/data-view.ts
- * @LastEditTime : 2024-12-06 22:19:28
+ * @LastEditTime : 2024-12-07 17:06:18
  * @Description  : 
  */
 import {
@@ -19,6 +19,9 @@ import { getCustomView } from "./custom-view";
 import UseStateMixin from "./use-state";
 
 import styles from './index.module.scss';
+import { matchIDFormat } from "./utils";
+import { BlockTypeShort } from "@/utils/const";
+import { deepMerge } from "./utils";
 
 const getCSSVar = (name: string) => getComputedStyle(document.documentElement).getPropertyValue(name);
 
@@ -711,7 +714,7 @@ export class DataView extends UseStateMixin implements IDataView {
                 data: y,
             }];
 
-        const echartOption = {
+        let echartOption = {
             title: options.title ? { text: options.title } : undefined,
             tooltip: { trigger: 'axis' },
             xAxis: {
@@ -724,8 +727,10 @@ export class DataView extends UseStateMixin implements IDataView {
                 name: options.ylabel,
             },
             series,
-            ...options.echartsOption,
         };
+
+        // Deep merge with user options
+        echartOption = deepMerge(echartOption, options.echartsOption);
 
         return this.echarts(echartOption, {
             height: options.height,
@@ -757,21 +762,25 @@ export class DataView extends UseStateMixin implements IDataView {
         ylabel?: string,
         legends?: string[],
         stack?: boolean,
+        serisOption?: IEchartsSeriesOption,
         echartsOption?: IEchartsOption,
     } = {}) {
+        options.serisOption = options.serisOption ?? {};
         const series = Array.isArray(y[0])
             ? y.map((bars, i) => ({
                 name: options.legends?.[i] ?? '',
                 type: 'bar',
                 data: bars,
                 stack: options.stack ? 'total' : undefined,
+                ...options.serisOption,
             }))
             : [{
                 type: 'bar',
                 data: y,
+                ...options.serisOption,
             }];
 
-        const echartOption = {
+        let echartOption = {
             title: options.title ? { text: options.title } : undefined,
             tooltip: { trigger: 'axis' },
             xAxis: {
@@ -786,6 +795,8 @@ export class DataView extends UseStateMixin implements IDataView {
             series,
             ...options.echartsOption,
         };
+        // Deep merge with user options
+        echartOption = deepMerge(echartOption, options.echartsOption);
 
         return this.echarts(echartOption, {
             height: options.height,
@@ -802,8 +813,9 @@ export class DataView extends UseStateMixin implements IDataView {
      * @param options.title - Chart title
      * @param options.orient - Tree orientation ('LR' for left-to-right, 'TB' for top-to-bottom)
      * @param options.nameRenderer - Custom function to render node names
-     * @param options.valueRenderer - Custom function to render node values
-     * @param options.symbolSize - Size of node symbols
+     * @param options.tooltipFormatter - Custom function to render tooltip content
+     * @param options.symbolSize - Size of node symbols, default as 14
+     * @param options.labelFontSize - Font size of node labels, default as 16
      * @param options.seriesOption - Additional series configuration; this will be merged within each series option
      * @param options.echartsOption - Additional ECharts configuration, see {@link https://echarts.apache.org/handbook/en/get-started/} for more details
      * @returns HTMLElement containing the tree visualization
@@ -815,65 +827,114 @@ export class DataView extends UseStateMixin implements IDataView {
         title?: string,
         orient?: 'LR' | 'TB',
         nameRenderer?: (node: ITreeNode) => string,
-        valueRenderer?: (node: ITreeNode) => string,
+        tooltipFormatter?: (node: ITreeNode) => string,
         symbolSize?: number,
+        labelFontSize?: number,
         seriesOption?: IEchartsSeriesOption,
         echartsOption?: IEchartsOption,
     } = {}) {
         const defaultRenderer = (node: any) => {
-            if (typeof node === 'string') return node;
-            return node.name || node.fcontent || node.content || node.id;
-        };
-        const defaultValueRenderer = (node: any | Block) => {
-            if (node.id && node.type && node.hpath) {
-                return `<ul><li>${node.id}</li><li>${node.type}</li><li>${node.hpath}</li></ul>`;
+            let name = options.nameRenderer?.(node);
+            if (name !== null && name !== undefined) {
+                return name;
             }
-            return defaultRenderer(node);
+            if (typeof node === 'string') return node;
+            name = node.name || node.fcontent || node.content || node.id;
+            return name;
+        };
+        const valueRenderer = (node: any) => {
+            if (typeof node === 'string') return node;
+            const value = { ...node };
+            if (value.children) {
+                value.children = value.children.length;
+            }
+            return value;
+        }
+
+        const valueFormatter = (node: any | Block) => {
+            if (node.id && node.type && node.hpath) {
+                const boxName = node.box ? globalThis.Query.Utils.boxname(node.box) : '';
+                return `<ul style="list-style-type: none; margin: 0; padding: 0;">
+                <li class="block-id popover__block" data-id="${node.id}">
+                    <a href="siyuan://blocks/${node.id}">${node.id}</a>
+                </li>
+                <li class="block-type">${BlockTypeShort[node.type] ?? node.type}</li>
+                <li class="block-hpath">${boxName ? `[${boxName}] ` : ''}${node.hpath}</li>
+                </ul>`;
+            }
+            return JSON.stringify(node);
         }
 
         const processData = (node: any) => {
             const processedNode = {
-                name: options.nameRenderer?.(node) ?? defaultRenderer(node),
-                value: options.valueRenderer?.(node) ?? defaultValueRenderer(node),
+                name: defaultRenderer(node),
+                value: valueRenderer(node),
                 children: (node.children || []).map(processData)
             };
             return processedNode;
         };
         data = processData(data);
 
-        const echartOption = {
+        let series = {
+            type: 'tree',
+            data: [data],
+            orient: options.orient || 'TB',
+            layout: 'orthogonal',
+            symbolSize: options.symbolSize ?? 14,
+            initialTreeDepth: -1,
+            lineStyle: {
+                curveness: 0.5,
+                width: 2.5,
+                color: getCSSVar('--b3-theme-primary-light')
+            },
+            label: {
+                position: options.orient === 'LR' ? 'right' : 'top',
+                rotate: options.orient === 'LR' ? 0 : undefined,
+                verticalAlign: 'middle',
+                fontSize: options.labelFontSize ?? 16
+            }
+        };
+
+        let echartOption = {
             title: options.title ? { text: options.title } : undefined,
             tooltip: {
                 trigger: 'item',
+                // show: true,
+                enterable: true,
+                alwaysShowContent: true,
                 formatter: (params: any) => {
-                    return params.value ?? params.name;
+                    if (options.tooltipFormatter) {
+                        return options.tooltipFormatter(params.value);
+                    }
+                    return valueFormatter(params.value) ?? params.name;
                 }
             },
-            series: [{
-                type: 'tree',
-                data: [data],
-                orient: options.orient || 'TB',
-                layout: 'orthogonal',
-                symbolSize: options.symbolSize ?? 12,
-                initialTreeDepth: -1,
-                lineStyle: {
-                    curveness: 0.5,
-                    width: 2.5,
-                    color: getCSSVar('--b3-theme-primary-light')
-                },
-                label: {
-                    position: options.orient === 'LR' ? 'right' : 'top',
-                    rotate: options.orient === 'LR' ? 0 : undefined,
-                    verticalAlign: 'middle'
-                },
-                ...options.seriesOption
-            }],
-            ...options.echartsOption
+            series: [deepMerge(series, options.seriesOption)],
         };
+        // Deep merge with user options
+        echartOption = deepMerge(echartOption, options.echartsOption);
+
+        const events = {
+            'click': (params: any) => {
+                console.log(params);
+                const value = params.value;
+                const event = params.event?.event;
+                const isCtrl = event.ctrlKey || event.metaKey;
+                // Ctrl + 点击 打开块
+                if (value.id && matchIDFormat(value.id) && isCtrl) {
+                    // 阻止事件冒泡和默认行为
+                    // params.event.cancelBubble = true;
+                    // params.event.stop();
+                    // params.event.event.preventDefault?.();
+                    openBlock(value.id);
+                }
+            }
+        }
 
         return this.echarts(echartOption, {
             height: options.height,
             width: options.width,
+            events
         });
     }
 
@@ -938,39 +999,42 @@ export class DataView extends UseStateMixin implements IDataView {
                 symbol: ['none', 'arrow'],
                 symbolSize: [10, 15],
                 color: getCSSVar('--b3-theme-primary-light'),
-                width: 2.5,
-                ...(link.lineStyle ?? {})
+                width: 2.5
             }
         }));
 
-        const echartOption = {
+        let series = {
+            type: 'graph',
+            layout: 'force',
+            data: graphNodes,
+            links: graphLinks,
+            roam: true,
+            label: {
+                show: true,
+                position: 'right'
+            },
+            edgeSymbol: ['none', 'arrow'],
+            edgeSymbolSize: [4, 10],
+            force: {
+                repulsion: 300,
+                gravity: 0.1,
+                edgeLength: 100,
+                layoutAnimation: false,
+                friction: 0.6
+            },
+        };
+        // Deep merge with user options
+        series = deepMerge(series, options.seriesOption);
+
+        let echartOption = {
             title: options.title ? { text: options.title } : undefined,
             tooltip: {},
             animationDurationUpdate: 300,
             animationEasingUpdate: 'linear',
-            series: [{
-                type: 'graph',
-                layout: 'force',
-                data: graphNodes,
-                links: graphLinks,
-                roam: true,
-                label: {
-                    show: true,
-                    position: 'right'
-                },
-                edgeSymbol: ['none', 'arrow'],
-                edgeSymbolSize: [4, 10],
-                force: {
-                    repulsion: 300,
-                    gravity: 0.1,
-                    edgeLength: 100,
-                    layoutAnimation: false,
-                    friction: 0.6
-                },
-                ...options.seriesOption
-            }],
-            ...options.echartsOption
+            series: [series],
         };
+        // Deep merge with user options
+        echartOption = deepMerge(echartOption, options.echartsOption);
 
         return this.echarts(echartOption, {
             height: options.height,
@@ -997,7 +1061,7 @@ export class DataView extends UseStateMixin implements IDataView {
         this._element.oninput = (el) => { el.stopImmediatePropagation(); };
         this._element.onclick = (el) => {
             el.stopImmediatePropagation();
-            // el.preventDefault(); //去掉, 不然 siyuan 链接无法点击跳转
+            // el.preventDefault(); //去掉, 然 siyuan 链接无法点击跳转
             const target = el.target as HTMLElement;
             if (target.tagName === 'SPAN') {
                 if (target.dataset.type === 'a') {
@@ -1066,7 +1130,7 @@ export class DataView extends UseStateMixin implements IDataView {
 
         // setTimeout(() => {
         //     //不知道为啥嵌入块有时候在渲染完成后会被缩减高度
-        //     //通过 setTimeout 在宏任务中恢复高度
+        //     //通过 setTimeout 在宏任务中恢复度
         //     this.thisEmbedNode.style.height = "";
         // }, 0);
         //弃用, 后面再观察一下

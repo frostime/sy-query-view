@@ -407,7 +407,7 @@ class MermaidRelation extends MermaidBase {
     constructor(options: {
         target: HTMLElement,
         type: 'flowchart' | 'mindmap',
-        rootNode: ITreeNode,
+        rootNode: ITreeNode | IBlockWithChilds,
         // blocks?: Block[],
         renderer?: (b: Block) => string | null,
         flowchart?: 'TD' | 'LR',
@@ -443,6 +443,7 @@ class MermaidRelation extends MermaidBase {
         //根据 this.rootNode 建立 this.blocks 的映射关系
         this.blocks = {};
         const traverseTree = (node: ITreeNode) => {
+            // 保存了绑定块的节点
             if (node.id && matchIDFormat(node.id)) {
                 this.blocks[node.id] = node;
             }
@@ -457,11 +458,13 @@ class MermaidRelation extends MermaidBase {
 
         const traverseTree = (node: ITreeNode) => {
             if (node.id) {
+                // 对比绑定块的 TreeNode，使用块信息
                 const b = this.blocks[node.id] as Block;
                 let content = this.renderer?.(b) || this.DEFAULT_RENDERER(b);
                 lines.push(`${node.id}["${content ?? node.id}"]`);
                 lines.push(`click ${node.id} "siyuan://blocks/${b.id}"`);
             } else if (node.name) {
+                // 否则，就只能当作一个普通的 tree node
                 let content = node.content || node.name;
                 lines.push(`${node.name}["${content}"]`);
             }
@@ -516,10 +519,10 @@ class MermaidRelation extends MermaidBase {
                         id = cls.split('data-id-')[1];
                     }
                 });
-                node.classList.add('popover__block');
-                node.dataset.id = id;
 
                 if (!id || !matchIDFormat(id)) return;
+                node.classList.add('popover__block');
+                node.dataset.id = id;
                 return id;
             }
 
@@ -731,7 +734,6 @@ class Echarts {
                 this.element.style.width = this.width ?? '100%';    // 设置默认宽度
             }
             this.element.style.padding = '0px';
-            this.element.style.overflow = 'hidden';
 
             // 初始化图表
             this.chart = window.echarts.init(

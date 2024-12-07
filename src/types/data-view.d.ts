@@ -32,9 +32,7 @@ interface IHasChildren<T> {
 }
 
 interface ITreeNode extends IHasChildren<ITreeNode> {
-    id?: string;
     name: string;
-    content?: string;
     children?: ITreeNode[];
     [key: string]: any;  // 允许其他自定义属性
 }
@@ -70,10 +68,6 @@ interface IGraphLink {
     label?: {            // 连线标签
         show?: boolean;
         formatter?: string;
-    };
-    lineStyle?: {
-        color?: string;
-        width?: number;
     };
     [key: string]: any;  // 允许其他自定义属性
 }
