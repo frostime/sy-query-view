@@ -234,6 +234,7 @@ interface ITableOptions {
     center?: boolean;
     fullwidth?: boolean;
     index?: boolean;
+    cols?: (string | Record<string, string>)[] | Record<string, string>;
     renderer?: (b: Block, attr: keyof Block) => string | number | undefined | null;
 }
 
@@ -423,9 +424,7 @@ export declare class DataView implements IDataView {
      * const children = await Query.childdoc(block);
      * dv.addtable(children, { cols: ['type', 'content'] , fullwidth: true });
      */
-    table(blocks: Block[], options?: ITableOptions & {
-        cols?: (string | Record<string, string>)[] | Record<string, string>;
-    }): HTMLElement;
+    table(blocks: Block[], options?: ITableOptions): HTMLElement;
     /**
      * Arranges elements in columns
      * @param elements - Array of HTMLElements to arrange

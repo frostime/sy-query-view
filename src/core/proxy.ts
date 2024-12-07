@@ -154,8 +154,8 @@ export const wrapBlock = (block: Block): IWrappedBlock => {
                     /** @type {Block} 返回原始 Block 对象 */
                     return target;
 
-                case 'asuri':
-                case 'touri':
+                case 'asurl':
+                case 'tourl':
                     /** @returns {string} 块的 URI 链接，格式: siyuan://blocks/xxx */
                     return `siyuan://blocks/${block.id}`
 
@@ -395,8 +395,10 @@ export const wrapList = (list: Block[], useWrapBlock: boolean = true): IWrappedL
                         const defaultkey = target[0]?.id ? 'id' : (x => x);
                         key = key ?? defaultkey;
                         if (typeof key === 'function') {
+                            //@ts-ignore
                             target.forEach(b => map[key(b)] = b);
                         } else {
+                            //@ts-ignore
                             target.forEach(b => map[b[key]] = b);
                         }
                         return wrapList(Object.values(map));
