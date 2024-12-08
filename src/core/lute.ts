@@ -8,5 +8,8 @@ export const initLute = () => {
 }
 
 export const getLute = () => {
+    if (!lute) {
+        initLute();
+    }
     return lute;
 }

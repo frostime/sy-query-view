@@ -126,9 +126,10 @@ declare const Query: {
     /**
      * Wraps blocks with additional functionality
      * @param blocks - Blocks to wrap
+     * @param useWrapBlock - Whether to wrap blocks inside the WrappedList
      * @returns Wrapped block(s)
      */
-    wrapBlocks: (blocks: Block[] | Block) => IWrappedBlock | IWrappedList<IWrappedBlock>;
+    wrapBlocks: (blocks: Block[] | Block, useWrapBlock?: boolean) => IWrappedBlock | IWrappedList<IWrappedBlock>;
     /**
      * SiYuan Kernel Request API
      * @example
@@ -193,6 +194,7 @@ declare const Query: {
     random: (limit?: number, type?: BlockType) => Promise<any[]>;
     /**
      * Gets the daily notes document
+     * @param limit - Maximum number of results
      * @param notebook - Notebook ID, if not specified, all daily notes documents will be returned
      * @returns Array of daily notes document blocks
      */
@@ -203,6 +205,7 @@ declare const Query: {
      * @returns Array of child document blocks
      */
     childdoc: (b: BlockId | Block) => Promise<IWrappedList<IWrappedBlock>>;
+    markdown: (block: Block) => Promise<any>;
     /**
      * Redirects first block IDs to their parent containers
      * @param inputs - Array of blocks or block IDs
@@ -215,6 +218,18 @@ declare const Query: {
         heading?: boolean;
         doc?: boolean;
     }) => Promise<IWrappedList<IWrappedBlock>>;
+    /**
+     * Send GPT request, use AI configuration in `siyuan.config.ai.openAI` by default
+     * @param prompt - Prompt
+     * @param options - Options
+     * @param options.timeout - Request timeout
+     * @param options.url - Custom API URL
+     * @param options.model - Custom API model
+     * @param options.apiKey - Custom API key
+     * @param options.returnRaw - Whether to return raw response (default: false)
+     * @param options.history - Chat history
+     * @returns GPT response
+     */
     gpt: (prompt: string, options?: {
         timeout?: number;
         url?: string;
@@ -702,12 +717,12 @@ export interface IWrappedBlock extends Block {
     /** Original Block object */
     unwrapped: Block;
     /** Block's URI link in format: siyuan://blocks/xxx */
-    asuri: string;
+    asurl: string;
     /** Block's URI link in format: siyuan://blocks/xxx */
-    touri: string;
-    /** Block's Markdown format link */
+    tourl: string;
+    /** Block's Markdown format link [content](siyuan://blocks/xxx) */
     aslink: string;
-    /** Block's Markdown format link */
+    /** Block's Markdown format link [content](siyuan://blocks/xxx) */
     tolink: string;
     /** Block's SiYuan reference format text */
     asref: string;
@@ -717,6 +732,10 @@ export interface IWrappedBlock extends Block {
      * Returns a rendered SiYuan attribute
      * @param attr - Attribute name
      * @param renderer - Custom render function, uses default rendering when returns null
+     * @returns {string} Rendered attribute value
+     * @example
+     * block.attr('box') // Returns the name of the notebook
+     * block.attr('root_id') // Returns the block link of the document
      */
     attr(attr: keyof Block, renderer?: (block: Block, attr: keyof Block) => string | null): string;
     /** Update date in YYYY-MM-DD format */

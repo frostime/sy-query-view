@@ -18,7 +18,9 @@ const query = async () => {
     dv.addele(button);
 
     dv.addtable(searchResult(), {
-        fullwidth: true,
+        fullwidth: false,
+        cols: null,
+        renderer: (b, a) => b[a]
     });
 
     button.onclick = async () => {

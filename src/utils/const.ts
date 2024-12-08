@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-04-02 22:43:02
  * @FilePath     : /src/utils/const.ts
- * @LastEditTime : 2024-12-04 18:31:20
+ * @LastEditTime : 2024-12-08 22:57:39
  * @Description  : 
  */
 export const Href = {
@@ -27,6 +27,8 @@ const BlockTypeShort_ZH = {
     "d": "文档块",
     "h": "标题块",
     "l": "列表块",
+    "o": "有序列表",
+    "u": "无序列表",
     "i": "列表项块",
     "c": "代码块",
     "m": "数学公式块",
@@ -44,6 +46,8 @@ const BlockTypeShort_EN = {
     "d": "Document",
     "h": "Heading",
     "l": "List",
+    "o": "Ordered List",
+    "u": "Unordered List",
     "i": "ListItem",
     "c": "Code",
     "m": "Math",

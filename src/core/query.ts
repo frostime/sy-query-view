@@ -1,13 +1,22 @@
+/*
+ * Copyright (c) 2024 by frostime. All Rights Reserved.
+ * @Author       : frostime
+ * @Date         : 2024-12-01 22:34:55
+ * @FilePath     : /src/core/query.ts
+ * @LastEditTime : 2024-12-09 00:34:25
+ * @Description  : 
+ */
 import { IProtyle } from "siyuan";
 
 import { request, sql, listDocsByPath } from "@/api";
-import { initLute } from "./lute";
+import { getLute, initLute } from "./lute";
 import { wrapBlock, wrapList } from "./proxy";
 import { formatDateTime } from "@/utils/time";
 import { DataView } from "./data-view";
 import { getNotebook, openBlock } from "@/utils";
 
 import { renderAttr } from "./components";
+import { BlockTypeShort } from "@/utils/const";
 // import { getSessionStorageSize } from "./gc";
 
 
@@ -17,11 +26,10 @@ import { renderAttr } from "./components";
  * @param mode uni 模式;
  *  - 'leaf' 只返回叶子节点
  *  - 'root' 只返回根节点
- * @param ret 返回类型, 'block' 返回 Block[], 'id' 返回 BlockId[]
  * @returns BlockId[]
  */
-function UniBlocks(blocks: Block[], mode: 'leaf' | 'root' = 'leaf', ret: "block" | "id" = "block") {
-    console.log('UniBlocks', blocks);
+function mergeBlocks(blocks: Block[], mode: 'leaf' | 'root' = 'leaf') {
+    // console.log('mergeBlocks', blocks);
     let p2c = new Map();
     let blocksMap = new Map();
     blocks.forEach(block => {
@@ -52,7 +60,7 @@ function UniBlocks(blocks: Block[], mode: 'leaf' | 'root' = 'leaf', ret: "block"
         }
     }
     let retBlocks = blockIdsResult.map(id => blocksMap.get(id));
-    return ret === "block" ? retBlocks : retBlocks.map(block => block.id);
+    return retBlocks;
 }
 
 async function getBlocksByIds(...ids: BlockId[]) {
@@ -146,6 +154,7 @@ const Query = {
         initLute();
         return new DataView(protyle, item, top);
     },
+
     Utils: {
         Date: (...args: ConstructorParameters<typeof SiYuanDate>) => new SiYuanDate(...args),
         /**
@@ -281,10 +290,21 @@ const Query = {
          * Gets the name of a notebook by its ID; equivalent to `notebook(boxid).name`
          * @param boxid - Notebook ID
          * @returns Notebook name
+         * @example
+         * Query.Utils.boxName(block['box']) // 'Notebook 123'
          */
-        boxname: (boxid: NotebookId) => {
+        boxName: (boxid: NotebookId) => {
             return getNotebook(boxid).name;
         },
+        /**
+         * Gets the readable name of the type of a block
+         * @param type - Block type
+         * @returns Readable block type name
+         * @example
+         * Query.Utils.typename(block['type']) // 'Heading'
+         */
+        typeName: (type: BlockType) => BlockTypeShort[type] ?? type,
+
         /**
          * Renders the value of a block attribute as markdown format
          */
@@ -295,11 +315,12 @@ const Query = {
     /**
      * Wraps blocks with additional functionality
      * @param blocks - Blocks to wrap
+     * @param useWrapBlock - Whether to wrap blocks inside the WrappedList
      * @returns Wrapped block(s)
      */
-    wrapBlocks: (blocks: Block[] | Block) => {
+    wrapBlocks: (blocks: Block[] | Block, useWrapBlock: boolean = true) => {
         if (Array.isArray(blocks)) {
-            return wrapList(blocks);
+            return wrapList(blocks, useWrapBlock);
         }
         return wrapBlock(blocks);
     },
@@ -422,6 +443,7 @@ const Query = {
 
     /**
      * Gets the daily notes document
+     * @param limit - Maximum number of results
      * @param notebook - Notebook ID, if not specified, all daily notes documents will be returned
      * @returns Array of daily notes document blocks
      */
@@ -460,6 +482,18 @@ const Query = {
         docs = ids.map(id => docsMap[id]);
         // return docs.map(wrapBlock);
         return wrapList(docs);
+    },
+
+    /**
+     * Return the markdown content of the document of the given block
+     * @param block - Block
+     * @returns 
+     */
+    docMd: async (block: Block) => {
+        const { content } = await request('/api/export/exportMdContent', {
+            id: block.id
+        });
+        return content;
     },
 
     /**
@@ -565,6 +599,18 @@ const Query = {
     },
 
 
+    /**
+     * Send GPT request, use AI configuration in `siyuan.config.ai.openAI` by default
+     * @param prompt - Prompt
+     * @param options - Options
+     * @param options.timeout - Request timeout
+     * @param options.url - Custom API URL
+     * @param options.model - Custom API model
+     * @param options.apiKey - Custom API key
+     * @param options.returnRaw - Whether to return raw response (default: false)
+     * @param options.history - Chat history
+     * @returns GPT response
+     */
     gpt: async (prompt: string, options?: {
         timeout?: number,
         url?: string,

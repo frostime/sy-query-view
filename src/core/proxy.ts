@@ -9,13 +9,13 @@ export interface IWrappedBlock extends Block {
     unwrapped: Block;
 
     /** Block's URI link in format: siyuan://blocks/xxx */
-    asuri: string;
+    asurl: string;
     /** Block's URI link in format: siyuan://blocks/xxx */
-    touri: string;
+    tourl: string;
 
-    /** Block's Markdown format link */
+    /** Block's Markdown format link [content](siyuan://blocks/xxx) */
     aslink: string;
-    /** Block's Markdown format link */
+    /** Block's Markdown format link [content](siyuan://blocks/xxx) */
     tolink: string;
 
     /** Block's SiYuan reference format text */
@@ -27,6 +27,10 @@ export interface IWrappedBlock extends Block {
      * Returns a rendered SiYuan attribute
      * @param attr - Attribute name
      * @param renderer - Custom render function, uses default rendering when returns null
+     * @returns {string} Rendered attribute value
+     * @example
+     * block.attr('box') // Returns the name of the notebook
+     * block.attr('root_id') // Returns the block link of the document
      */
     attr(attr: keyof Block, renderer?: (block: Block, attr: keyof Block) => string | null): string;
 
@@ -255,6 +259,15 @@ export const wrapList = (list: Block[], useWrapBlock: boolean = true): IWrappedL
                 case 'unwrapped':
                     /** @type {Block[]} 原始数组 */
                     return target;
+                case 'asMap':
+                case 'asmap':
+                    /** @returns {Record<string, Block>} 返回一个以 key 为键值的 Map */
+                    return (key: keyof Block = 'id') => {
+                        return target.reduce((map, block) => {
+                            map[block[key]] = block;
+                            return map;
+                        }, {});
+                    }
                 case 'pick':
                     /**
                      * 返回只包含指定属性的新数组
@@ -313,6 +326,13 @@ export const wrapList = (list: Block[], useWrapBlock: boolean = true): IWrappedL
                         //@ts-ignore
                         return wrapList(newTarget);
                     }
+                case 'toSorted':
+                    /**
+                     * 返回按指定属性排序的新数组
+                     */
+                    return (predicate: (a: Block, b: Block) => number) => {
+                        return wrapList(target.toSorted(predicate));
+                    }
                 case 'sorton':
                     /**
                      * 返回按指定属性排序的新数组
@@ -322,7 +342,7 @@ export const wrapList = (list: Block[], useWrapBlock: boolean = true): IWrappedL
                      * @example list.sorton('updated', 'desc')
                      */
                     return (attr: keyof Block, order: 'asc' | 'desc' = 'asc') => {
-                        let sorted = target.sort((a, b) => {
+                        let sorted = target.toSorted((a, b) => {
                             if (a[attr] > b[attr]) {
                                 return order === 'asc' ? 1 : -1;
                             } else if (a[attr] < b[attr]) {
@@ -380,6 +400,10 @@ export const wrapList = (list: Block[], useWrapBlock: boolean = true): IWrappedL
                      */
                     return (start: number, end: number) => {
                         return wrapList(target.slice(start, end));
+                    }
+                case 'map':
+                    return (fn: (b: Block, index: number) => any, useWrapBlock: boolean = true) => {
+                        return wrapList(target.map(fn), useWrapBlock);
                     }
                 case 'unique':
                     /**

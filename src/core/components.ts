@@ -13,13 +13,17 @@ import { i18n } from "@/index";
 import { setting } from "@/setting";
 
 
+interface BlockWithOthers extends Block {
+    [key: string | number]: string | number;
+}
+
 /**
  * Renders the value of a block attribute as markdown format
  * @param b - Block object
  * @param attr - Attribute name
  * @returns Rendered attribute value
  */
-const renderAttr = (b: Block, attr: keyof Block, options?: {
+const renderAttr = (b: BlockWithOthers, attr: keyof BlockWithOthers, options?: {
     onlyDate?: boolean;
     onlyTime?: boolean;
 }): string => {
@@ -86,6 +90,21 @@ const renderAttr = (b: Block, attr: keyof Block, options?: {
                 ialObj[key] = value;
             });
             v = JSON.stringify(ialObj);
+            break;
+
+        /**
+         * 兼容 refs 表中的字段
+         */
+        case 'block_id':
+        case 'def_block_id':
+        case 'def_block_parent_id':
+        case 'def_block_root_id':
+            if (b[attr]) {
+                //@ts-ignore
+                v = link(b[attr], b[attr]);
+            } else {
+                v = b[attr]
+            }
             break;
 
         default:
