@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-12-03 19:49:52
  * @FilePath     : /src/core/use-state.ts
- * @LastEditTime : 2024-12-07 19:36:42
+ * @LastEditTime : 2024-12-08 19:38:54
  * @Description  : 
  */
 import { setBlockAttrs } from "@/api";
@@ -66,16 +66,16 @@ class UseStateMixin {
         }
     }
 
-    protected saveToBlockAttrs() {
+    protected async saveToBlockAttrs() {
         const stateObj: Record<string, string> = {};
         this.stateMap.forEach((value, key) => {
             stateObj[UseStateMixin.customStateKey(key)] = JSON.stringify(value);
         });
         console.debug('saveToBlockAttrs', this.blockId, stateObj);
-        setBlockAttrs(this.blockId, stateObj);
+        await setBlockAttrs(this.blockId, stateObj);
     }
 
-    protected saveToBlockDebounced = debounce(this.saveToBlockAttrs.bind(this), 1000);
+    // protected saveToBlockDebounced = debounce(this.saveToBlockAttrs.bind(this), 1000);
     // private saveToBlockThrottled = throttle(this.saveToBlockAttrs.bind(this), 1000);
 
     public get hasState() {

@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-12-02 10:15:04
  * @FilePath     : /src/core/data-view.ts
- * @LastEditTime : 2024-12-08 17:57:24
+ * @LastEditTime : 2024-12-08 19:39:48
  * @Description  : 
  */
 import {
@@ -263,13 +263,14 @@ export class DataView extends UseStateMixin implements IDataView {
      * 将 sessionStorage 中临时缓存的状态同步到块属性中
      * 仅仅在 Protyle 销毁等完全关闭的情况先调用
      */
-    flushStateIntoBlockAttr() {
+    async flushStateIntoBlockAttr() {
         if (!this.hasState) {
             return;
         }
         console.debug(`Flushing state into block attrs for ${this.root_id}::${this.embed_id}`);
-        // this.removeFromSessionStorage(); //后面还可能调用 dispose, 所以 remove 方法就不放在这里, 单独调用好了
-        this.saveToBlockDebounced();
+        // this.saveToBlockDebounced();
+        //必须 await，否则在 reload, 关闭窗口的时候可能还没写入 kernel 就直接退出了
+        await this.saveToBlockAttrs();
     }
 
     /**
@@ -1177,21 +1178,30 @@ export class DataView extends UseStateMixin implements IDataView {
             content: content
         });
 
-        this._element.onmousedown = (e) => {
-            e.stopPropagation();
-        };
-        this._element.onmouseup = (e) => {
-            e.stopPropagation();
-        };
-        this._element.onkeydown = (e) => {
-            e.stopPropagation();
-        };
-        this._element.onkeyup = (e) => {
-            e.stopPropagation();
-        };
-        this._element.oninput = (e) => {
-            e.stopPropagation();
-        };
+        const stopPropagation = (e: Event) => {
+            e.stopImmediatePropagation();
+        }
+
+        const oncapture = undefined;
+
+        const EVENTS_TO_STOP = [
+            'compositionstart',  //如果不加这两个会无法正常输入中文
+            'compositionend',
+            'mousedown',
+            'mouseup',
+            'keydown',
+            'keyup',
+            'input',
+            'copy',
+            'cut',
+            'paste'
+        ];
+
+        EVENTS_TO_STOP.forEach(event => {
+            this._element.addEventListener(event, stopPropagation, oncapture);
+        });
+
+
         this._element.onclick = (el) => {
             el.stopImmediatePropagation();
             // el.preventDefault(); //去掉, 否则 siyuan 链接 a 无法点击跳转
@@ -1224,15 +1234,11 @@ export class DataView extends UseStateMixin implements IDataView {
          * Garbage Collection Callbacks
          */
         this.disposers.push(() => {
-            this.protyle.element.removeEventListener("keydown", cancelKeyEvent, true);
-        });
-        this.disposers.push(() => {
             this.protyle = null;
-            this._element.onmousedown = null;
-            this._element.onmouseup = null;
-            this._element.onkeydown = null;
-            this._element.onkeyup = null;
-            this._element.oninput = null;
+            EVENTS_TO_STOP.forEach(event => {
+                this._element.removeEventListener(event, stopPropagation, oncapture);
+            });
+            this.protyle.element.removeEventListener("keydown", cancelKeyEvent, true)
             this._element.onclick = null;
             this.thisEmbedNode = null;
             this._element = null;

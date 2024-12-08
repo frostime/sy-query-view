@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-12-01 11:21:44
  * @FilePath     : /src/core/finalize.ts
- * @LastEditTime : 2024-12-06 22:13:22
+ * @LastEditTime : 2024-12-08 19:40:16
  * @Description  : 
  */
 import { DataView } from "./data-view";
@@ -80,9 +80,9 @@ export const registerProtyleGC = (docId: DocumentId, dataView: DataView) => {
     }
 }
 
-const finalizeDataView = (dataView: DataView) => {
+const finalizeDataView = async (dataView: DataView) => {
     console.debug(`[finalize.ts] Finalize dataView@${dataView.embed_id}`);
-    dataView.flushStateIntoBlockAttr();
+    await dataView.flushStateIntoBlockAttr();
     dataView.dispose();
     //保证之后如果有其他设备的数据同步给当前设备，则新打开的时候会从 element 而非 session 中读取
     dataView.removeFromSessionStorage();
@@ -111,10 +111,10 @@ export const onProtyleSwitch = ({ detail }) => {
 
 export const finalizeAllDataviews = () => {
     dataviews.forEach((views, docId) => {
-        views.forEach(view => {
+        views.forEach(async view => {
             const dataView = view.deref();
             if (dataView) {
-                finalizeDataView(dataView);
+                await finalizeDataView(dataView);
             }
         });
     });
