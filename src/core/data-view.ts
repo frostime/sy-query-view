@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-12-02 10:15:04
  * @FilePath     : /src/core/data-view.ts
- * @LastEditTime : 2024-12-07 20:37:26
+ * @LastEditTime : 2024-12-08 17:57:24
  * @Description  : 
  */
 import {
@@ -24,33 +24,6 @@ import { BlockTypeShort } from "@/utils/const";
 import { deepMerge } from "./utils";
 
 const getCSSVar = (name: string) => getComputedStyle(document.documentElement).getPropertyValue(name);
-
-/**************************************** ZX写的 DataView 类 ****************************************/
-
-function cancelKeyEvent(el: KeyboardEvent) {
-    const selection = document.getSelection();
-    if (!selection || selection.rangeCount === 0) return;
-
-    let nodeElement: HTMLElement = selection.getRangeAt(0).startContainer.parentElement;
-    if (hasParentWithClass(nodeElement, styles["data-query-embed"])) {
-        el.stopPropagation();
-    }
-}
-
-function hasParentWithClass(element: HTMLElement, className: string) {
-    // 获取父元素
-    let parent = element.parentElement;
-    // 通过while循环遍历父元素
-    while (parent && !parent.classList.contains('protyle-wysiwyg--attr')) {
-        // 检查父元素是否包含指定class
-        if (parent.classList.contains(className)) {
-            return true;
-        }
-        // 继续向上获取父元素
-        parent = parent.parentElement;
-    }
-    return false;
-}
 
 const newViewWrapper = (tag: string = 'div') => {
     let div = document.createElement(tag);
@@ -240,7 +213,7 @@ export class DataView extends UseStateMixin implements IDataView {
         this._element = document.createElement("div");
         this.lute = getLute();
 
-        this._element.classList.add(styles["data-query-embed"], 'protyle-wysiwyg__embed');
+        this._element.classList.add(styles["data-query-embed"], 'protyle-wysiwyg__embed', 'protyle-custom');
         this._element.dataset.id = window.Lute.NewNodeID();
 
         this.thisEmbedNode.lastElementChild.insertAdjacentElement("beforebegin", this._element);
@@ -1176,7 +1149,6 @@ export class DataView extends UseStateMixin implements IDataView {
      * Renders the DataView and sets up event handlers and cleanup
      */
     render() {
-        this.protyle.element.addEventListener("keydown", cancelKeyEvent, true);
         const rotateElement = this.thisEmbedNode.querySelector(".fn__rotate");
 
         if (rotateElement) {
@@ -1184,14 +1156,45 @@ export class DataView extends UseStateMixin implements IDataView {
         }
 
         this._element.setAttribute("contenteditable", "false");
-        this._element.onmousedown = (el) => { el.stopImmediatePropagation(); };
-        this._element.onmouseup = (el) => { el.stopImmediatePropagation(); };
-        this._element.onkeydown = (el) => { el.stopImmediatePropagation(); };
-        this._element.onkeyup = (el) => { el.stopImmediatePropagation(); };
-        this._element.oninput = (el) => { el.stopImmediatePropagation(); };
+
+        if (this.top) {
+            // 前进后退定位 https://ld246.com/article/1667652729995
+            // https://github.com/siyuan-note/siyuan/commit/5d736483ec80e1071b2f3eab4fcd64aac5856271
+            this.protyle.contentElement.scrollTop = this.top;
+        }
+
+        // 确保内部节点不可编辑
+        let editableNodeList = this._element.querySelectorAll('[contenteditable="true"]');
+        editableNodeList.forEach(node => {
+            node.setAttribute('contenteditable', 'false');
+        });
+
+        this.thisEmbedNode.style.height = "";
+
+        let content = this.lute.BlockDOM2Content(this._element.innerText).replaceAll('\n', ' ');
+        fetchSyncPost('/api/search/updateEmbedBlock', {
+            id: this.thisEmbedNode.getAttribute("data-node-id"),
+            content: content
+        });
+
+        this._element.onmousedown = (e) => {
+            e.stopPropagation();
+        };
+        this._element.onmouseup = (e) => {
+            e.stopPropagation();
+        };
+        this._element.onkeydown = (e) => {
+            e.stopPropagation();
+        };
+        this._element.onkeyup = (e) => {
+            e.stopPropagation();
+        };
+        this._element.oninput = (e) => {
+            e.stopPropagation();
+        };
         this._element.onclick = (el) => {
             el.stopImmediatePropagation();
-            // el.preventDefault(); //去掉, 然 siyuan 链接无法点击跳转
+            // el.preventDefault(); //去掉, 否则 siyuan 链接 a 无法点击跳转
             const target = el.target as HTMLElement;
             if (target.tagName === 'SPAN') {
                 if (target.dataset.type === 'a') {
@@ -1215,29 +1218,7 @@ export class DataView extends UseStateMixin implements IDataView {
             }
             // el.stopPropagation();
         };
-
-        if (this.top) {
-            // 前进后退定位 https://ld246.com/article/1667652729995
-            // https://github.com/siyuan-note/siyuan/commit/5d736483ec80e1071b2f3eab4fcd64aac5856271
-            this.protyle.contentElement.scrollTop = this.top;
-        }
-
-        // 确保内部节点不可编辑
-        let editableNodeList = this._element.querySelectorAll('[contenteditable="true"]');
-        editableNodeList.forEach(node => {
-            node.setAttribute('contenteditable', 'false');
-        });
-
-        this.thisEmbedNode.style.height = "";
-
-        /**
-         * 不确定这个到底会不会造成 BUG 问题，现暂时关闭 #TODO
-         */
-        // let content = this.lute.BlockDOM2Content(this._element.innerText).replaceAll('\n', ' ');
-        // fetchSyncPost('/api/search/updateEmbedBlock', {
-        //     id: this.thisEmbedNode.getAttribute("data-node-id"),
-        //     content: content
-        // });
+        this.protyle.element.addEventListener("keydown", cancelKeyEvent, true);
 
         /**
          * Garbage Collection Callbacks
@@ -1247,6 +1228,12 @@ export class DataView extends UseStateMixin implements IDataView {
         });
         this.disposers.push(() => {
             this.protyle = null;
+            this._element.onmousedown = null;
+            this._element.onmouseup = null;
+            this._element.onkeydown = null;
+            this._element.onkeyup = null;
+            this._element.oninput = null;
+            this._element.onclick = null;
             this.thisEmbedNode = null;
             this._element = null;
             this.lute = null;
@@ -1285,7 +1272,7 @@ export class DataView extends UseStateMixin implements IDataView {
             mutations.forEach((mutation) => {
                 if (mutation.type === 'childList') {
                     mutation.removedNodes.forEach((node) => {
-                        if (node instanceof Element && 
+                        if (node instanceof Element &&
                             node.classList.contains(styles["data-query-embed"])) {
                             this.dispose();
                         }
@@ -1307,6 +1294,41 @@ export class DataView extends UseStateMixin implements IDataView {
             attributeFilter: ['style']  // 只监听 style 属性的变化
         });
     }
+}
+
+/**************************************** ZX写的 DataView 类 ****************************************/
+const selector = `.${styles["data-query-embed"]}`;
+function cancelKeyEvent(event: KeyboardEvent) {
+    const selection = document.getSelection();
+    if (!selection || selection.rangeCount === 0) return;
+
+    let nodeElement: HTMLElement = selection.getRangeAt(0).startContainer.parentElement;
+    let closest = nodeElement.closest(selector);
+    if (closest) {
+        // console.log('Stop');
+        event.stopPropagation();
+    }
+    // if (nodeElement.closest(selector)) {
+    // const stop = hasParentWithClass(nodeElement, selector)
+    // if (stop) {
+    //     el.stopImmediatePropagation();
+    // }
+}
+
+function hasParentWithClass(element: Element, className: string) {
+    if (!element) return false;
+    // 获取父元素
+    let parent = element.parentElement;
+    // 通过while循环遍历父元素
+    while (parent && !parent.classList.contains('protyle-wysiwyg--attr')) {
+        // 检查父元素是否包含指定class
+        if (parent.classList.contains(className)) {
+            return true;
+        }
+        // 继续向上获取父元素
+        parent = parent.parentElement;
+    }
+    return false;
 }
 
 export const PROHIBIT_METHOD_NAMES = DataView.PROHIBIT_METHOD_NAMES;
