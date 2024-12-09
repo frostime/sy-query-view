@@ -55,11 +55,19 @@ const renderAttr = (b: Block & { [key: string | number]: string | number }, attr
             break;
 
         case 'root_id':
-            v = link(docName(), b.root_id);
+            if (b.hpath) {
+                v = link(docName(), b.root_id);
+            } else {
+                v = b.root_id;
+            }
             break;
 
         case 'hpath':
-            v = link(b.hpath, b.root_id);
+            if (b.root_id) {
+                v = link(b.hpath, b.root_id);
+            } else {
+                v = b.hpath;
+            }
             break;
 
         case 'content':

@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-12-02 10:15:04
  * @FilePath     : /src/core/data-view.ts
- * @LastEditTime : 2024-12-08 19:39:48
+ * @LastEditTime : 2024-12-09 22:03:35
  * @Description  : 
  */
 import {
@@ -30,10 +30,13 @@ const newViewWrapper = (tag: string = 'div') => {
     // 怀疑同步异常是 Lute 解析错误导致的，加一个 protyle-custom 不知道有没有用
     // https://github.com/88250/lute/issues/206
     div.classList.add(styles["data-view-component"], 'protyle-custom');
+    const id = window.Lute.NewNodeID();
+    div.dataset.id = id;
     return div;
 }
 
 const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
+
 
 /**
  * DataView class for creating and managing dynamic data visualizations
@@ -53,7 +56,8 @@ export class DataView extends UseStateMixin implements IDataView {
     private lute: Lute;
 
     /** @internal */
-    private disposers: (() => void)[] = [];
+    // private disposers: (() => void)[] = [];
+    private disposers: Record<string, () => void> = {};
 
     /** @internal */
     private ROOT_ID: DocumentId;
@@ -160,7 +164,7 @@ export class DataView extends UseStateMixin implements IDataView {
                     }
                 }
                 if (dispose) {
-                    this.addDisposer(() => dispose());
+                    this.addDisposer(() => dispose(), container.dataset.id);
                 }
                 return container;
             }
@@ -249,11 +253,15 @@ export class DataView extends UseStateMixin implements IDataView {
         this.disposed = true;
 
         try {
-            this.disposers.forEach(dispose => dispose());
+            for (let key in this.disposers) {
+                const disposer = this.disposers[key];
+                disposer();
+            }
         } catch (error) {
             console.error('Error during dispose:', error);
         } finally {
-            this.disposers = [];
+            // this.disposers = [];
+            this.disposers = {};
             this.cleanup();
         }
     }
@@ -315,34 +323,136 @@ export class DataView extends UseStateMixin implements IDataView {
      * Only when you need to add some extra cleanup logic, you should use this method.
      * @param dispose The dispose function
      */
-    addDisposer(dispose: () => void) {
-        this.disposers.push(dispose);
+    addDisposer(dispose: () => void, id?: string) {
+        // this.disposers.push(dispose, key);
+        id = id ?? window.Lute.NewNodeID();
+        if (this.disposers[id]) {
+            const oldDiposer = this.disposers[id];
+            oldDiposer();
+            console.warn(`WARNING! Disposer with key@${id} has already registered!`)
+        }
+        this.disposers[id] = dispose;
     }
 
     adddisposer = this.addDisposer;
 
     /**
      * Add a custom element to the DataView.
-     * @param customEle 
-     * @returns 
+     * If the passing is a view container, it will be directly appended.
+     * Otherwise, it will be wrapped by a new container
+     * @param ele
+     * @param disposer -- dispose function, optional
+     * @returns {HTMLElement} View Conainer, with a special class name, and a `data-id` attribute
+     * @alias addele
      */
-    addElement(customEle: HTMLElement | string) {
-        const customElem = newViewWrapper();
-
-        if (typeof customEle === 'string') {
-            const html = `<div class="data-view-element" style="display: contents;">${customEle}</div>`;
-            customElem.innerHTML = html;
+    addElement(ele: HTMLElement | string, disposer?: () => void) {
+        let customView;
+        if (typeof ele === 'string') {
+            customView = newViewWrapper();
+            const html = `<div class="data-view-element" style="display: contents;">${ele}</div>`;
+            customView.innerHTML = html;
         }
-        else if (customEle instanceof Element) {
-            customElem.appendChild(customEle);
+        else if (ele instanceof Element) {
+            // 如果本身就是一个 view-container, 就直接加入
+            if (ele.classList.contains(styles["data-view-component"] && ele.dataset.id)) {
+                customView = ele;
+            } else {
+                customView = newViewWrapper();
+                customView.appendChild(ele);
+            }
         }
-
-        this._element.append(customElem);
-        return customElem;
+        this._element.append(customView);
+        if (disposer) {
+            const id = customView.dataset.id;
+            this.addDisposer(disposer, id);
+        }
+        return customView;
     }
-
     addelement = this.addElement;
     addele = this.addElement;
+
+    isValidViewContainer(container: HTMLElement) {
+        if (!container.classList.contains(styles["data-view-component"])) {
+            return false;
+        }
+        const id = container.dataset.id;
+        if (!id || !matchIDFormat(id)) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Remove the view element (by given the id of the container) from dataview
+     * @param id Existed view's data-id
+     * @param beforeRemove, an optional callback funcgtion
+     * @returns {boolean} Whether the removal succeeded
+     */
+    removeView(id: string, beforeRemove?: (viewContainer: HTMLElement) => void) {
+        if (!id) return false;
+        const selector = `.${styles["data-view-component"]}[data-id="${id}"]`;
+        const container: HTMLElement = this._element.querySelector(selector);
+        if (container && this.isValidViewContainer(container)) {
+            const disposer = this.disposers[id];
+            if (disposer) {
+                disposer();
+                delete this.disposers[id];
+            }
+            beforeRemove?.(container);
+            container.remove();
+            return true;
+        }
+        return false;
+    }
+
+    removeview = this.removeView;
+
+    /**
+     * Replace the view element (by given the id of the container) with another given element
+     * @param id
+     * @param viewContainer: must be a conatiner element
+     * @param disposer: dispose functioin, if already specified for viewContainer, this one will be omit!.
+     * @warn Don not duplicately specify dispose function for new view!
+     * @returns
+     */
+    replaceView(id: string, viewContainer: HTMLElement, disposer?: () => void) {
+        if (!id) return null;
+        if (!this.isValidViewContainer(viewContainer)) {
+            console.warn(`DataView.replaceView Failed! The new-come element is not a valid view container!`)
+            return null;
+        }
+
+        let flag = this.removeView(id, (oldView: HTMLElement) => {
+            oldView.insertAdjacentElement('beforebegin', viewContainer);
+        });
+        delete this.disposers[id];
+        if (!flag) {
+            this._element.append(viewContainer);
+        }
+        /**
+         * 替换为旧的 ID
+         */
+        let oldId = viewContainer.dataset.id;
+        // if old disposer already exists, update the id of it.
+        if (this.disposers[oldId]) {
+            this.disposers[id] = this.disposers[oldId];
+            delete this.disposers[oldId];
+        }
+        if (disposer) {
+            const oldDisposer = this.disposers[id];
+            if (oldDisposer) {
+                this.disposers[id] = () => {
+                    oldDisposer();
+                    disposer();
+                }
+            } else {
+                this.disposers[id] = disposer;
+            }
+        }
+        viewContainer.dataset.id = id;
+        return viewContainer;
+    }
+    replaceview = this.replaceView;
 
     /**
      * Adds markdown content to the DataView
@@ -526,7 +636,7 @@ export class DataView extends UseStateMixin implements IDataView {
             code
         );
         mermaid.render();
-        this.disposers.push(() => mermaid.dispose());
+        this.addDisposer(() => mermaid.dispose(), mermaidContainer.dataset.id);
         return mermaidContainer;
     }
 
@@ -569,7 +679,7 @@ export class DataView extends UseStateMixin implements IDataView {
             renderer: options.renderer,  // undefined 也不要紧, 组件里有默认渲染方式
             flowchart: options.flowchart ?? 'LR'
         });
-        this.disposers.push(() => mermaid.dispose());
+        this.addDisposer(() => mermaid.dispose(), mermaidContainer.dataset.id);
         return mermaidContainer;
     }
 
@@ -654,7 +764,7 @@ export class DataView extends UseStateMixin implements IDataView {
             option: echartOption,
             ...options
         });
-        this.disposers.push(() => echarts.dispose());
+        this.addDisposer(() => echarts.dispose(), container.dataset.id);
 
         return container;
     }
@@ -1233,17 +1343,15 @@ export class DataView extends UseStateMixin implements IDataView {
         /**
          * Garbage Collection Callbacks
          */
-        this.disposers.push(() => {
-            this.protyle = null;
+        this.addDisposer(() => {
+            this.protyle.element.removeEventListener("keydown", cancelKeyEvent, true);
             EVENTS_TO_STOP.forEach(event => {
                 this._element.removeEventListener(event, stopPropagation, oncapture);
             });
-            this.protyle.element.removeEventListener("keydown", cancelKeyEvent, true)
             this._element.onclick = null;
             this.thisEmbedNode = null;
             this._element = null;
-            this.lute = null;
-            this.disposers = [];
+            this.protyle = null;
             this.observer = null;
         });
 
@@ -1265,7 +1373,7 @@ export class DataView extends UseStateMixin implements IDataView {
      */
     private registerInternalGC(): void {
         // 注销 MutationObserver
-        this.disposers.push(() => {
+        this.addDisposer(() => {
             console.debug('DataView dispose:', this.EMBED_BLOCK_ID);
             if (this.observer) {
                 this.observer.disconnect();

@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-12-01 22:34:55
  * @FilePath     : /src/core/query.ts
- * @LastEditTime : 2024-12-09 00:34:25
+ * @LastEditTime : 2024-12-09 21:37:32
  * @Description  : 
  */
 import { IProtyle } from "siyuan";
@@ -166,7 +166,7 @@ const Query = {
          * @returns Timestamp string in yyyyMMddHHmmss format
          */
         now: (days?: number | string, hms: boolean = true) => {
-            let date = new SiYuanDate().beginOfDay();
+            let date = new SiYuanDate();
             date = date.add(days);
             return date.toString(hms);
         },

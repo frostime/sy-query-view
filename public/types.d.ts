@@ -439,16 +439,38 @@ export declare class DataView implements IDataView {
      * Only when you need to add some extra cleanup logic, you should use this method.
      * @param dispose The dispose function
      */
-    addDisposer(dispose: () => void): void;
-    adddisposer: (dispose: () => void) => void;
+    addDisposer(dispose: () => void, id?: string): void;
+    adddisposer: (dispose: () => void, id?: string) => void;
     /**
      * Add a custom element to the DataView.
-     * @param customEle
+     * If the passing is a view container, it will be directly appended.
+     * Otherwise, it will be wrapped by a new container
+     * @param ele
+     * @param disposer -- dispose function, optional
+     * @returns {HTMLElement} View Conainer, with a special class name, and a `data-id` attribute
+     * @alias addele
+     */
+    addElement(ele: HTMLElement | string, disposer?: () => void): any;
+    addelement: (ele: HTMLElement | string, disposer?: () => void) => any;
+    addele: (ele: HTMLElement | string, disposer?: () => void) => any;
+    isValidViewContainer(container: HTMLElement): boolean;
+    /**
+     * Remove the view element (by given the id of the container) from dataview
+     * @param id Existed view's data-id
+     * @param beforeRemove, an optional callback funcgtion
+     * @returns {boolean} Whether the removal succeeded
+     */
+    removeView(id: string, beforeRemove?: (viewContainer: HTMLElement) => void): boolean;
+    removeview: (id: string, beforeRemove?: (viewContainer: HTMLElement) => void) => boolean;
+    /**
+     * Replace the view element (by given the id of the container) with another given element
+     * @param id
+     * @param viewContainer: must be a conatiner element
+     * @param disposer: dispose functioin, if already specified for viewContainer, this one will be omit!.
+     * @warn Don not duplicately specify dispose function for new view!
      * @returns
      */
-    addElement(customEle: HTMLElement | string): HTMLElement;
-    addelement: (customEle: HTMLElement | string) => HTMLElement;
-    addele: (customEle: HTMLElement | string) => HTMLElement;
+    replaceView(id: string, viewContainer: HTMLElement, disposer?: () => void): HTMLElement;
     /**
      * Adds markdown content to the DataView
      * @param md - Markdown text to be rendered
