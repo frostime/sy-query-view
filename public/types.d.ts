@@ -112,12 +112,24 @@ declare const Query: {
          * Gets the name of a notebook by its ID; equivalent to `notebook(boxid).name`
          * @param boxid - Notebook ID
          * @returns Notebook name
+         * @example
+         * Query.Utils.boxName(block['box']) // 'Notebook 123'
          */
-        boxname: (boxid: NotebookId) => string;
+        boxName: (boxid: NotebookId) => string;
+        /**
+         * Gets the readable name of the type of a block
+         * @param type - Block type
+         * @returns Readable block type name
+         * @example
+         * Query.Utils.typename(block['type']) // 'Heading'
+         */
+        typeName: (type: BlockType) => any;
         /**
          * Renders the value of a block attribute as markdown format
          */
-        renderAttr: (b: Block, attr: keyof Block, options?: {
+        renderAttr: (b: Block & {
+            [key: string | number]: string | number;
+        }, attr: (keyof Block & string) | number, options?: {
             onlyDate?: boolean;
             onlyTime?: boolean;
         }) => string;
@@ -205,7 +217,12 @@ declare const Query: {
      * @returns Array of child document blocks
      */
     childdoc: (b: BlockId | Block) => Promise<IWrappedList<IWrappedBlock>>;
-    markdown: (block: Block) => Promise<any>;
+    /**
+     * Return the markdown content of the document of the given block
+     * @param block - Block
+     * @returns
+     */
+    docMd: (block: Block) => Promise<any>;
     /**
      * Redirects first block IDs to their parent containers
      * @param inputs - Array of blocks or block IDs

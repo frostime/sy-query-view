@@ -13,17 +13,13 @@ import { i18n } from "@/index";
 import { setting } from "@/setting";
 
 
-interface BlockWithOthers extends Block {
-    [key: string | number]: string | number;
-}
-
 /**
  * Renders the value of a block attribute as markdown format
  * @param b - Block object
  * @param attr - Attribute name
  * @returns Rendered attribute value
  */
-const renderAttr = (b: BlockWithOthers, attr: keyof BlockWithOthers, options?: {
+const renderAttr = (b: Block & { [key: string | number]: string | number }, attr: keyof Block & string | number, options?: {
     onlyDate?: boolean;
     onlyTime?: boolean;
 }): string => {
@@ -95,9 +91,13 @@ const renderAttr = (b: BlockWithOthers, attr: keyof BlockWithOthers, options?: {
         /**
          * 兼容 refs 表中的字段
          */
+        //@ts-ignore
         case 'block_id':
+        //@ts-ignore
         case 'def_block_id':
+        //@ts-ignore
         case 'def_block_parent_id':
+        //@ts-ignore
         case 'def_block_root_id':
             if (b[attr]) {
                 //@ts-ignore
@@ -195,7 +195,12 @@ class BlockTable {
             colKey = this.fallbckColumns(blocks);
             colName = colKey;
             return { key: colKey, name: colName };
-        } else if (cols === null && blocks.length > 0) {
+        } else if (cols === null) {
+            if (blocks.length == 0) {
+                colKey = this.fallbckColumns(blocks);
+                colName = colKey;
+                return { key: colKey, name: colName };
+            }
             // 如果 col 为 null，则使用 blocks 里面的所有 key
             const firstBlock = blocks[0];
             colKey = Object.keys(firstBlock);

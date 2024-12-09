@@ -331,6 +331,7 @@ export const wrapList = (list: Block[], useWrapBlock: boolean = true): IWrappedL
                      * 返回按指定属性排序的新数组
                      */
                     return (predicate: (a: Block, b: Block) => number) => {
+                        //@ts-ignore
                         return wrapList(target.toSorted(predicate));
                     }
                 case 'sorton':
@@ -342,6 +343,7 @@ export const wrapList = (list: Block[], useWrapBlock: boolean = true): IWrappedL
                      * @example list.sorton('updated', 'desc')
                      */
                     return (attr: keyof Block, order: 'asc' | 'desc' = 'asc') => {
+                        //@ts-ignore
                         let sorted = target.toSorted((a, b) => {
                             if (a[attr] > b[attr]) {
                                 return order === 'asc' ? 1 : -1;

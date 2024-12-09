@@ -25,7 +25,7 @@ removeTypesDir();
 
 let outputDir = './public';
 
-const tsc = `tsc --declaration --emitDeclarationOnly --skipLibCheck --target ES2022 --project tsconfig.json --outDir ./types --noEmitOnError false --stripInternal`;
+const tsc = `tsc --declaration --emitDeclarationOnly --skipLibCheck --target ESNext --project tsconfig.json --outDir ./types --noEmitOnError false --stripInternal`;
 
 execSync(tsc);
 

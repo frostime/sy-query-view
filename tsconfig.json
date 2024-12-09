@@ -6,9 +6,10 @@
         "lib": [
             "DOM",
             "DOM.Iterable",
-            "ES2022",
             "ESNext",
-            "ESNext.WeakRef"
+            "ESNext.WeakRef",
+            "ES2023",
+            "ES2023.Array"
         ],
         "skipLibCheck": true,
         "noImplicitAny": false,
