@@ -34,7 +34,7 @@ declare const Query: {
         /**
          * Gets timestamp for current time with optional day offset
          * @param days - Number of days to offset (positive or negative)
-         * - {number} 直接使用数字
+         * - {number} 直接��用数字
          * - {string} 使用字符串，如 '1d' 表示 1 天，'2w' 表示 2 周，'3m' 表示 3 个月，'4y' 表示 4 年
          * - 可以为负数
          * @returns Timestamp string in yyyyMMddHHmmss format
@@ -471,6 +471,7 @@ export declare class DataView implements IDataView {
      * @returns
      */
     replaceView(id: string, viewContainer: HTMLElement, disposer?: () => void): HTMLElement;
+    replaceview: (id: string, viewContainer: HTMLElement, disposer?: () => void) => HTMLElement;
     /**
      * Adds markdown content to the DataView
      * @param md - Markdown text to be rendered

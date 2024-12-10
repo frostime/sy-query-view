@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-12-02 10:15:04
  * @FilePath     : /src/core/data-view.ts
- * @LastEditTime : 2024-12-09 22:03:35
+ * @LastEditTime : 2024-12-10 16:11:54
  * @Description  : 
  */
 import {
@@ -123,8 +123,10 @@ export class DataView extends UseStateMixin implements IDataView {
 
         const addViewFn = ((...args: any[]) => {
             const result = method.apply(this, args);
-            this._element.append(result);
-            return result.firstElementChild || result;
+            // this._element.append(result);
+            // return result;
+            let container = this.addElement(result);
+            return container;
         });
 
         // Register add method
@@ -333,8 +335,31 @@ export class DataView extends UseStateMixin implements IDataView {
         }
         this.disposers[id] = dispose;
     }
-
+    /** @internal */
     adddisposer = this.addDisposer;
+
+    /**
+     * Wrap an element into a view container
+     * @param ele 
+     */
+    view(ele: HTMLElement | string) {
+        let view: HTMLElement;
+        if (typeof ele === 'string') {
+            view = newViewWrapper();
+            const html = `<div class="data-view-element" style="display: contents;">${ele}</div>`;
+            view.innerHTML = html;
+        }
+        else if (ele instanceof Element) {
+            // 如果本身就是一个 view-container, 就直接加入
+            if (this.isValidViewContainer(ele)) {
+                view = ele;
+            } else {
+                view = newViewWrapper();
+                view.appendChild(ele);
+            }
+        }
+        return view;
+    }
 
     /**
      * Add a custom element to the DataView.
@@ -342,25 +367,11 @@ export class DataView extends UseStateMixin implements IDataView {
      * Otherwise, it will be wrapped by a new container
      * @param ele
      * @param disposer -- dispose function, optional
-     * @returns {HTMLElement} View Conainer, with a special class name, and a `data-id` attribute
+     * @returns View Conainer, with a special class name, and a `data-id` attribute
      * @alias addele
      */
     addElement(ele: HTMLElement | string, disposer?: () => void) {
-        let customView;
-        if (typeof ele === 'string') {
-            customView = newViewWrapper();
-            const html = `<div class="data-view-element" style="display: contents;">${ele}</div>`;
-            customView.innerHTML = html;
-        }
-        else if (ele instanceof Element) {
-            // 如果本身就是一个 view-container, 就直接加入
-            if (ele.classList.contains(styles["data-view-component"] && ele.dataset.id)) {
-                customView = ele;
-            } else {
-                customView = newViewWrapper();
-                customView.appendChild(ele);
-            }
-        }
+        let customView = this.view(ele);
         this._element.append(customView);
         if (disposer) {
             const id = customView.dataset.id;
@@ -368,7 +379,11 @@ export class DataView extends UseStateMixin implements IDataView {
         }
         return customView;
     }
+    /** @internal */
+    addView = this.addElement;
+    /** @internal */
     addelement = this.addElement;
+    /** @internal */
     addele = this.addElement;
 
     isValidViewContainer(container: HTMLElement) {
@@ -386,7 +401,7 @@ export class DataView extends UseStateMixin implements IDataView {
      * Remove the view element (by given the id of the container) from dataview
      * @param id Existed view's data-id
      * @param beforeRemove, an optional callback funcgtion
-     * @returns {boolean} Whether the removal succeeded
+     * @returns Whether the removal succeeded
      */
     removeView(id: string, beforeRemove?: (viewContainer: HTMLElement) => void) {
         if (!id) return false;
@@ -417,18 +432,17 @@ export class DataView extends UseStateMixin implements IDataView {
      */
     replaceView(id: string, viewContainer: HTMLElement, disposer?: () => void) {
         if (!id) return null;
-        if (!this.isValidViewContainer(viewContainer)) {
-            console.warn(`DataView.replaceView Failed! The new-come element is not a valid view container!`)
-            return null;
-        }
+        viewContainer = this.view(viewContainer);
 
         let flag = this.removeView(id, (oldView: HTMLElement) => {
             oldView.insertAdjacentElement('beforebegin', viewContainer);
         });
-        delete this.disposers[id];
         if (!flag) {
+            errorMessage(viewContainer, `Failed to replace view with ID=${id}, please check if anything wrong.`)
             this._element.append(viewContainer);
+            return;
         }
+        delete this.disposers[id];
         /**
          * 替换为旧的 ID
          */
@@ -573,7 +587,7 @@ export class DataView extends UseStateMixin implements IDataView {
         gap?: string;
         flex?: number[];
     } = {}) {
-        let columns = document.createElement("div");
+        let columns = newViewWrapper();
         Object.assign(columns.style, {
             display: "flex",
             flexDirection: "row",
@@ -610,7 +624,7 @@ export class DataView extends UseStateMixin implements IDataView {
         gap?: string;
         flex?: number[];
     } = {}) {
-        let rows = document.createElement("div");
+        let rows = newViewWrapper();
         Object.assign(rows.style, {
             display: "flex",
             flexDirection: "column",

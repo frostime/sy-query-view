@@ -1,7 +1,8 @@
 //!js
+// NOTE: 实际使用过程中，其实更加建议配合模板使用，在创建的时候直接配置 now 为当天的日期，而非通过 state 来维护日期状态
+const now = Query.Utils.today(false);
 const query = async () => {
     let dv = Query.DataView(protyle, item, top);
-    const now = Query.Utils.today(false);
     const todayState = dv.useState('today', now); //Only update the state once.
 
     let updatedState = dv.useState('updated-docs', []);

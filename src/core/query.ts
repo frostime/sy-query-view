@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-12-01 22:34:55
  * @FilePath     : /src/core/query.ts
- * @LastEditTime : 2024-12-09 21:37:32
+ * @LastEditTime : 2024-12-10 16:28:12
  * @Description  : 
  */
 import { IProtyle } from "siyuan";
@@ -160,7 +160,7 @@ const Query = {
         /**
          * Gets timestamp for current time with optional day offset
          * @param days - Number of days to offset (positive or negative)
-         * - {number} 直接使用数字
+         * - {number} 直接用数字
          * - {string} 使用字符串，如 '1d' 表示 1 天，'2w' 表示 2 周，'3m' 表示 3 个月，'4y' 表示 4 年
          * - 可以为负数
          * @returns Timestamp string in yyyyMMddHHmmss format
@@ -603,21 +603,25 @@ const Query = {
      * Send GPT request, use AI configuration in `siyuan.config.ai.openAI` by default
      * @param prompt - Prompt
      * @param options - Options
-     * @param options.timeout - Request timeout
      * @param options.url - Custom API URL
      * @param options.model - Custom API model
      * @param options.apiKey - Custom API key
      * @param options.returnRaw - Whether to return raw response (default: false)
      * @param options.history - Chat history
+     * @param options.stream - Whether to use streaming mode, default: false
+     * @param options.streamMsg - Callback function for streaming messages, only works when options.stream is true
+     * @param options.streamInterval - Interval for calling options.streamMsg on each chunk, default: 1
      * @returns GPT response
      */
     gpt: async (prompt: string, options?: {
-        timeout?: number,
         url?: string,
         model?: string,
         apiKey?: string,
         returnRaw?: boolean,
-        history?: { role: 'user' | 'assistant', content: string }[]
+        history?: { role: 'user' | 'assistant', content: string }[],
+        stream?: boolean,
+        streamMsg?: (msg: string) => void,
+        streamInterval?: number
     }) => {
         let { apiBaseURL, apiModel, apiKey } = window.siyuan.config.ai.openAI;
         apiModel = options?.model ?? apiModel;
@@ -628,26 +632,88 @@ const Query = {
         } else {
             url = `${apiBaseURL.endsWith('/') ? apiBaseURL : apiBaseURL + '/'}chat/completions`;
         }
-        const result = await request('/api/network/forwardProxy', {
-            "url": url,
-            "method": "POST",
-            "contentType": "application/json",
-            "payload": {
-                "model": apiModel,
-                "messages": [{
-                    "role": "user",
-                    "content": prompt
-                }, ...(options?.history ?? [])],
-                "stream": false
-            },
-            "headers": [{
-                "Authorization": `Bearer ${apiKey}`
-            }],
-            "timeout": options?.timeout ?? 1000 * 12
-        });
-        let body = result.body;
-        let payload = JSON.parse(body);
-        return options?.returnRaw ? payload : payload.choices[0].message.content;
+
+        const payload = {
+            "model": apiModel,
+            "messages": [{
+                "role": "user",
+                "content": prompt
+            }, ...(options?.history ?? [])],
+            "stream": options?.stream ?? false
+        };
+
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${apiKey}`,
+                    'Accept': 'text/event-stream'
+                },
+                body: JSON.stringify(payload),
+                // signal: AbortSignal.timeout(options?.timeout ?? 1000 * 12)
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            if (options?.stream) {
+                const reader = response.body?.getReader();
+                if (!reader) {
+                    throw new Error('Failed to get response reader');
+                }
+
+                options.streamInterval = options.streamInterval ?? 1;
+
+                const decoder = new TextDecoder();
+                let fullText = '';
+
+                try {
+                    let chunkIndex = 0;
+                    while (true) {
+                        const { done, value } = await reader.read();
+                        if (done) break;
+
+                        const chunk = decoder.decode(value);
+                        const lines = chunk.split('\n').filter(line => line.trim() !== '');
+
+                        for (const line of lines) {
+                            if (line.includes('[DONE]')) {
+                                continue;
+                            }
+                            if (!line.startsWith('data: ')) continue;
+
+                            try {
+                                const data = JSON.parse(line.slice(6));
+                                if (!data.choices[0].delta?.content) continue;
+
+                                const content = data.choices[0].delta.content;
+                                fullText += content;
+                                // options.streamMsg?.(fullText);
+                            } catch (e) {
+                                console.warn('Failed to parse stream data:', e);
+                            }
+                        }
+                        if (chunkIndex % options.streamInterval === 0) {
+                            options.streamMsg?.(fullText);
+                        }
+                        chunkIndex++;
+                    }
+                } catch (error) {
+                    console.error('Stream reading error:', error);
+                    throw error;
+                } finally {
+                    reader.releaseLock();
+                }
+                return fullText;
+            }
+
+            const data = await response.json();
+            return options?.returnRaw ? data : data.choices[0].message.content;
+        } catch (error) {
+            return `[Error] Failed to request openai api, ${error}`;
+        }
     }
 }
 
