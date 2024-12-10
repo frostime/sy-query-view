@@ -194,6 +194,8 @@ class BlockTable {
     private center: boolean;
     private indices: boolean;
 
+    private tdRenderer: (input: string) => string;
+
     private adaptColumnInput(options: { cols?: any, blocks: Block[] }) {
         const { cols, blocks } = options;
         let colKey: any[] = [];
@@ -264,6 +266,7 @@ class BlockTable {
     constructor(options: {
         target: HTMLElement, blocks: Block[], center?: boolean,
         cols?: (string | Record<string, string>)[] | Record<string, string>, indices?: boolean,
+        cell?: 'markdown' | 'raw',
         renderer?: (b: Block, attr: keyof Block) => string | number | undefined | null,
     }) {
         const columns = this.adaptColumnInput(options);
@@ -274,6 +277,16 @@ class BlockTable {
                 return options.renderer(b, c) ?? renderAttr(b, c);
             } else {
                 return renderAttr(b, c);
+            }
+        }
+
+        options.cell = options.cell ?? 'markdown';
+        const lute = getLute();
+        this.tdRenderer = (input: string) => {
+            if (options?.cell === 'markdown') {
+                return lute.InlineMd2BlockDOM(`${input}`);
+            } else {
+                return input;
             }
         }
 
@@ -304,7 +317,7 @@ class BlockTable {
         const tableData = this.tableData;
         const headerRow = tableData[0].map(header => `<th>${lute.InlineMd2BlockDOM(`${header}`)}</th>`).join('');
         const bodyRows = tableData.slice(1).map(row => {
-            const rowItems = row.map(rowItem => `<td>${lute.InlineMd2BlockDOM(`${rowItem}`)}</td>`).join('');
+            const rowItems = row.map(rowItem => `<td>${this.tdRenderer(`${rowItem}`)}</td>`).join('');
             return `<tr>${rowItems}</tr>`;
         }).join('');
 

@@ -55,7 +55,12 @@ const removeLine = (content, line) => {
 }
 
 const writer = fileWriter(path.join(outputDir, 'types.d.ts'));
-const replaceSomething = (content) => {
+const replaceSomething = (content, lines = []) => {
+    if (lines.length > 0) {
+        lines.forEach(line => {
+            content = content.replaceAll(line, '');
+        });
+    }
     content = content.replaceAll(`import("./proxy").`, '');
     content = content.replaceAll(`import("@/core/query").default;`, 'Query');
     return content;
@@ -68,21 +73,26 @@ declare module 'siyuan' {
     }
 }
 
+/**
+ * Send siyuan kernel request
+ */
+declare function request(url: string, data: any): Promise<any | null>;
+
 `.trimStart());
 
-writer.append('// ================== query.d.ts ==================\n');
+writer.append('///@query.d.ts\n');
 let query = readFile('./types/core/query.d.ts');
-query = replaceSomething(query);
+query = replaceSomething(query, ['import { request } from "@/api";']);
 writer.append(query);
 writer.append('\n');
 
-writer.append('// ================== data-view.d.ts ==================\n');
+writer.append('///@data-view.d.ts\n');
 let dataviewdts = readFile('./src/types/data-view.d.ts');
 dataviewdts = replaceSomething(dataviewdts);
 writer.append(dataviewdts);
 writer.append('\n');
 
-writer.append('// ================== data-view.d.ts ==================\n');
+writer.append('///@data-view.d.ts\n');
 let dataview = readFile('./types/core/data-view.d.ts');
 dataview = removeLine(dataview, 'import { IProtyle } from "siyuan";');
 dataview = replaceSomething(dataview);
@@ -97,13 +107,13 @@ writer.append('\n');
 // writer.append(useState);
 // writer.append('\n');
 
-writer.append('// ================== proxy.d.ts ==================\n');
+writer.append('///@proxy.d.ts\n');
 let proxy = readFile('./types/core/proxy.d.ts');
 proxy = replaceSomething(proxy);
 writer.append(proxy);
 writer.append('\n');
 
-writer.append('// ================== index.d.ts ==================\n');
+writer.append('///@index.d.ts\n');
 let indexdts = readFile('./src/types/index.d.ts');
 indexdts = replaceSomething(indexdts);
 writer.append(indexdts);

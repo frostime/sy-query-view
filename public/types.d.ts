@@ -5,9 +5,14 @@ declare module 'siyuan' {
 
 }
 
-// ================== query.d.ts ==================
+/**
+ * Send siyuan kernel request
+ */
+declare function request(url: string, data: any): Promise<any | null>;
+
+///@query.d.ts
 import { IProtyle } from "siyuan";
-import { request } from "@/api";
+
 /**
  * Data class for SiYuan timestamp
  * In SiYuan, the timestamp is in the format of yyyyMMddHHmmss
@@ -34,7 +39,7 @@ declare const Query: {
         /**
          * Gets timestamp for current time with optional day offset
          * @param days - Number of days to offset (positive or negative)
-         * - {number} 直接��用数字
+         * - {number} 直接用数字
          * - {string} 使用字符串，如 '1d' 表示 1 天，'2w' 表示 2 周，'3m' 表示 3 个月，'4y' 表示 4 年
          * - 可以为负数
          * @returns Timestamp string in yyyyMMddHHmmss format
@@ -112,6 +117,7 @@ declare const Query: {
          * Gets the name of a notebook by its ID; equivalent to `notebook(boxid).name`
          * @param boxid - Notebook ID
          * @returns Notebook name
+         * @alias boxname
          * @example
          * Query.Utils.boxName(block['box']) // 'Notebook 123'
          */
@@ -239,16 +245,17 @@ declare const Query: {
      * Send GPT request, use AI configuration in `siyuan.config.ai.openAI` by default
      * @param prompt - Prompt
      * @param options - Options
-     * @param options.timeout - Request timeout
      * @param options.url - Custom API URL
      * @param options.model - Custom API model
      * @param options.apiKey - Custom API key
      * @param options.returnRaw - Whether to return raw response (default: false)
      * @param options.history - Chat history
+     * @param options.stream - Whether to use streaming mode, default: false
+     * @param options.streamMsg - Callback function for streaming messages, only works when options.stream is true
+     * @param options.streamInterval - Interval for calling options.streamMsg on each chunk, default: 1
      * @returns GPT response
      */
     gpt: (prompt: string, options?: {
-        timeout?: number;
         url?: string;
         model?: string;
         apiKey?: string;
@@ -257,10 +264,13 @@ declare const Query: {
             role: "user" | "assistant";
             content: string;
         }[];
+        stream?: boolean;
+        streamMsg?: (msg: string) => void;
+        streamInterval?: number;
     }) => Promise<any>;
 };
 
-// ================== data-view.d.ts ==================
+///@data-view.d.ts
 /**
  * List Options
  * @interface IListOptions
@@ -402,7 +412,7 @@ interface IState<T> {
     derived: (derive: (value: T) => T) => () => T;
 }
 
-// ================== data-view.d.ts ==================
+///@data-view.d.ts
 /**
  * DataView class for creating and managing dynamic data visualizations
  * Provides various methods for visualizing data.
@@ -440,25 +450,27 @@ export declare class DataView implements IDataView {
      * @param dispose The dispose function
      */
     addDisposer(dispose: () => void, id?: string): void;
-    adddisposer: (dispose: () => void, id?: string) => void;
+    /**
+     * Wrap an element into a view container
+     * @param ele
+     */
+    view(ele: HTMLElement | string): HTMLElement;
     /**
      * Add a custom element to the DataView.
      * If the passing is a view container, it will be directly appended.
      * Otherwise, it will be wrapped by a new container
      * @param ele
      * @param disposer -- dispose function, optional
-     * @returns {HTMLElement} View Conainer, with a special class name, and a `data-id` attribute
+     * @returns View Conainer, with a special class name, and a `data-id` attribute
      * @alias addele
      */
-    addElement(ele: HTMLElement | string, disposer?: () => void): any;
-    addelement: (ele: HTMLElement | string, disposer?: () => void) => any;
-    addele: (ele: HTMLElement | string, disposer?: () => void) => any;
+    addElement(ele: HTMLElement | string, disposer?: () => void): HTMLElement;
     isValidViewContainer(container: HTMLElement): boolean;
     /**
      * Remove the view element (by given the id of the container) from dataview
      * @param id Existed view's data-id
      * @param beforeRemove, an optional callback funcgtion
-     * @returns {boolean} Whether the removal succeeded
+     * @returns Whether the removal succeeded
      */
     removeView(id: string, beforeRemove?: (viewContainer: HTMLElement) => void): boolean;
     removeview: (id: string, beforeRemove?: (viewContainer: HTMLElement) => void) => boolean;
@@ -524,7 +536,7 @@ export declare class DataView implements IDataView {
     columns(elements: HTMLElement[], options?: {
         gap?: string;
         flex?: number[];
-    }): HTMLDivElement;
+    }): HTMLElement;
     /**
      * Arranges elements in rows
      * @param elements - Array of HTMLElements to arrange
@@ -536,7 +548,7 @@ export declare class DataView implements IDataView {
     rows(elements: HTMLElement[], options?: {
         gap?: string;
         flex?: number[];
-    }): HTMLDivElement;
+    }): HTMLElement;
     /**
      * Creates a Mermaid diagram from Mermaid code
      * @param code - Mermaid code
@@ -749,7 +761,7 @@ export declare class DataView implements IDataView {
 
 export declare const PROHIBIT_METHOD_NAMES: string[];
 
-// ================== proxy.d.ts ==================
+///@proxy.d.ts
 /** Wrapped Block interface with extended convenient properties and methods */
 export interface IWrappedBlock extends Block {
     /** Method to return the original Block object */
@@ -861,7 +873,7 @@ export interface IWrappedList<T> extends Array<T> {
     addcol(newItems: Record<string, ScalarValue | ScalarValue[]> | Record<string, ScalarValue>[] | ((b: T, index: number) => Record<string, ScalarValue> | Record<string, ScalarValue[]>)): IWrappedList<T>;
 }
 
-// ================== index.d.ts ==================
+///@index.d.ts
 /*
  * Copyright (c) 2024 by frostime. All Rights Reserved.
  * @Author       : frostime
