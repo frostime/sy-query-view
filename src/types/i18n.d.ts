@@ -32,6 +32,17 @@ interface I18n {
         user_custom_view: string;
         user_self_written_view: string;
     };
+    src_userhelp_examplests: {
+        backlinks_table: string;
+        daily_quote: string;
+        doc_outline_tree: string;
+        docs_per_month: string;
+        query_attr_views: string;
+        random_text_translate: string;
+        simple_chatgpt: string;
+        sql_exec_result: string;
+        updated_docs_today: string;
+    };
     src_userhelp_indexts: {
         create_notebook: string;
         download: string;

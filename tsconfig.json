@@ -1,6 +1,6 @@
 {
     "compilerOptions": {
-        "target": "ES2023",
+        "target": "ESNext",
         "useDefineForClassFields": true,
         "module": "ESNext",
         "lib": [

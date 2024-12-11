@@ -3,18 +3,35 @@
  * @Author       : frostime
  * @Date         : 2024-12-11 18:24:00
  * @FilePath     : /src/user-help/examples.ts
- * @LastEditTime : 2024-12-11 19:18:55
+ * @LastEditTime : 2024-12-11 19:33:12
  * @Description  : 
  */
 import { getFileBlob, readDir } from "@/api";
 import type QueryViewPlugin from ".."
 import { openTab } from "siyuan";
 
+import { i18n } from "..";
+
 let exampleHTML = '';
 
+const Description = {
+    "exp-avs-under-root-doc.js": () => i18n.src_userhelp_examplests.query_attr_views,
+    "exp-created-docs.js": () => i18n.src_userhelp_examplests.docs_per_month,
+    "exp-daily-sentence.js": () => i18n.src_userhelp_examplests.daily_quote,
+    "exp-doc-backlinks-table.js": () => i18n.src_userhelp_examplests.backlinks_table,
+    "exp-gpt-chat.js": () => i18n.src_userhelp_examplests.simple_chatgpt,
+    "exp-gpt-translate.js": () => i18n.src_userhelp_examplests.random_text_translate,
+    "exp-outline.js": () => i18n.src_userhelp_examplests.doc_outline_tree,
+    "exp-sql-executor.js": () => i18n.src_userhelp_examplests.sql_exec_result,
+    "exp-today-updated.js": () => i18n.src_userhelp_examplests.updated_docs_today
+};
+
 const addSection = (title: string, content: string) => {
+    let desc = Description[title]?.() ?? '';
 let newpart = `
 <h4>${title}</h4>
+
+${desc ? `<blockquote>${desc}</blockquote>` : '' }
 
 <textarea
     class="form-control b3-text-field fn__block"
@@ -23,6 +40,10 @@ let newpart = `
 >
 ${content}
 </textarea>
+
+<br/>
+<br/>
+
 `;
     exampleHTML += newpart;
 }
