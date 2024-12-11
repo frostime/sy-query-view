@@ -27,7 +27,7 @@ const compareVersion = (v1: string, v2: string) => {
 }
 
 const OutlineCode = `
-> {{//!js_esc_newline_const query = async () => {_esc_newline_    let dv = Query.DataView(protyle, item, top);_esc_newline_    let ans = await Query.request('/api/outline/getDocOutline', {_esc_newline_        id: Query.root_id(protyle)_esc_newline_    });_esc_newline_    const iterate = (data) => {_esc_newline_        for (let item of data) {_esc_newline_            if (item.count > 0) {_esc_newline_                let subtocs = iterate(item.blocks ?? item.children);_esc_newline_                item.children = Query.wrapBlocks(subtocs);_esc_newline_            }_esc_newline_        }_esc_newline_        return data;_esc_newline_    }_esc_newline_    let tocs = iterate(ans);_esc_newline_    dv.addmd('### Outline');_esc_newline_    dv.addlist(tocs, {_esc_newline_	    renderer: b => \`[\${b.name || b.content}](\${b.asurl})\`,_esc_newline_    });_esc_newline_    dv.render();_esc_newline_}_esc_newline__esc_newline_return query();}}
+> {{//!js_esc_newline_const query = async () => {_esc_newline_    let dv = Query.DataView(protyle, item, top);_esc_newline_    let ans = await Query.request('/api/outline/getDocOutline', {_esc_newline_        id: Query.root_id(protyle)_esc_newline_    });_esc_newline_    const iterate = (data) => {_esc_newline_        for (let item of data) {_esc_newline_            if (item.count > 0) {_esc_newline_                let subtocs = iterate(item.blocks ?? item.children);_esc_newline_                item.children = Query.wrapBlocks(subtocs);_esc_newline_            }_esc_newline_        }_esc_newline_        return data;_esc_newline_    }_esc_newline_    let tocs = iterate(ans);_esc_newline_    dv.addmd('### Outline');_esc_newline_    dv.addlist(tocs, {_esc_newline_	renderer: b => \`[\${b.name || b.content}](\${b.asurl})\`,_esc_newline_        columns: 2_esc_newline_    });_esc_newline_    dv.render();_esc_newline_}_esc_newline__esc_newline_return query();}}
 `.trim();
 
 
@@ -38,18 +38,9 @@ const createReadmeText = async (plugin: QueryViewPlugin) => {
     const response = await fetch(`/plugins/sy-query-view/${fname}`);
     let readme = await response.text();
 
-    // let urlTemplate = `https://github.com/frostime/sy-query-view/blob/v${plugin.version}/assets/{{file}}?raw=true`;
-
-    // const regex = /!\[image\]\(assets\/([^)]+)\s*"([^"]+)?"\)/g;
-    // // Replace matched images with the desired syntax
-    // readme = readme.replace(regex, (match, filename, title) => {
-    //     const fullUrl = urlTemplate.replace('{{file}}', filename.trim());
-    //     return `![${title || 'image'}](${fullUrl})`;
-    // });
-
     const AheadHint = i18n.user_help.ahead_hint.trim();
     let ahead = AheadHint.replace('{{version}}', plugin.version);
-    readme = ahead + '\n' + OutlineCode + '\n\n' +  readme;
+    readme = ahead + '\n' + OutlineCode + '\n\n' + readme;
     return readme;
 }
 
@@ -64,7 +55,8 @@ const createReadme = async (plugin: QueryViewPlugin) => {
     let readme = await createReadmeText(plugin);
     let docId = await createDocWithMd(notebook.id, `/${title}`, readme);
     const attr = {
-        [CUSTOM_USER_README_ATTR]: plugin.version
+        [CUSTOM_USER_README_ATTR]: plugin.version,
+        'custom-sy-readonly': 'true'
     };
     await setBlockAttrs(docId, attr);
     return docId;
@@ -106,17 +98,19 @@ const useUserReadme = async (plugin: QueryViewPlugin) => {
     if (attrVer.length === 0) return;
     const attrVerStr = attrVer[0].value;
     if (compareVersion(attrVerStr, plugin.version) < 0) {
+        showMessage(((`检查到插件版本已更新，正在更新文档，请稍等...`)), 5000)
         let newText = await createReadmeText(plugin);
-        await updateBlock('markdown', newText, targetDocId);
-        await setBlockAttrs(targetDocId, { [CUSTOM_USER_README_ATTR]: plugin.version });
         const title = `${plugin.displayName}@${plugin.version} ` + i18n.src_userhelp_indexts.help_doc;
         const doc = docs[0];
         await renameDoc(doc.box, doc.path, title)
+        await updateBlock('markdown', newText, targetDocId);
+        await setBlockAttrs(targetDocId, {
+            [CUSTOM_USER_README_ATTR]: plugin.version,
+            'custom-sy-readonly': 'true'
+        });
     }
 
-    setTimeout(() => {
-        openBlock(targetDocId);
-    }, 0);
+    openBlock(targetDocId);
 }
 
 export const load = async (plugin: QueryViewPlugin) => {
@@ -129,7 +123,7 @@ export const load = async (plugin: QueryViewPlugin) => {
         label: i18n.src_userhelp_indexts.download + ' d.ts',
         icon: 'iconDownload',
         click: () => {
-            const url ='/plugins/sy-query-view/types.d.ts';
+            const url = '/plugins/sy-query-view/types.d.ts';
             const a = document.createElement('a');
             a.href = url;
             a.download = `${pluginName}@${pluginVersion}.types.d.ts`;

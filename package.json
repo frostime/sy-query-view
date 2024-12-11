@@ -8,8 +8,8 @@
   "author": "frostime",
   "license": "MIT",
   "scripts": {
-    "dev": "npm run export-types && npm run vite:dev && npm run replace-md-file ./dev",
-    "build": "npm run export-types && npm run vite:build && npm run replace-md-file ./dist",
+    "dev": "npm run export-types && npm run vite:dev",
+    "build": "npm run export-types && npm run vite:build",
     "vite:dev": "cross-env NODE_ENV=development VITE_SOURCEMAP=inline vite build --watch",
     "vite:build": "cross-env NODE_ENV=production vite build",
     "vite:build-no-minify": "cross-env NODE_ENV=production NO_MINIFY=true vite build",
@@ -18,7 +18,6 @@
     "make-install": "pnpm run vite:build-no-minify && npx make-install",
     "auto-i18n": "i18n extract && i18n translate && i18n export",
     "export-types": "node scripts/export-types.js",
-    "replace-md-file": "node scripts/replace-md-file.js",
     "git-tag": "node scripts/git-tag.js"
   },
   "devDependencies": {
@@ -29,6 +28,7 @@
     "fast-glob": "^3.2.12",
     "glob": "^10.0.0",
     "js-yaml": "^4.1.0",
+    "marked": "^15.0.3",
     "minimist": "^1.2.8",
     "rollup-plugin-livereload": "^2.0.5",
     "sass": "^1.63.3",

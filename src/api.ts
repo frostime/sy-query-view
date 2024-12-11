@@ -89,7 +89,7 @@ export async function listDocsByPath(notebook: NotebookId, path: string) {
 
 export async function renameDoc(notebook: NotebookId, path: string, title: string): Promise<DocumentId> {
     let data = {
-        doc: notebook,
+        notebook: notebook,
         path: path,
         title: title
     };

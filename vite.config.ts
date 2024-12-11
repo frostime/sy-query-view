@@ -77,13 +77,17 @@ export default defineConfig({
                                 this.addWatchFile(file);
                             }
                         }
-                    }
+                    },
+                    replaceMDVars(outputDir),
+                    replaceMDImgUrl(outputDir)
                 ] : [
                     // Clean up unnecessary files under dist dir
                     cleanupDistFiles({
                         patterns: ['i18n/*.yaml', 'i18n/*.md'],
                         distDir: outputDir
                     }),
+                    replaceMDVars(outputDir),
+                    replaceMDImgUrl(outputDir),
                     zipPack({
                         inDir: './dist',
                         outDir: './',
@@ -158,6 +162,118 @@ function cleanupDistFiles(options: { patterns: string[], distDir: string }) {
                         console.error(`Failed to clean up ${file}:`, error);
                     }
                 }
+            }
+        }
+    };
+}
+
+
+function replaceMDVars(dirname: string) {
+
+    return {
+        name: 'rollup-plugin-replace-md-vars',
+        enforce: 'post',
+        writeBundle: {
+            sequential: true,
+            order: 'post' as 'post',
+            async handler() {
+                const path = await import('path');
+                const fs = await import('fs');
+
+                const readFile = (filepath: string) => {
+                    return fs.readFileSync(filepath, 'utf8');
+                }
+
+                const replaceMDFileVar = (dirname: string, varVal: Record<string, string>) => {
+                    const replace = (filepath: string) => {
+                        let md = readFile(filepath);
+                        for (const [key, value] of Object.entries(varVal)) {
+                            //@ts-ignore
+                            md = md.replaceAll(key, value);
+                        }
+                        fs.writeFileSync(filepath, md);
+                    }
+
+                    // 遍历所有 README*.md 文件
+                    const files = fs.readdirSync(dirname).filter(file => file.startsWith('README') && file.endsWith('.md'));
+                    for (const file of files) {
+                        replace(path.join(dirname, file));
+                    }
+                }
+                console.log('Replace MD vars under:', dirname);
+                const jsonfile = './types/types.d.ts.json';
+                const cache = JSON.parse(fs.readFileSync(jsonfile, 'utf8'));
+                replaceMDFileVar(dirname, cache);
+            }
+        }
+    };
+
+}
+
+
+function replaceMDImgUrl(dirname: string) {
+    return {
+        name: 'rollup-plugin-replace-md-img-url',
+        enforce: 'post',
+        writeBundle: {
+            sequential: true,
+            order: 'post' as 'post',
+            async handler() {
+                const fs = await import('fs');
+                const { resolve } = await import('path');
+
+                console.log('Replace MD image URLs under:', dirname);
+
+                const replace = async (readmePath: string, prefix: string) => {
+                    if (prefix.endsWith('/')) {
+                        prefix = prefix.slice(0, -1);
+                    }
+                    function replaceImageUrl(url: string) {
+                        // Replace with your desired image hosting URL
+                        if (url.startsWith('assets/')) {
+                            return `${prefix}/${url}`;
+                        }
+                        return url;
+                    }
+
+                    try {
+                        let readmeContent = fs.readFileSync(readmePath, 'utf-8');
+
+                        // Regular expression to match Markdown image syntax
+                        // Matches both with and without title/alt text
+                        const imageRegex = /!\[([^\]]*)\]\(([^)\s"]+)(?:\s+"([^"]*)")?\)/g;
+
+                        // Replace all image URLs in the content
+                        const updatedReadmeContent = readmeContent.replace(
+                            imageRegex,
+                            (match, alt, url, title) => {
+                                const newUrl = replaceImageUrl(url);
+                                // If there was a title, include it in the new markdown
+                                if (title) {
+                                    return `![${alt}](${newUrl} "${title}")`;
+                                }
+                                // Otherwise just return the image with alt text
+                                return `![${alt}](${newUrl})`;
+                            }
+                        );
+
+                        // Write the updated content back to the file
+                        fs.writeFileSync(readmePath, updatedReadmeContent, 'utf-8');
+                        console.log(`Successfully updated ${readmePath}`);
+
+                    } catch (error) {
+                        console.error(`Error processing ${readmePath}:`, error);
+                    }
+                }
+
+                const prefix_github = 'https://github.com/frostime/sy-query-view/raw/main';
+                // const prefix_cdn = 'https://cdn.jsdelivr.net/gh/frostime/sy-query-view@main';
+                const prefix_cdn = 'https://ghp.ci/https://github.com/frostime/sy-query-view/raw/main';
+
+                let readmePath = resolve(dirname, 'README.md');
+                await replace(readmePath, prefix_github);
+                readmePath = resolve(dirname, 'README_zh_CN.md');
+                await replace(readmePath, prefix_cdn);
             }
         }
     };

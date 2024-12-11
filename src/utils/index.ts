@@ -3,17 +3,13 @@
  * @Author       : frostime
  * @Date         : 2024-04-18 21:05:32
  * @FilePath     : /src/utils/index.ts
- * @LastEditTime : 2024-12-02 22:03:35
+ * @LastEditTime : 2024-12-11 16:26:50
  * @Description  : 
  */
 import * as api from '../api';
 import { getFrontend, openMobileFileById, openTab, type Plugin } from 'siyuan';
 import { app } from '@/index';
 
-export const getPlugin = (): Plugin => {
-    let plugin = window.siyuan.ws.app.plugins.find(p => p.name === 'sy-f-misc');
-    return plugin;
-}
 
 export function debounce<F extends (...args: Parameters<F>) => ReturnType<F>>(func: F, wait: number) {
     let timeout: ReturnType<typeof setTimeout> | undefined;
