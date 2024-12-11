@@ -61,7 +61,7 @@ jobs:
           # 显示 TypeScript 配置
           cat tsconfig.json
           # 执行构建并捕获所有输出
-          pnpm build || { echo "Build failed"; exit 1; }
+          pnpm run build || { echo "Build failed"; exit 1; }
           # 检查构建后的文件
           ls -la dist
           ls -la types || true

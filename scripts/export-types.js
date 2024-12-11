@@ -31,6 +31,7 @@ let outputDir = './public';
 
 const tsc = `tsc --declaration --emitDeclarationOnly --skipLibCheck --target ESNext --project tsconfig.json --outDir ./types --noEmitOnError false --stripInternal`;
 
+console.log(tsc);
 execSync(tsc);
 
 
@@ -167,3 +168,4 @@ for (let i = 0; i < lines.length - 1; i++) {
 
 // removeTypesDir();
 fs.writeFileSync(path.join(outputDir, 'types.d.ts'), lines.join('\n'));
+console.log(`${outputDir}/types.d.ts generated`);
