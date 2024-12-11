@@ -1910,6 +1910,14 @@ Common code editor command-line references:
 
 ## 7. Other Usage Suggestions
 
+### My code in the embed block is not responding, what should I do?
+
+Since the code in the embed block is executed within a `Function`​ object, errors during execution may not appear in the console.
+
+In such cases, it is essential to learn how to debug your JavaScript code and carefully check if there are any mistakes.
+
+If possible, it is more recommended to edit your code in an external editor, where syntax highlighting and other prompts can help avoid many low-level errors.
+
 ### How to Debug DataView Code?
 
 You can add `debugger`​ in the code and open the developer mode. When it runs to this line, it will automatically enter the breakpoint mode, and then you can debug the program.
