@@ -106,6 +106,7 @@ export const load = async (plugin: Plugin) => {
             svg: 'svg'
         }
     });
+    /* For Debug Only
     settingUtils.addItem({
         type: 'hint',
         title: 'Session Storage Size',
@@ -152,6 +153,7 @@ export const load = async (plugin: Plugin) => {
             return div;
         }
     });
+    */
     const configs = await settingUtils.load();
     delete configs.codeEditor;
     defaultSetting = { ...defaultSetting, ...configs };

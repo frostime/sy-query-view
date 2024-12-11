@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-12-02 10:15:04
  * @FilePath     : /src/core/data-view.ts
- * @LastEditTime : 2024-12-10 16:11:54
+ * @LastEditTime : 2024-12-11 18:10:46
  * @Description  : 
  */
 import {
@@ -219,7 +219,23 @@ export class DataView extends UseStateMixin implements IDataView {
         this._element = document.createElement("div");
         this.lute = getLute();
 
-        this._element.classList.add(styles["data-query-embed"], 'protyle-wysiwyg__embed', 'protyle-custom');
+        this._element.classList.add(styles["data-query-embed"], 'protyle-custom');
+        /** 
+         * 加了这一行有时候会出现 getBlockInfo 的问题, 样例:
+            //!js
+            let dv = Query.DataView(protyle, item, top);
+            const state = dv.useState('counter', 1);
+            const button = document.createElement('button');
+            button.textContent = '+1';
+            button.onclick = (e) => {
+                state.value += 1;
+                dv.repaint();
+            }
+            dv.addcols([button, dv.md(`State = ${state()}`)]);
+
+            dv.render();
+         */
+        // this._element.classList.add('protyle-wysiwyg__embed');
         this._element.dataset.id = window.Lute.NewNodeID();
 
         this.thisEmbedNode.lastElementChild.insertAdjacentElement("beforebegin", this._element);
@@ -478,6 +494,11 @@ export class DataView extends UseStateMixin implements IDataView {
     markdown(md: string) {
         let elem = newViewWrapper();
         elem.innerHTML = this.lute.Md2BlockDOM(md);
+        // elem.querySelectorAll('[contenteditable]').forEach
+        let editableNodeList = elem.querySelectorAll('[contenteditable="true"]');
+        editableNodeList.forEach(node => {
+            node.setAttribute('contenteditable', 'false');
+        });
         return elem;
     }
 

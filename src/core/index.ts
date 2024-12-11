@@ -3,14 +3,13 @@
  * @Author       : frostime
  * @Date         : 2024-05-08 15:00:37
  * @FilePath     : /src/core/index.ts
- * @LastEditTime : 2024-12-08 21:34:19
+ * @LastEditTime : 2024-12-11 18:17:26
  * @Description  :
  *      - Fork from project https://github.com/zxhd863943427/siyuan-plugin-data-query
  *      - 基于该项目的 v0.0.7 版本进行修改
  */
 // import type FMiscPlugin from "@/index";
 import {
-    Plugin,
     showMessage,
 } from "siyuan";
 
@@ -18,9 +17,10 @@ import { embedBlockEvent } from "./editor";
 import Query from "./query";
 import { finalizeAllDataviews, onProtyleDestroyed } from "./finalize";
 import { loadUserCustomView } from "./custom-view";
+import type QueryViewPlugin from "..";
+import { i18n } from "..";
 
-
-const load = (plugin: Plugin) => {
+const load = (plugin: QueryViewPlugin) => {
 
     globalThis.Query = Query;
 
@@ -38,9 +38,24 @@ const load = (plugin: Plugin) => {
             console.debug(`Load custom query-view: ${Object.keys(status.custom)}`);
         }
     });
+
+    plugin.registerMenuItem({
+        //@ts-ignore
+        label: i18n.src_core_indexts.reload_custom_comp,
+        icon: 'iconAccount',
+        click: async () => {
+            const result = await loadUserCustomView();
+            if (result.ok) {
+                let cnt = Object.keys(result.custom).length;
+                showMessage(i18n.src_setting_indexts.import_success.replace('{cnt}', `${cnt}`), 3000, 'info');
+            } else {
+                showMessage(i18n.src_setting_indexts.import_failed, 3000, 'error');
+            }
+        }
+    });
 }
 
-const unload = (plugin: Plugin) => {
+const unload = (plugin: QueryViewPlugin) => {
 
     finalizeAllDataviews();
 

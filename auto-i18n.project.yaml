@@ -18,12 +18,12 @@ code_files:
 - src/**/*.ts
 - src/**/*.svelte
 dict:
-  - 思源翻译为 SiYuan
-  - QueryView, DataView 这些专有名词, 不用翻译, 保持原名
-  - "视图组件" 翻译成 "View Component"
-  - "块" 是思源笔记中的基本单位，翻译成 Block
-  - 嵌入块 翻译成 Embed Block
-  - "反向链接" 或者 "反链" 翻译成 "backlink"
+# - 思源翻译为 SiYuan
+# - QueryView, DataView 这些专有名词, 不用翻译, 保持原名
+# - "视图组件" 翻译成 "View Component"
+# - "块" 是思源笔记中的基本单位，翻译成 Block
+# - 嵌入块 翻译成 Embed Block
+# - "反向链接" 或者 "反链" 翻译成 "backlink"
 export_dir: src/types
 i18n_dir: public/i18n
 i18n_pattern: \(\(`(.+?)`\)\)
@@ -31,6 +31,4 @@ i18n_var_mid: pathname
 i18n_var_prefix: i18n
 main_file: zh_CN.yaml
 strategy: diff
-global_config:
-  GPT:
-    model: doubao-pro-128k
+

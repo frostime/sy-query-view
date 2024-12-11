@@ -9,6 +9,7 @@ interface I18n {
     };
     src_core_indexts: {
         custom_queryview_error: string;
+        reload_custom_comp: string;
     };
     src_dataquery_componentsts: {
         mermaid_render_failed: string;
@@ -36,6 +37,9 @@ interface I18n {
         download: string;
         help_doc: string;
         help_doc_2: string;
+    };
+    src_userhelp_sydocts: {
+        plugin_update_doc: string;
     };
     user_help: {
         ahead_hint: string;
