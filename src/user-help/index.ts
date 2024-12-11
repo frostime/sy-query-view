@@ -1,4 +1,4 @@
-import { createDocWithMd, removeDoc, request, setBlockAttrs, sql, updateBlock } from "@/api";
+import { createDocWithMd, removeDoc, renameDoc, request, setBlockAttrs, sql, updateBlock } from "@/api";
 import type QueryViewPlugin from "@/index";
 import { openBlock } from "@/utils";
 import { showMessage } from "siyuan";
@@ -37,6 +37,16 @@ const createReadmeText = async (plugin: QueryViewPlugin) => {
 
     const response = await fetch(`/plugins/sy-query-view/${fname}`);
     let readme = await response.text();
+
+    // let urlTemplate = `https://github.com/frostime/sy-query-view/blob/v${plugin.version}/assets/{{file}}?raw=true`;
+
+    // const regex = /!\[image\]\(assets\/([^)]+)\s*"([^"]+)?"\)/g;
+    // // Replace matched images with the desired syntax
+    // readme = readme.replace(regex, (match, filename, title) => {
+    //     const fullUrl = urlTemplate.replace('{{file}}', filename.trim());
+    //     return `![${title || 'image'}](${fullUrl})`;
+    // });
+
     const AheadHint = i18n.user_help.ahead_hint.trim();
     let ahead = AheadHint.replace('{{version}}', plugin.version);
     readme = ahead + '\n' + OutlineCode + '\n\n' +  readme;
@@ -99,6 +109,9 @@ const useUserReadme = async (plugin: QueryViewPlugin) => {
         let newText = await createReadmeText(plugin);
         await updateBlock('markdown', newText, targetDocId);
         await setBlockAttrs(targetDocId, { [CUSTOM_USER_README_ATTR]: plugin.version });
+        const title = `${plugin.displayName}@${plugin.version} ` + i18n.src_userhelp_indexts.help_doc;
+        const doc = docs[0];
+        await renameDoc(doc.box, doc.path, title)
     }
 
     setTimeout(() => {
