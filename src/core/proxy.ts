@@ -10,18 +10,12 @@ export interface IWrappedBlock extends Block {
 
     /** Block's URI link in format: siyuan://blocks/xxx */
     asurl: string;
-    /** Block's URI link in format: siyuan://blocks/xxx */
-    tourl: string;
 
     /** Block's Markdown format link [content](siyuan://blocks/xxx) */
     aslink: string;
-    /** Block's Markdown format link [content](siyuan://blocks/xxx) */
-    tolink: string;
 
     /** Block's SiYuan reference format text */
     asref: string;
-    /** Block's SiYuan reference format text */
-    toref: string;
 
     /**
      * Returns a rendered SiYuan attribute
@@ -58,6 +52,14 @@ export interface IWrappedList<T> extends Array<T> {
 
     /** Original array */
     unwrapped: T[];
+
+    /**
+     * Converts the array to a map object, where the key is specified by the key parameter.
+     * Equivalent to calling `array.reduce((acc, cur) => ({...acc, [cur[key]]: cur }), {})`
+     * @param key 
+     * @returns 
+     */
+    asMap: (key: string) => Record<string, Block>;
 
     /**
      * Returns a new array containing only specified properties
@@ -100,13 +102,19 @@ export interface IWrappedList<T> extends Array<T> {
      */
     slice(start: number, end: number): IWrappedList<T>;
     /**
+     * Returns a new array with the results of calling a provided function on every element in the calling array
+     * @param fn 
+     * @param useWrapBlock  - If true, the result will be wrapped as a IWrappedBlock
+     */
+    map<U>(callbackfn: (value: T, index: number, array: T[]) => U, useWrapBlock: boolean) : IWrappedList<U>;
+    /**
      * Returns a new array with unique elements
      * @param {keyof Block | Function} key - Unique criteria, can be property name or function
      * @example
      * list.unique('id')
      * list.unique(b => b.updated.slice(0, 4))
      */
-    unique(key?: keyof T | ((b: T) => string | number)): IWrappedList<T>;
+    unique(key?: keyof Block | ((b: Block) => string | number)): IWrappedList<IWrappedBlock>;
     /**
      * Returns a new array with added rows
      * @alias addrows
@@ -239,9 +247,9 @@ export const wrapBlock = (block: Block): IWrappedBlock => {
  * @param list 
  * @returns 
  */
-export const wrapList = (list: Block[], useWrapBlock: boolean = true): IWrappedList<IWrappedBlock> => {
+export const wrapList = (list: Block[], useWrapBlock: boolean = true) => {
     if (list?.['unwrapped']) {
-        return list as IWrappedList<IWrappedBlock>;
+        return list
     }
 
     // let wrappedBlocks = list.map(block => wrapBlock(block as Block));
@@ -440,6 +448,7 @@ export const wrapList = (list: Block[], useWrapBlock: boolean = true): IWrappedL
                     }
                 case 'addcol':
                 case 'addcols':
+                case 'stack':
                     /**
                      * Returns a new array with merged elements for each item
                      * @param {Record<string, ScalarValue | ScalarValue[]> | Record<string, ScalarValue>[] | Function} newItems - New columns to add
@@ -500,5 +509,6 @@ export const wrapList = (list: Block[], useWrapBlock: boolean = true): IWrappedL
             return null;
         }
     });
-    return proxy as IWrappedList<IWrappedBlock>;
+    //@ts-ignore
+    return proxy;
 }

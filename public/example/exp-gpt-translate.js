@@ -9,6 +9,7 @@ ${text}
 `;
 const query = async () => {
     let dv = Query.DataView(protyle, item, top);
+    dv.render();
     //任意选择一个不为空的段落
     let block = (await Query.random(10, 'p')).find(b => b.markdown !== '');
 
@@ -35,8 +36,6 @@ ${md}
 
 ${translated}
 `.trim());
-
-    dv.render();
 }
 
 return query();

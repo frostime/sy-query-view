@@ -23,7 +23,8 @@ src_setting_indexts:
   defaultcolumnsofdataviewtable: When calling DataView.table, the default columns
     to be displayed, separated by commas; leaving it blank means showing all columns
   echarts_renderer: Echarts renderer
-  echarts_renderer_option: Echarts renderer, which can be "canvas" or "svg", default is "svg"
+  echarts_renderer_option: Echarts renderer, which can be "canvas" or "svg", default
+    is "svg"
   import_failed: Import failed. Please check the console error for details.
   import_success: Import succeeded. There are a total of {cnt} custom views.
   local_command_desc: The local command used to open the code editor, by default it
@@ -44,8 +45,13 @@ src_userhelp_examplests:
     tree structure
   docs_per_month: Query the number of documents created each month and display them
     using an echarts line chart
-  query_attr_views: Query all attribute views under the current document
-    and summarize them in an embedded block
+  echarts_graph_ref: Using Echarts Graph to Display Backlink Reference Blocks in the
+    Current Document
+  query_attr_views: Query all attribute views under the current document and summarize
+    them in an embedded block
+  query_doc_tree: Query the document tree structure under the current document and
+    display it using a nested list; the maximum depth is controlled by the MAX_DEPTH
+    variable.
   random_text_translate: Randomly select a piece of text from SiYuan and translate
     it into English using GPT, with the GPT API set internally in SiYuan
   simple_chatgpt: A very simple ChatGPT dialog box, using the GPT API set internally
@@ -57,6 +63,7 @@ src_userhelp_examplests:
     format; this example uses state, so after today, the table will no longer update
     and will only display cached records.
     In the actual use process, in fact, it is more recommended to use it with a template. When creating, directly configure "now" as the date of the current day instead of maintaining the date status through "state".
+  view_assets_images: View all images in the assets directory by pagination
 src_userhelp_indexts:
   create_notebook: Please create at least one notebook to store the help documents
   download: Download

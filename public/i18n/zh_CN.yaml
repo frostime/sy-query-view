@@ -20,7 +20,8 @@ src_setting_indexts:
   echarts_renderer_option: Echarts 渲染器，可以为 "canvas" 或 "svg", 默认 "svg"
   import_failed: 导入失败, 详细情况请检查控制台报错
   import_success: 导入成功, 共 {cnt} 个自定义视图
-  local_command_desc: 本地用于打开代码编辑器的命令, 默认为 "code -w {{filepath}}" 代表使用 VSCode 打开, 其中 {{filepath}} 在运行时会被替换为真实的代码文件
+  local_command_desc: 本地用于打开代码编辑器的命令, 默认为 "code -w {{filepath}}" 代表使用 VSCode 打开, 其中
+    {{filepath}} 在运行时会被替换为真实的代码文件
   open_local_editor: ✒️ 打开本地编辑器
   reload: 重新加载
   table_default_columns: 🔑 表格视图默认显示列
@@ -32,13 +33,16 @@ src_userhelp_examplests:
   daily_quote: 每日一句，这个案例中用到了 state，所以每天只会显示一条句子；不过注意这个例子中用到了随便从网上找到 API，不一定稳定，当个案例看看就行
   doc_outline_tree: 查询当前文档的大纲，并以树状结构展示
   docs_per_month: 查询每个月创建的文档的数量，并使用 echarts 折线图展示出来
+  echarts_graph_ref: 使用 Echarts Graph 展示当前文档的反链引用块
   query_attr_views: 查询所在文档下，所有的属性视图 (Attribute View) 然后汇总显示在嵌入块中
+  query_doc_tree: 查询当前文档下属的文档树结构，并使用嵌套列表展示; 最大深度由 MAX_DEPTH 变量控制
   random_text_translate: 随机从思源中选取一段文字，然后使用 GPT 翻译成英文，使用思源内部设置的 GPT API
   simple_chatgpt: 一个非常简单的 ChatGPT 对话框，使用思源内部设置的 GPT API
   sql_exec_result: 在输入框中输入 SQL 语句，点击执行按钮，将执行结果以表格的形式展示
   updated_docs_today: |
     查询今天更新的所有文档，并以列表的形式展示；这个案例中使用了 state，今天之后将不会再更新表格而只会显示缓存的记录。
     实际使用过程中，其实更加建议配合模板使用，在创建的时候直接配置 now 为当天的日期，而非通过 state 来维护日期状态。
+  view_assets_images: 分页查看 assets 目录下所有的图片
 src_userhelp_indexts:
   create_notebook: 请至少先创建一个笔记本用于存放帮助文档
   download: 下载
