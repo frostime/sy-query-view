@@ -46,7 +46,7 @@ const renderAttr = (b: Block & { [key: string | number]: string | number }, attr
 
     switch (attr) {
         case 'type':
-            const type = (BlockTypeShort[b.type] ?? b.type).slice(0, -1);
+            const type = (BlockTypeShort[b.type] ?? b.type);
             v = link(type, b.id);
             break;
 

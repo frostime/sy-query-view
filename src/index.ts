@@ -34,6 +34,8 @@ export default class QueryViewPlugin extends Plugin {
     declare version: string;
 
     private init() {
+
+        this.addIcons(ICON);
         const showMenu = () => {
             let menu = new Menu("query-view");
             this.topBarMenuItems.forEach(item => {
@@ -49,7 +51,7 @@ export default class QueryViewPlugin extends Plugin {
         }
 
         const topbar = this.addTopBar({
-            icon: 'iconEmbed',
+            icon: 'iconQueryView',
             title: 'Query&View',
             position: 'left',
             callback: showMenu
@@ -93,5 +95,9 @@ export default class QueryViewPlugin extends Plugin {
         }
     }
 }
+
+const ICON = `
+<symbol id="iconQueryView" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="4362"><path d="M512 128C724.053333 128 896 299.946667 896 512 896 587.093333 874.666667 657.066667 837.12 716.373333L896 775.253333 896 853.333333C896 876.8 876.8 896 853.333333 896L775.68 896 716.373333 837.12C657.493333 874.666667 587.093333 896 512 896 299.946667 896 128 724.053333 128 512 128 299.946667 299.946667 128 512 128M512 298.666667C394.24 298.666667 298.666667 394.24 298.666667 512 298.666667 629.76 394.24 725.333333 512 725.333333 539.733333 725.333333 565.76 720.213333 590.08 710.4L467.2 587.52C433.92 554.666667 433.92 500.053333 467.2 466.773333 500.48 433.493333 554.666667 433.493333 587.946667 466.773333L710.826667 589.653333C720.213333 565.76 725.333333 539.306667 725.333333 512 725.333333 394.24 629.76 298.666667 512 298.666667Z" p-id="4363"></path></symbol>
+`;
 
 export { i18n, app };

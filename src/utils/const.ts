@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-04-02 22:43:02
  * @FilePath     : /src/utils/const.ts
- * @LastEditTime : 2024-12-08 22:57:39
+ * @LastEditTime : 2024-12-11 19:06:04
  * @Description  : 
  */
 export const Href = {
@@ -24,18 +24,18 @@ export const Svg = {
 };
 
 const BlockTypeShort_ZH = {
-    "d": "文档块",
-    "h": "标题块",
-    "l": "列表块",
+    "d": "文档",
+    "h": "标题",
+    "l": "列表",
     "o": "有序列表",
     "u": "无序列表",
-    "i": "列表项块",
-    "c": "代码块",
-    "m": "数学公式块",
-    "t": "表格块",
-    "b": "引述块",
+    "i": "列表项",
+    "c": "代码",
+    "m": "数学公式",
+    "t": "表格",
+    "b": "引述",
     "s": "超级块",
-    "p": "段落块",
+    "p": "段落",
     "html": "HTML块",
     "query_embed": "嵌入块",
     'av': '属性视图',

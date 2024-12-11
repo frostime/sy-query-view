@@ -1,6 +1,13 @@
+/*
+ * Copyright (c) 2024 by frostime. All Rights Reserved.
+ * @Author       : frostime
+ * @Date         : 2024-12-11 18:24:00
+ * @FilePath     : /src/user-help/examples.ts
+ * @LastEditTime : 2024-12-11 19:18:55
+ * @Description  : 
+ */
 import { getFileBlob, readDir } from "@/api";
 import type QueryViewPlugin from ".."
-import { getLute } from "@/core/lute";
 import { openTab } from "siyuan";
 
 let exampleHTML = '';
@@ -9,7 +16,13 @@ const addSection = (title: string, content: string) => {
 let newpart = `
 <h4>${title}</h4>
 
-<textarea class="form-control" rows="15" readonly>${content}</textarea>
+<textarea
+    class="form-control b3-text-field fn__block"
+    rows="15" readonly
+    style="font-size: 1.25rem; line-height: 1.5rem; resize: vertical;"
+>
+${content}
+</textarea>
 `;
     exampleHTML += newpart;
 }
@@ -40,7 +53,7 @@ export const useExamples = async (plugin: QueryViewPlugin) => {
             readme.classList.add('b3-typography');
             readme.classList.add('b3-typography--default');
             readme.innerHTML = exampleHTML;
-            readme.style.padding = '10px 15px';
+            readme.style.padding = '10px 15%';
             this.element.appendChild(readme);
         }
     });

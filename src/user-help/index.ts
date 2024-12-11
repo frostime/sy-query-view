@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-12-10 18:46:12
  * @FilePath     : /src/user-help/index.ts
- * @LastEditTime : 2024-12-11 18:35:52
+ * @LastEditTime : 2024-12-11 19:02:10
  * @Description  : 
  */
 import { i18n } from "@/index";
@@ -38,13 +38,10 @@ export const load = async (plugin: QueryViewPlugin) => {
             useUserReadme(plugin);
         }
     });
-
+    const { open } = await useExamples(plugin);
     plugin.registerMenuItem({
-        label: i18n.src_userhelp_indexts.help_doc,
-        icon: 'iconHelp',
-        click: async () => {
-            const { open } = await useExamples(plugin);
-            open();
-        }
+        label: 'Examples',
+        icon: 'iconCode',
+        click: open
     });
 }
