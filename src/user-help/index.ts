@@ -32,7 +32,10 @@ const OutlineCode = `
 
 
 const createReadmeText = async (plugin: QueryViewPlugin) => {
-    const response = await fetch('/plugins/sy-query-view/README.md');
+    const lang = window.siyuan.config.lang;
+    const fname = lang.startsWith('zh') ? 'README_zh_CN.md' : 'README.md';
+
+    const response = await fetch(`/plugins/sy-query-view/${fname}`);
     let readme = await response.text();
     const AheadHint = i18n.user_help.ahead_hint.trim();
     let ahead = AheadHint.replace('{{version}}', plugin.version);
@@ -110,7 +113,7 @@ export const load = async (plugin: QueryViewPlugin) => {
     const pluginVersion = pluginJson.version;
 
     plugin.registerMenuItem({
-        label: i18n.src_userhelp_indexts.download + 'd.ts',
+        label: i18n.src_userhelp_indexts.download + ' d.ts',
         icon: 'iconDownload',
         click: () => {
             const url ='/plugins/sy-query-view/types.d.ts';
