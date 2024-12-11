@@ -1,9 +1,8 @@
 //!js
 const query = async () => {
     let dv = Query.DataView(protyle, item, top);
-    let docId = dv.root_id;
     let ans = await Query.request('/api/outline/getDocOutline', {
-        id: docId
+        id: Query.root_id(protyle)
     });
     const iterate = (data) => {
         for (let item of data) {

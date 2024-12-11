@@ -3,14 +3,14 @@
  * @Author       : frostime
  * @Date         : 2024-12-01 22:34:55
  * @FilePath     : /src/core/query.ts
- * @LastEditTime : 2024-12-10 16:28:12
+ * @LastEditTime : 2024-12-11 12:14:44
  * @Description  : 
  */
 import { IProtyle } from "siyuan";
 
 import { request, sql, listDocsByPath } from "@/api";
 import { getLute, initLute } from "./lute";
-import { wrapBlock, wrapList } from "./proxy";
+import { IWrappedBlock, IWrappedList, wrapBlock, wrapList } from "./proxy";
 import { formatDateTime } from "@/utils/time";
 import { DataView } from "./data-view";
 import { getNotebook, openBlock } from "@/utils";
@@ -155,6 +155,10 @@ const Query = {
         return new DataView(protyle, item, top);
     },
 
+    /**
+     * Utility for query
+     * Every function here is sync function, no need to await
+     */
     Utils: {
         Date: (...args: ConstructorParameters<typeof SiYuanDate>) => new SiYuanDate(...args),
         /**
@@ -260,7 +264,6 @@ const Query = {
          * Converts a block to a SiYuan link format
          * @param b - Block to convert
          * @returns String in markdown link format
-         * @alias asRef
          */
         asLink: (b: Block) => `[${b.fcontent || b.content}](siyuan://blocks/${b.id})`,
 
@@ -268,7 +271,6 @@ const Query = {
          * Converts a block to a SiYuan reference format
          * @param b - Block to convert
          * @returns String in reference format ((id 'content'))
-         * @alias asLink
          */
         asRef: (b: Block) => `((${b.id} '${b.fcontent || b.content}'))`,
 
@@ -338,10 +340,11 @@ const Query = {
      * Gets blocks by their IDs
      * @param ids - Block IDs to retrieve
      * @returns Array of wrapped blocks
+     * @alias `id2block`
      */
-    getBlocksByIds: async (...ids: BlockId[]) => {
+    getBlocksByIds: async (...ids: BlockId[]): Promise<IWrappedList<IWrappedBlock>> => {
         let blocks = await getBlocksByIds(...ids);
-        return blocks.map(wrapBlock);
+        return Query.wrapBlocks(blocks) as IWrappedList<IWrappedBlock>;
     },
 
     /**
@@ -349,7 +352,7 @@ const Query = {
      * @param protyle - Protyle instance
      * @returns Document ID
      */
-    docid: (protyle: IProtyle) => protyle.block.rootID,
+    root_id: (protyle: IProtyle) => protyle.block.rootID,
 
     /**
      * Gets the current document as a block
@@ -368,11 +371,12 @@ const Query = {
      * @param wrap - Whether to wrap results
      * @returns Query results
      */
-    sql: async (fmt: string, wrap: boolean = true) => {
+    sql: async (fmt: string, wrap: boolean = true): Promise<IWrappedList<IWrappedBlock>> => {
         fmt = fmt.trim();
         let data = await sql(fmt);
-        if (data === null || data === undefined) return [];
+        if (data === null || data === undefined) return [] as IWrappedList<IWrappedBlock>;
         // return wrap ? data.map(wrapBlock) : data;
+        //@ts-ignore
         return wrap ? wrapList(data) : data;
     },
 
@@ -436,18 +440,17 @@ const Query = {
         const sql = `select * from blocks
         ${type ? `where type = '${type}'` : ''}
         order by random()
-
         limit ${limit};`
         return Query.sql(sql);
     },
 
     /**
      * Gets the daily notes document
-     * @param limit - Maximum number of results
      * @param notebook - Notebook ID, if not specified, all daily notes documents will be returned
+     * @param limit - Maximum number of results
      * @returns Array of daily notes document blocks
      */
-    dailynote: async (limit: number = 64, notebook?: NotebookId) => {
+    dailynote: async (notebook?: NotebookId, limit: number = 64) => {
         const sql = `
         SELECT B.*
         FROM blocks AS B
@@ -466,7 +469,7 @@ const Query = {
      * @param b - Parent block or block ID
      * @returns Array of child document blocks
      */
-    childdoc: async (b: BlockId | Block) => {
+    childDoc: async (b: BlockId | Block) => {
         let block = null;
         if (typeof b === 'string') {
             const _ = await getBlocksByIds(b);
@@ -485,15 +488,72 @@ const Query = {
     },
 
     /**
+     * Search the document that contains all the keywords
+     * @param keywords 
+     * @returns The document blocks that contains all the given keywords
+     */
+    keywordDoc: async (...keywords: string[]) => {
+        const sql = `select * from blocks where ${keywords.map(keyword => `content like '%${keyword}%'`).join(' or ')}`;
+        let results = await Query.sql(sql);
+        let matchedDocs = [];
+        let docs = results.groupby(b => b.root_id, (root_id: string, blocks: Block[]) => {
+            let contains = { ...keywords.map(keyword => ({ [keyword]: false })) };
+            blocks.forEach(block => {
+                keywords.forEach(keyword => {
+                    if (block.content.includes(keyword)) {
+                        contains[keyword] = true;
+                    }
+                });
+            });
+            let matched = true;
+            for (let keyword of keywords) {
+                if (!contains[keyword]) {
+                    matched = false;
+                    break;
+                }
+            }
+            if (matched) {
+                matchedDocs.push(root_id);
+            }
+        });
+        return getBlocksByIds(...matchedDocs);
+    },
+
+    /**
      * Return the markdown content of the document of the given block
      * @param block - Block
-     * @returns 
+     * @returns Markdown content of the document
      */
-    docMd: async (block: Block) => {
+    docMd: async (id: BlockId) => {
         const { content } = await request('/api/export/exportMdContent', {
-            id: block.id
+            id: id
         });
         return content;
+    },
+
+    /**
+     * Return the statistics of the document with given document ID
+     * @param docId The ID of document
+     * @returns The statistics of the document
+     * @returns.runeCount - The number of characters in the document
+     * @returns.wordCount - The number of words (Chinese characters are counted as one word) in the document
+     * @returns.linkCount - The number of links in the document
+     * @returns.imageCount - The number of images in the document
+     * @returns.refCount - The number of references in the document
+     * @returns.blockCount - The number of blocks in the document
+     */
+    docStat: async (docId: DocumentId): Promise<{
+        "runeCount": number,
+        "wordCount": number,
+        "linkCount": number,
+        "imageCount": number,
+        "refCount": number,
+        "blockCount": number
+    }> => {
+        const stat = await request('/api/block/getTreeStat', {
+            id: docId
+        });
+        return stat;
     },
 
     /**
@@ -503,6 +563,7 @@ const Query = {
      * @param enable.heading - Whether to process heading blocks
      * @param enable.doc - Whether to process document blocks
      * @returns Processed blocks or block IDs
+     * @alias `redirect`
      */
     fb2p: async (inputs: Block[], enable?: { heading?: boolean, doc?: boolean }) => {
         /**
@@ -717,8 +778,9 @@ const Query = {
     }
 }
 
-const addAlias = (obj: any, attr: string, alias: string[]) => {
+const addAlias = (obj: any, attr: string, alias?: string[]) => {
     if (!(attr in obj)) return;
+    alias = alias ?? [];
     alias.forEach(alias => {
         if (alias in obj) return;
         obj[alias] = obj[attr];
@@ -727,11 +789,11 @@ const addAlias = (obj: any, attr: string, alias: string[]) => {
 
 addAlias(Query, 'DataView', ['Dataview']);
 addAlias(Query, 'Utils', ['utils']);
-addAlias(Query, 'getBlocksByIds', ['getBlocksByIDs']);
-addAlias(Query, 'docid', ['docId']);
+addAlias(Query, 'getBlocksByIds', ['getBlocksByIDs', 'id2block']);
+addAlias(Query, 'root_id', ['docId']);
 addAlias(Query, 'thisdoc', ['thisDoc']);
 addAlias(Query, 'backlink', ['backlinks']);
-addAlias(Query, 'childdoc', ['childDoc', 'childDocs', 'childdocs']);
+addAlias(Query, 'childDoc', ['childDocs']);
 addAlias(Query, 'wrapBlocks', ['wrapblocks']);
 addAlias(Query, 'fb2p', ['redirect']);
 const utils = Object.keys(Query.Utils);

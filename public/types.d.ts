@@ -1,3 +1,10 @@
+/**
+ * @name sy-query-view
+ * @author frostime
+ * @version 1.0.0-beta8
+ * @updated 2024-12-11T04:49:55.328Z
+ */
+
 declare module 'siyuan' {
     interface IProtyle {
         [key: string]: any;
@@ -12,6 +19,7 @@ declare function request(url: string, data: any): Promise<any | null>;
 
 ///@query.d.ts
 import { IProtyle } from "siyuan";
+
 
 /**
  * Data class for SiYuan timestamp
@@ -34,6 +42,10 @@ declare const Query: {
      * @returns DataView instance
      */
     DataView: (protyle: IProtyle, item: HTMLElement, top: number | null) => DataView;
+    /**
+     * Utility for query
+     * Every function here is sync function, no need to await
+     */
     Utils: {
         Date: (value: string | number | Date) => SiYuanDate;
         /**
@@ -93,14 +105,12 @@ declare const Query: {
          * Converts a block to a SiYuan link format
          * @param b - Block to convert
          * @returns String in markdown link format
-         * @alias asRef
          */
         asLink: (b: Block) => string;
         /**
          * Converts a block to a SiYuan reference format
          * @param b - Block to convert
          * @returns String in reference format ((id 'content'))
-         * @alias asLink
          */
         asRef: (b: Block) => string;
         asMap: (blocks: Block[], key?: string) => {
@@ -117,7 +127,6 @@ declare const Query: {
          * Gets the name of a notebook by its ID; equivalent to `notebook(boxid).name`
          * @param boxid - Notebook ID
          * @returns Notebook name
-         * @alias boxname
          * @example
          * Query.Utils.boxName(block['box']) // 'Notebook 123'
          */
@@ -160,14 +169,15 @@ declare const Query: {
      * Gets blocks by their IDs
      * @param ids - Block IDs to retrieve
      * @returns Array of wrapped blocks
+     * @alias `id2block`
      */
-    getBlocksByIds: (...ids: BlockId[]) => Promise<IWrappedBlock[]>;
+    getBlocksByIds: (...ids: BlockId[]) => Promise<IWrappedList<IWrappedBlock>>;
     /**
      * Gets the current document's ID
      * @param protyle - Protyle instance
      * @returns Document ID
      */
-    docid: (protyle: IProtyle) => string;
+    root_id: (protyle: IProtyle) => string;
     /**
      * Gets the current document as a block
      * @param protyle - Protyle instance
@@ -180,14 +190,14 @@ declare const Query: {
      * @param wrap - Whether to wrap results
      * @returns Query results
      */
-    sql: (fmt: string, wrap?: boolean) => Promise<any[]>;
+    sql: (fmt: string, wrap?: boolean) => Promise<IWrappedList<IWrappedBlock>>;
     /**
      * Finds backlinks to a specific block
      * @param id - Block ID to find backlinks for
      * @param limit - Maximum number of results
      * @returns Array of blocks linking to the specified block
      */
-    backlink: (id: BlockId, limit?: number) => Promise<any[]>;
+    backlink: (id: BlockId, limit?: number) => Promise<IWrappedList<IWrappedBlock>>;
     /**
      * Finds blocks with specific attributes
      * @param name - Attribute name
@@ -196,39 +206,64 @@ declare const Query: {
      * @param limit - Maximum number of results
      * @returns Array of matching blocks
      */
-    attr: (name: string, val?: string, valMatch?: "=" | "like", limit?: number) => Promise<any[]>;
+    attr: (name: string, val?: string, valMatch?: "=" | "like", limit?: number) => Promise<IWrappedList<IWrappedBlock>>;
     /**
      * Find unsolved task blocks
      * @param limit - Maximum number of results
      * @returns Array of unsolved task blocks
      */
-    task: (limit?: number) => Promise<any[]>;
+    task: (limit?: number) => Promise<IWrappedList<IWrappedBlock>>;
     /**
      * Randomly roam blocks
      * @param limit - Maximum number of results
      * @param type - Block type
      * @returns Array of randomly roamed blocks
      */
-    random: (limit?: number, type?: BlockType) => Promise<any[]>;
+    random: (limit?: number, type?: BlockType) => Promise<IWrappedList<IWrappedBlock>>;
     /**
      * Gets the daily notes document
-     * @param limit - Maximum number of results
      * @param notebook - Notebook ID, if not specified, all daily notes documents will be returned
+     * @param limit - Maximum number of results
      * @returns Array of daily notes document blocks
      */
-    dailynote: (limit?: number, notebook?: NotebookId) => Promise<any[]>;
+    dailynote: (notebook?: NotebookId, limit?: number) => Promise<IWrappedList<IWrappedBlock>>;
     /**
      * Gets child documents of a block
      * @param b - Parent block or block ID
      * @returns Array of child document blocks
      */
-    childdoc: (b: BlockId | Block) => Promise<IWrappedList<IWrappedBlock>>;
+    childDoc: (b: BlockId | Block) => Promise<IWrappedList<IWrappedBlock>>;
+    /**
+     * Search the document that contains all the keywords
+     * @param keywords
+     * @returns The document blocks that contains all the given keywords
+     */
+    keywordDoc: (...keywords: string[]) => Promise<any[]>;
     /**
      * Return the markdown content of the document of the given block
      * @param block - Block
-     * @returns
+     * @returns Markdown content of the document
      */
-    docMd: (block: Block) => Promise<any>;
+    docMd: (id: BlockId) => Promise<any>;
+    /**
+     * Return the statistics of the document with given document ID
+     * @param docId The ID of document
+     * @returns The statistics of the document
+     * @returns.runeCount - The number of characters in the document
+     * @returns.wordCount - The number of words (Chinese characters are counted as one word) in the document
+     * @returns.linkCount - The number of links in the document
+     * @returns.imageCount - The number of images in the document
+     * @returns.refCount - The number of references in the document
+     * @returns.blockCount - The number of blocks in the document
+     */
+    docStat: (docId: DocumentId) => Promise<{
+        "runeCount": number;
+        "wordCount": number;
+        "linkCount": number;
+        "imageCount": number;
+        "refCount": number;
+        "blockCount": number;
+    }>;
     /**
      * Redirects first block IDs to their parent containers
      * @param inputs - Array of blocks or block IDs
@@ -236,6 +271,7 @@ declare const Query: {
      * @param enable.heading - Whether to process heading blocks
      * @param enable.doc - Whether to process document blocks
      * @returns Processed blocks or block IDs
+     * @alias `redirect`
      */
     fb2p: (inputs: Block[], enable?: {
         heading?: boolean;

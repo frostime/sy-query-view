@@ -31,4 +31,13 @@ interface I18n {
         user_custom_view: string;
         user_self_written_view: string;
     };
+    src_userhelp_indexts: {
+        create_notebook: string;
+        download: string;
+        help_doc: string;
+        help_doc_2: string;
+    };
+    user_help: {
+        ahead_hint: string;
+    };
 }

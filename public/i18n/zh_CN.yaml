@@ -19,10 +19,21 @@ src_setting_indexts:
   echarts_renderer_option: Echarts 渲染器，可以为 "canvas" 或 "svg", 默认 "svg"
   import_failed: 导入失败, 详细情况请检查控制台报错
   import_success: 导入成功, 共 {cnt} 个自定义视图
-  local_command_desc: 本地用于打开代码编辑器的命令, 默认为 "code -w {{filepath}}" 代表使用 VSCode 打开, 其中 {{filepath}} 在运行时会被替换为真实的代码文件
+  local_command_desc: |
+    本地用于打开代码编辑器的命令, 默认为 "code -w {{filepath}}" 代表使用 VSCode 打开, 其中 {{filepath}} 在运行时会被替换为真实的代码文件
   open_local_editor: ✒️ 打开本地编辑器
   reload: 重新加载
   table_default_columns: 🔑 表格视图默认显示列
   user_custom_view: 用户自定义视图
   user_self_written_view: 用户自行编写的 View 组件, 存放在 '/data/public/custom-query-view.js'
     下
+src_userhelp_indexts:
+  create_notebook: 请至少先创建一个笔记本用于存放帮助文档
+  download: 下载
+  help_doc: 帮助文档
+  help_doc_2: 帮助文档
+user_help:
+  ahead_hint: |
+    > 💡 注: 本文档由 SiYuan Query&View 插件 **{{version}}** 版自动生成，为插件的 README 文档。
+    > 你可以将本文档放在思源的任何地方，如果插件在需要打开的时候未能找到本文档，将会自动创建一个新的文档。
+    > 请不要在这个文档中记录任何对你有价值的东西，这些记录在本文档中的信息很有可能随着重新创建用户文档而丢失！

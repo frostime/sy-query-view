@@ -14,6 +14,10 @@ process.chdir(path.join(__dirname, '..'));
 console.log(process.cwd());
 const dirname = process.cwd();
 
+// 读取 plugin.json
+const pluginJson = fs.readFileSync('./plugin.json', 'utf8');
+const plugin = JSON.parse(pluginJson);
+
 const removeTypesDir = () => {
     if (fs.existsSync('./types')) {
         fs.rmSync('./types', { recursive: true, force: true });
@@ -67,6 +71,13 @@ const replaceSomething = (content, lines = []) => {
 }
 
 writer.append(`
+/**
+ * @name ${plugin.name}
+ * @author ${plugin.author}
+ * @version ${plugin.version}
+ * @updated ${new Date().toISOString()}
+ */
+
 declare module 'siyuan' {
     interface IProtyle {
         [key: string]: any;
@@ -82,7 +93,10 @@ declare function request(url: string, data: any): Promise<any | null>;
 
 writer.append('///@query.d.ts\n');
 let query = readFile('./types/core/query.d.ts');
-query = replaceSomething(query, ['import { request } from "@/api";']);
+query = replaceSomething(query, [
+    'import { request } from "@/api";',
+    'import { IWrappedBlock, IWrappedList } from "./proxy";'
+]);
 writer.append(query);
 writer.append('\n');
 
