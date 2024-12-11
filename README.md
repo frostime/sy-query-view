@@ -1981,19 +1981,19 @@ The following example codes will be downloaded locally with the plugin. You can:
 
 ### Display the Backlink Table of the Current Document
 
-Source code reference: [https://github.com/frostime/sy-query-view/blob/main/example/exp-doc-backlinks-table.js](https://github.com/frostime/sy-query-view/blob/main/example/exp-doc-backlinks-table.js)
+Source code reference: [https://github.com/frostime/sy-query-view/blob/main/public/example/exp-doc-backlinks-table.js](https://github.com/frostime/sy-query-view/blob/main/public/example/exp-doc-backlinks-table.js)
 
 ​![image](assets/image-20241210183914-5nm5w4r.png)​
 
 ### Display the Outline of the Current Document
 
-Source code reference: [https://github.com/frostime/sy-query-view/blob/main/example/exp-outline.js](https://github.com/frostime/sy-query-view/blob/main/example/exp-outline.js)
+Source code reference: [https://github.com/frostime/sy-query-view/blob/main/public/example/exp-outline.js](https://github.com/frostime/sy-query-view/blob/main/public/example/exp-outline.js)
 
 ​![image](assets/image-20241210172133-ivjwzpc.png)​
 
 ### Count the Documents Updated Today
 
-Source code reference: [https://github.com/frostime/sy-query-view/blob/main/example/exp-today-updated.js](https://github.com/frostime/sy-query-view/blob/main/example/exp-today-updated.js)
+Source code reference: [https://github.com/frostime/sy-query-view/blob/main/public/example/exp-today-updated.js](https://github.com/frostime/sy-query-view/blob/main/public/example/exp-today-updated.js)
 
 In this example, `state`​ is used to store the date information. After today, the content of the table will remain unchanged rather than fetching documents updated on a future day.
 
@@ -2001,19 +2001,19 @@ In this example, `state`​ is used to store the date information. After today, 
 
 ### Create the Change Curve of Documents
 
-Source code reference: [https://github.com/frostime/sy-query-view/blob/main/example/exp-created-docs.js](https://github.com/frostime/sy-query-view/blob/main/example/exp-created-docs.js)
+Source code reference: [https://github.com/frostime/sy-query-view/blob/main/public/example/exp-created-docs.js](https://github.com/frostime/sy-query-view/blob/main/public/example/exp-created-docs.js)
 
 ​![image](assets/image-20241207010811-8lh25x5.png)​
 
 ### SQL Query Executor
 
-Source code reference: [https://github.com/frostime/sy-query-view/blob/main/example/exp-sql-executor.js](https://github.com/frostime/sy-query-view/blob/main/example/exp-sql-executor.js)
+Source code reference: [https://github.com/frostime/sy-query-view/blob/main/public/example/exp-sql-executor.js](https://github.com/frostime/sy-query-view/blob/main/public/example/exp-sql-executor.js)
 
 ​![image](assets/image-20241209005221-qtytbib.png)​
 
 ### ChatGPT
 
-Source code reference: [https://github.com/frostime/sy-query-view/blob/main/example/exp-gpt-chat.js](https://github.com/frostime/sy-query-view/blob/main/example/exp-gpt-chat.js)
+Source code reference: [https://github.com/frostime/sy-query-view/blob/main/public/example/exp-gpt-chat.js](https://github.com/frostime/sy-query-view/blob/main/public/example/exp-gpt-chat.js)
 
 > This code uses an API `Query.gpt`​ that was not mentioned above. For specific usage, please refer to
 

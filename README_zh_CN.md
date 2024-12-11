@@ -1963,8 +1963,6 @@ dv.render();
 {{DataView}}
 ```
 
-‍
-
 ### IWrapBlock & IWrapList
 
 ```ts
@@ -1983,19 +1981,19 @@ dv.render();
 
 ### 展示当前文档的反向链接表格
 
-源代码参见：[https://github.com/frostime/sy-query-view/blob/main/example/exp-doc-backlinks-table.js](https://github.com/frostime/sy-query-view/blob/main/example/exp-doc-backlinks-table.js)
+源代码参见：[https://github.com/frostime/sy-query-view/blob/main/public/example/exp-doc-backlinks-table.js](https://github.com/frostime/sy-query-view/blob/main/public/example/exp-doc-backlinks-table.js)
 
 ​![image](assets/image-20241210183914-5nm5w4r.png)​
 
 ### 展示当前文档的大纲
 
-源代码参见：[https://github.com/frostime/sy-query-view/blob/main/example/exp-outline.js](https://github.com/frostime/sy-query-view/blob/main/example/exp-outline.js)
+源代码参见：[https://github.com/frostime/sy-query-view/blob/main/public/example/exp-outline.js](https://github.com/frostime/sy-query-view/blob/main/public/example/exp-outline.js)
 
 ​![image](assets/image-20241210172133-ivjwzpc.png)​
 
 ### 统计当天今天的文档
 
-源代码参见：[https://github.com/frostime/sy-query-view/blob/main/example/exp-today-updated.js](https://github.com/frostime/sy-query-view/blob/main/example/exp-today-updated.js)
+源代码参见：[https://github.com/frostime/sy-query-view/blob/main/public/example/exp-today-updated.js](https://github.com/frostime/sy-query-view/blob/main/public/example/exp-today-updated.js)
 
 这个案例中，使用 `state`​ 来存储日期信息，过了今天之后，表格的内容将一直保持不变而非获取未来某天更新的文档。
 
@@ -2003,20 +2001,20 @@ dv.render();
 
 ### 创建文档的变化曲线
 
-源代码参见：[https://github.com/frostime/sy-query-view/blob/main/example/exp-created-docs.js](https://github.com/frostime/sy-query-view/blob/main/example/exp-created-docs.js)
+源代码参见：[https://github.com/frostime/sy-query-view/blob/main/public/example/exp-created-docs.js](https://github.com/frostime/sy-query-view/blob/main/public/example/exp-created-docs.js)
 
 ​![image](assets/image-20241207010811-8lh25x5.png)​
 
 ### SQL 查询器
 
-源代码参见：[https://github.com/frostime/sy-query-view/blob/main/example/exp-sql-executor.js](https://github.com/frostime/sy-query-view/blob/main/example/exp-sql-executor.js)
+源代码参见：[https://github.com/frostime/sy-query-view/blob/main/public/example/exp-sql-executor.js](https://github.com/frostime/sy-query-view/blob/main/public/example/exp-sql-executor.js)
 
 ​![image](assets/image-20241209005221-qtytbib.png)​
 
 ### ChatGPT
 
-源代码参见：[https://github.com/frostime/sy-query-view/blob/main/example/exp-gpt-chat.js](https://github.com/frostime/sy-query-view/blob/main/example/exp-gpt-chat.js)
+源代码参见：[https://github.com/frostime/sy-query-view/blob/main/public/example/exp-gpt-chat.js](https://github.com/frostime/sy-query-view/blob/main/public/example/exp-gpt-chat.js)
 
-> 这个代码用到了一个上面没有提到的 `Query.gpt`​ 的 API，具体用法请参考
+> 这个代码用到了一个上面没有提到的 `Query.gpt`​ 的 API，具体用法请参考 d.ts 文件
 
 ​![image](assets/image-20241210171119-o72dyyd.png)​
