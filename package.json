@@ -18,7 +18,8 @@
     "make-install": "pnpm run vite:build-no-minify && npx make-install",
     "auto-i18n": "i18n extract && i18n translate && i18n export",
     "export-types": "node scripts/export-types.js",
-    "replace-md-file": "node scripts/replace-md-file.js"
+    "replace-md-file": "node scripts/replace-md-file.js",
+    "git-tag": "node scripts/git-tag.js"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^3.1.0",
