@@ -2026,3 +2026,15 @@ Source code reference: [https://github.com/frostime/sy-query-view/blob/main/publ
 > This code uses an API `Query.gpt`​ that was not mentioned above. For specific usage, please refer to
 
 ​![image](assets/image-20241210171119-o72dyyd.png)​
+
+### See backlinks in graph
+
+Source code reference：[https://github.com/frostime/sy-query-view/blob/main/public/example/exp-doc-backlinks-graph.js](https://github.com/frostime/sy-query-view/blob/main/public/example/exp-doc-backlinks-graph.js)
+
+​![image](assets/image-20241211213426-38ws4kk.png)​
+
+### Show images under assets/
+
+Source code reference：[https://github.com/frostime/sy-query-view/blob/main/public/example/exp-show-asset-images.js](https://github.com/frostime/sy-query-view/blob/main/public/example/exp-show-asset-images.js)
+
+​![image](assets/image-20241211225413-fc962d4.png)​

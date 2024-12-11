@@ -2026,3 +2026,17 @@ dv.render();
 > 这个代码用到了一个上面没有提到的 `Query.gpt`​ 的 API，具体用法请参考 d.ts 文件
 
 ​![image](assets/image-20241210171119-o72dyyd.png)​
+
+### 当前文档的反链关系图
+
+源代码参见：[https://github.com/frostime/sy-query-view/blob/main/public/example/exp-doc-backlinks-graph.js](https://github.com/frostime/sy-query-view/blob/main/public/example/exp-doc-backlinks-graph.js)
+
+​![image](assets/image-20241211213426-38ws4kk.png)​
+
+### 浏览资源目录下所有的图片
+
+源代码参见：[https://github.com/frostime/sy-query-view/blob/main/public/example/exp-show-asset-images.js](https://github.com/frostime/sy-query-view/blob/main/public/example/exp-show-asset-images.js)
+
+​![image](assets/image-20241211225413-fc962d4.png)​
+
+‍
