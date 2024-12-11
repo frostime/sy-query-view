@@ -3,6 +3,12 @@
 
 ⚠️ 注意，本帮助文档默认用户了解基础的 Javascript 语法概念。（至少需要理解基础的变量、流程、函数调用、aysnc/await）。
 
+> 🔔 本帮助文档较长，在安装页面查看可能较为不方便。
+>
+> 你可以在下载下来之后，点击左上角菜单按钮中的“帮助文档”按钮，插件会自动在思源内创建一个帮助文档。
+>
+> ​![image](assets/image-20241211194348-sfzl8pc.png)​
+
 ## 0. 功能速览
 
 💡 本插件大致可以提供以下功能（这里提供一个概览印象，详细用法见后面的说明）。
@@ -12,8 +18,6 @@
 案例：查询指定 ID 的文档的子文档，并只展示前三个文档：
 
 ​![image](assets/image-20241025221225-4ml02nc.png "查询指定 ID 的文档的子文档")​
-
-‍
 
 2️⃣ 使用 DataView 对象，自定义地渲染嵌入块内容。
 
@@ -35,15 +39,9 @@
 
 ​![image](assets/image-20241025223457-hi94ial.png)​
 
-‍
-
 4️⃣ 在外部代码编辑器中编辑嵌入块的代码，并随着外部的编辑自动更新源代码。
 
 ​![image](assets/image-20241130145358-bqvwgmb.png)​
-
-5️⃣ 使用内置的查询模板。
-
-从零开始编写 JS 查询较为繁琐，故而插件还提供了一些内置的模板，你可以通过 `/`​ 指令在编辑器中快速插入一些常用的 JS 查询。
 
 ## 1. 基本概念：什么是 JS 嵌入块
 
@@ -477,7 +475,7 @@ interface IWrappedBlock extends Block {
 
 ​![image](assets/image-20241025223457-hi94ial.png)​
 
-> 🔔 以上介绍不一定完整，完整 API 文档以 repo/public/types.d.ts 为准
+> 🔔 以上介绍不一定完整，完整 API 文档以 `repo/public/types.d.ts`​ 为准
 
 #### IWrappedList
 
@@ -753,8 +751,6 @@ declare interface Partial<Query['Utils'] > {
 * ​`openBlock`​ 是个特别方法，传入块的 ID 可以在思源中打开对应的块
 * ​`asMap`​ 等价于  `IWrappedList`​ 的 `asmap`​ 函数
 * ​`asLink`​ 和 `asRef`​ 本质上等价于调用 `IWrappedBlock`​ 的这两个属性
-
-‍
 
 ### fb2p （容器块传递）
 
@@ -1715,7 +1711,7 @@ dv.render();
 
 > 🔔 **注意**：`DataView`​ 会给所有的组件**自动添加他小写版本的别名**，所以两个名为 `Add`​ 和 `add`​ 的组件可能会一方覆盖另一方！
 
-自定义的组件会在插件启动的时候自动导入，如果你在插件运行的过程当中更改了 js 文件，可以在设置面板中点击「**重新导入**」的按钮更新组件的状态。
+自定义的组件会在插件启动的时候自动导入，如果你在插件运行的过程当中更改了 js 文件，可以在设置面板或者顶栏菜单中点击「**重新导入**」的按钮更新组件的状态。
 
 ### DataView.useState
 
@@ -1877,6 +1873,8 @@ dv.render();
     * 如果你在编写自定义的 dv 的过程中，发现了和用户输入相关的异常情况，你最好停下来，不要再继续尝试，以免对重要数据造成不良影响
 2. <u>多端设备同步情况下</u>，使用 useState 要小心，建议开启「**设置-云端-生成冲突文件**」![image](assets/image-20241210133627-mnp2zup.png)​
 
+    ​![image](assets/image-20241211194757-74vrp7m.png)​
+
     目前 state 功能虽然规避了「冲突地狱」的问题，但是在**一些特殊的多端同步情况下仍然可能出现数据冲突的情况**。
 
     为了避免出现数据状态丢失，建议在思源的同步设置中开启「生成冲突文档」的设置，这样则遇到问题的时候还可以手动处理。
@@ -1945,9 +1943,13 @@ dv.render();
 
 ## 完整 API
 
-> 注：由于接口文件会随着开发而变动，所以 markdown 本体中并不包含 interface 代码，而是放了一些 placeholder 然后在编译运行时，将自动生成的接口代码替换到打包文件的 README 文件里面。
+> 注：由于接口文件会随着开发而变动，所以 README 本体中并不包含 interface 代码，而是放了一些 placeholder 。然后在编译运行时，将自动生成的接口代码替换到打包文件的 README 文件里面。
 >
 > 最新的完整的接口文件，请访问 [https://github.com/frostime/sy-query-view/blob/main/public/types.d.ts](https://github.com/frostime/sy-query-view/blob/main/public/types.d.ts) 获取。
+>
+> 你还可以在下载插件之后，在左上角的菜单按钮中点击“下载 d.ts”获取当前版本的 types 文件。
+>
+> ​![image](assets/image-20241211194447-8sa9hcx.png)​
 
 ### Query
 
@@ -1958,10 +1960,12 @@ dv.render();
 ### DataView
 
 ```ts
-{{Query}}
+{{DataView}}
 ```
 
-### WrapBlock & WrapList
+‍
+
+### IWrapBlock & IWrapList
 
 ```ts
 {{Proxy}}
@@ -1970,6 +1974,12 @@ dv.render();
 ## 案例演示
 
 提供了一些 example 代码。部分案例在上面的文档中其实已经出现过了。
+
+以下的案例代码均会随插件下载到本地，你可以：在 `plugins/sy-query-view/example`​ 中查看这些脚本。
+
+💡 当然更方便的是，在在左上角插件的菜单中点击「Examples」在新的标签页中查看样例代码。
+
+​![image](assets/image-20241211194155-oc0yj5l.png)​
 
 ### 展示当前文档的反向链接表格
 

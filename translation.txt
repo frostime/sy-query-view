@@ -1,0 +1,18 @@
+- **Task**: Translate the given readme document into English. 
+- **Requirements**:
+  - Retain the original Markdown formatting of the text
+  - No need to output intermediate text. After you finished the translation, offer me the translated markdown file to download.
+  - The file is quite long, please follow the procedure.
+- **Procedure**:
+  1. Esimate the length of whole document.
+  2. Split the total document to several chunks (BUT DO NOT BREAK THE NATRUAL LANGUAGE's SYNTAX), each of which you are capable of handling once.
+  3. Translate every chunk
+  4. Merge the translation result, check and validate the result
+  5. Output them into one file, and offer the result file to me.
+- **Vocabulary**:
+  - 思源翻译为 SiYuan
+  - QueryView, DataView 这些专有名词, 不用翻译, 保持原名
+  - "视图组件" 翻译成 "View Component"
+  - "块" 是思源笔记中的基本单位，翻译成 Block
+  - 嵌入块 翻译成 Embed Block
+  - "反向链接" 或者 "反链" 翻译成 "backlink"
