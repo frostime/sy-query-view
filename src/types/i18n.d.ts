@@ -41,6 +41,7 @@ interface I18n {
         query_attr_views: string;
         query_doc_tree: string;
         random_text_translate: string;
+        recent_docs: string;
         simple_chatgpt: string;
         sql_exec_result: string;
         updated_docs_today: string;

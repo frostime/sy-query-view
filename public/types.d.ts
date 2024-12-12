@@ -2,7 +2,7 @@
  * @name sy-query-view
  * @author frostime
  * @version 1.0.0
- * @updated 2024-12-11T13:55:21.490Z
+ * @updated 2024-12-12T06:18:49.679Z
  */
 
 declare module 'siyuan' {
@@ -156,7 +156,7 @@ declare const Query: {
      * @param useWrapBlock - Whether to wrap blocks inside the WrappedList
      * @returns Wrapped block(s)
      */
-    wrapBlocks: (blocks: Block[] | Block, useWrapBlock?: boolean) => IWrappedBlock | IWrappedList<IWrappedBlock>;
+    wrapBlocks: (blocks: Block[] | Block, useWrapBlock?: boolean) => Block[] | IWrappedBlock;
     /**
      * SiYuan Kernel Request API
      * @example
@@ -232,7 +232,7 @@ declare const Query: {
      * @param b - Parent block or block ID
      * @returns Array of child document blocks
      */
-    childDoc: (b: BlockId | Block) => Promise<IWrappedList<IWrappedBlock>>;
+    childDoc: (b: BlockId | Block) => Promise<Block[]>;
     /**
      * Search the document that contains all the keywords
      * @param keywords
@@ -276,7 +276,7 @@ declare const Query: {
     fb2p: (inputs: Block[], enable?: {
         heading?: boolean;
         doc?: boolean;
-    }) => Promise<IWrappedList<IWrappedBlock>>;
+    }) => Promise<Block[]>;
     /**
      * Send GPT request, use AI configuration in `siyuan.config.ai.openAI` by default
      * @param prompt - Prompt
@@ -333,7 +333,7 @@ interface ITableOptions {
     fullwidth?: boolean;
     index?: boolean;
     cols?: (string | Record<string, string>)[] | Record<string, string>;
-    renderer?: (b: Block, attr: keyof Block) => string | number | undefined | null;
+    renderer?: (b: Block, attr: keyof Block) => string | undefined | null;
 }
 
 interface IHasChildren<T> {
@@ -552,7 +552,10 @@ export declare class DataView implements IDataView {
      *       - Record<string, string> to specify the column name, like `{type: 'Type', content: 'Content', 'root_id': 'Document'}`
      *       - Mixed array, like `['type', {content: 'Content'}, 'hpath']`
      *       - `null`, in this case, all columns will be shown
-     * @param options.renderer - Custom function to render table cells, the return will be used as markdown code
+     * @param options.renderer - Custom function to render table cells
+     *       - The return will be used as markdown code, and insert into each td cell
+     *       - If returns `null`, the default renderer will be used
+     *       - SPECIAL USAGE: if the returned string is wrapped with {@html ...}, it will be treated as HTML code
      * @returns HTMLElement containing the block table
      * @example
      * const children = await Query.childdoc(block);
@@ -806,16 +809,10 @@ export interface IWrappedBlock extends Block {
     unwrapped: Block;
     /** Block's URI link in format: siyuan://blocks/xxx */
     asurl: string;
-    /** Block's URI link in format: siyuan://blocks/xxx */
-    tourl: string;
     /** Block's Markdown format link [content](siyuan://blocks/xxx) */
     aslink: string;
-    /** Block's Markdown format link [content](siyuan://blocks/xxx) */
-    tolink: string;
     /** Block's SiYuan reference format text */
     asref: string;
-    /** Block's SiYuan reference format text */
-    toref: string;
     /**
      * Returns a rendered SiYuan attribute
      * @param attr - Attribute name
@@ -848,6 +845,13 @@ export interface IWrappedList<T> extends Array<T> {
     unwrap(): T[];
     /** Original array */
     unwrapped: T[];
+    /**
+     * Converts the array to a map object, where the key is specified by the key parameter.
+     * Equivalent to calling `array.reduce((acc, cur) => ({...acc, [cur[key]]: cur }), {})`
+     * @param key
+     * @returns
+     */
+    asMap: (key: string) => Record<string, Block>;
     /**
      * Returns a new array containing only specified properties
      * @param attrs - Property names to keep
@@ -882,13 +886,19 @@ export interface IWrappedList<T> extends Array<T> {
      */
     slice(start: number, end: number): IWrappedList<T>;
     /**
+     * Returns a new array with the results of calling a provided function on every element in the calling array
+     * @param fn
+     * @param useWrapBlock  - If true, the result will be wrapped as a IWrappedBlock
+     */
+    map<U>(callbackfn: (value: T, index: number, array: T[]) => U, useWrapBlock: boolean): IWrappedList<U>;
+    /**
      * Returns a new array with unique elements
      * @param {keyof Block | Function} key - Unique criteria, can be property name or function
      * @example
      * list.unique('id')
      * list.unique(b => b.updated.slice(0, 4))
      */
-    unique(key?: keyof T | ((b: T) => string | number)): IWrappedList<T>;
+    unique(key?: keyof Block | ((b: Block) => string | number)): IWrappedList<IWrappedBlock>;
     /**
      * Returns a new array with added rows
      * @alias addrows

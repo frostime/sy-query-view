@@ -24,7 +24,7 @@ interface ITableOptions {
     fullwidth?: boolean;
     index?: boolean;
     cols?: (string | Record<string, string>)[] | Record<string, string>;
-    renderer?: (b: Block, attr: keyof Block) => string | number | undefined | null;
+    renderer?: (b: Block, attr: keyof Block) => string | undefined | null;
 }
 
 interface IHasChildren<T> {

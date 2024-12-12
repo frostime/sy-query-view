@@ -104,7 +104,9 @@ export const loadUserCustomView = async () => {
 
     let url: string | undefined;
     try {
-        const response = await fetch(filepath.replace('/data', ''));  // /data 是路径, 路由则不需要这个前缀
+        const response = await fetch(filepath.replace('/data', ''), {
+            cache: 'no-cache'
+        });  // /data 是路径, 路由则不需要这个前缀
         if (!response.ok) {
             result.exists = false;
             throw new Error(`Failed to fetch custom JS file: ${response.statusText}`);

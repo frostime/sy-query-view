@@ -154,11 +154,25 @@ class BlockList {
         const indent = "    ".repeat(depth); // 4 spaces per level
         const prefix = this.type === 'u' ? "*" : `${index}.`;
 
-        if (typeof item === 'string' || typeof item === 'number' || !item.name) {
-            return [`${indent}${prefix} ${item.toString()}`];
+        const ahead = `${indent}${prefix} `;
+        const spaces = " ".repeat(ahead.length);
+        /**
+         * 允许为多行的文本，这时就需要处理缩进问题
+         * @param text 
+         * @returns 
+         */
+        const headingSpaced = (text: string) => {
+            let lines = text.split("\n");
+            if (lines.length <= 1) return text;
+            // 将除了第一行之外都进行缩进
+            return lines.map((line, idx) => idx === 0 ? line : `${spaces}${line}`).join("\n");
         }
 
-        const lines: string[] = [`${indent}${prefix} ${item.name.toString()}`];
+        if (typeof item === 'string' || typeof item === 'number' || !item.name) {
+            return [`${ahead}${headingSpaced(item.toString())}`];
+        }
+
+        const lines: string[] = [`${ahead}${headingSpaced(item.name.toString())}`];
 
         if (item.children?.length) {
             item.children.forEach((child, idx) => {
@@ -266,7 +280,6 @@ class BlockTable {
     constructor(options: {
         target: HTMLElement, blocks: Block[], center?: boolean,
         cols?: (string | Record<string, string>)[] | Record<string, string>, indices?: boolean,
-        cell?: 'markdown' | 'raw',
         renderer?: (b: Block, attr: keyof Block) => string | number | undefined | null,
     }) {
         const columns = this.adaptColumnInput(options);
@@ -280,13 +293,17 @@ class BlockTable {
             }
         }
 
-        options.cell = options.cell ?? 'markdown';
         const lute = getLute();
         this.tdRenderer = (input: string) => {
-            if (options?.cell === 'markdown') {
-                return lute.InlineMd2BlockDOM(`${input}`);
-            } else {
+            /**
+             * 彩蛋语法, 如果包裹在 `{@html }` 内就视为纯 html 代码
+             * 否则视为 markdown 语法
+             */
+            if (input.toLowerCase().startsWith('{@html') && input.endsWith('}')) {
+                input = input.slice(7, -1);
                 return input;
+            } else {
+                return lute.InlineMd2BlockDOM(`${input}`);
             }
         }
 
@@ -326,7 +343,7 @@ class BlockTable {
         const tableHtml = `
             <table class="query-table" style="${this.center ? 'margin: 0 auto;' : ''}">
                 <thead>
-                    <tr>${headerRow}</tr>
+                    <tr style="text-align: left;">${headerRow}</tr>
                 </thead>
                 <tbody>${bodyRows}</tbody>
             </table>

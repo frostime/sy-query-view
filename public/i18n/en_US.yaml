@@ -54,6 +54,10 @@ src_userhelp_examplests:
     variable.
   random_text_translate: Randomly select a piece of text from SiYuan and translate
     it into English using GPT, with the GPT API set internally in SiYuan
+  recent_docs: |
+    Displays the 32 most recently updated documents. This example uses
+    SiYuan's super block markdown dialect syntax to horizontally display multiple
+    columns of information within the same list item.
   simple_chatgpt: A very simple ChatGPT dialog box, using the GPT API set internally
     in SiYuan
   sql_exec_result: Enter an SQL statement in the input box, click the execute button,

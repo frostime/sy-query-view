@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-12-02 10:15:04
  * @FilePath     : /src/core/data-view.ts
- * @LastEditTime : 2024-12-11 18:10:46
+ * @LastEditTime : 2024-12-12 01:29:42
  * @Description  : 
  */
 import {
@@ -571,7 +571,10 @@ export class DataView extends UseStateMixin implements IDataView {
      *       - Record<string, string> to specify the column name, like `{type: 'Type', content: 'Content', 'root_id': 'Document'}`
      *       - Mixed array, like `['type', {content: 'Content'}, 'hpath']`
      *       - `null`, in this case, all columns will be shown
-     * @param options.renderer - Custom function to render table cells, the return will be used as markdown code
+     * @param options.renderer - Custom function to render table cells
+     *       - The return will be used as markdown code, and insert into each td cell
+     *       - If returns `null`, the default renderer will be used
+     *       - SPECIAL USAGE: if the returned string is wrapped with {@html ...}, it will be treated as HTML code
      * @returns HTMLElement containing the block table
      * @example
      * const children = await Query.childdoc(block);
