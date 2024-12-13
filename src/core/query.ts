@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-12-01 22:34:55
  * @FilePath     : /src/core/query.ts
- * @LastEditTime : 2024-12-11 12:14:44
+ * @LastEditTime : 2024-12-12 17:22:52
  * @Description  : 
  */
 import { IProtyle } from "siyuan";
@@ -413,6 +413,32 @@ const Query = {
             ${val ? `AND A.value ${valMatch} '${val}'` : ''}
             ${limit ? `limit ${limit}` : ''}
         );
+        `);
+    },
+
+    /**
+     * Search blocks by tags
+     * @param tags - Tags to search for; can provide multiple tags
+     * @returns Array of blocks matching the tags
+     * @example
+     * Query.tag('tag1') // Search for blocks with 'tag1'
+     * Query.tag(['tag1', 'tag2'], 'or') // Search for blocks with 'tag1' or 'tag2'
+     * Query.tag(['tag1', 'tag2'], 'and') // Search for blocks with 'tag1' and 'tag2'
+     */
+    tag: async (tags: string | string[], join: 'or' | 'and' = 'or', limit?: number) => {
+        const ensureTag = (tag: string) => {
+            if (!tag.startsWith('#')) {
+                tag = `#${tag}`;
+            }
+            if (!tag.endsWith('#')) {
+                tag = `${tag}#`;
+            }
+            return tag;
+        }
+        tags = Array.isArray(tags) ? tags : [tags];
+        return Query.sql(`select * from blocks where
+            ${tags.map(ensureTag).map(tag => `tag like '%${tag}%'`).join(` ${join} `)}
+            ${limit ? `limit ${limit}` : ''}
         `);
     },
 

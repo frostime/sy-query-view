@@ -2,7 +2,7 @@
  * @name sy-query-view
  * @author frostime
  * @version 1.0.0
- * @updated 2024-12-12T06:18:49.679Z
+ * @updated 2024-12-12T14:57:05.087Z
  */
 
 declare module 'siyuan' {
@@ -207,6 +207,16 @@ declare const Query: {
      * @returns Array of matching blocks
      */
     attr: (name: string, val?: string, valMatch?: "=" | "like", limit?: number) => Promise<IWrappedList<IWrappedBlock>>;
+    /**
+     * Search blocks by tags
+     * @param tags - Tags to search for; can provide multiple tags
+     * @returns Array of blocks matching the tags
+     * @example
+     * Query.tag('tag1') // Search for blocks with 'tag1'
+     * Query.tag(['tag1', 'tag2'], 'or') // Search for blocks with 'tag1' or 'tag2'
+     * Query.tag(['tag1', 'tag2'], 'and') // Search for blocks with 'tag1' and 'tag2'
+     */
+    tag: (tags: string | string[], join?: "or" | "and", limit?: number) => Promise<IWrappedList<IWrappedBlock>>;
     /**
      * Find unsolved task blocks
      * @param limit - Maximum number of results
