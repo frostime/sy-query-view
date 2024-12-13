@@ -35,6 +35,7 @@ interface I18n {
     src_userhelp_examplests: {
         backlinks_table: string;
         daily_quote: string;
+        doc_backlinks_grouping: string;
         doc_outline_tree: string;
         docs_per_month: string;
         echarts_graph_ref: string;

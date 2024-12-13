@@ -1912,9 +1912,11 @@ dv.render();
 
 ### 我在嵌入块中的代码没有什么反应，我该怎么办？
 
-由于嵌入块的代码是在一个 `Function`​ 对象中执行，所以当执行出现错误的时候不一定会在控制台有报错。
+1. 检查有没有加 `//!js`​，思源只有在读入以这个为前缀的代码，才会当作 JS 程序来执行。
+2. 查看控制台报错
 
-在这种情况下，就需要学会 debug 你的 Js 代码然后详细查看是不是哪里写错了。
+    不过由于嵌入块的代码是在一个 `Function`​ 对象中执行，所以当执行出现错误的时候不一定会在控制台有报错。
+3. Debug 你的 Js 代码，然后详细查看是不是哪里写错了。（见下一小节）
 
 如果有条件，更加推荐在外部编辑器中编辑你的代码，有语法高亮等提示后可以规避很多低级错误（例如不慎输入了中文符号等）。
 
@@ -1983,9 +1985,11 @@ dv.render();
 
 以下的案例代码均会随插件下载到本地，你可以：在 `plugins/sy-query-view/example`​ 中查看这些脚本。
 
-💡 当然更方便的是，在在左上角插件的菜单中点击「Examples」在新的标签页中查看样例代码。
+> 💡 **完整的案例代码**：在在左上角插件的菜单中点击「Examples」在新的标签页中查看样例代码。
 
 ​![image](assets/image-20241211194155-oc0yj5l.png)​
+
+以下展示部分案例代码的使用效果。
 
 ### 展示当前文档的反向链接表格
 
@@ -1993,13 +1997,27 @@ dv.render();
 
 ​![image](assets/image-20241210183914-5nm5w4r.png)​
 
+### 按照类型分组显示当前文档的反向链接
+
+源代码参见：[https://github.com/frostime/sy-query-view/blob/main/public/example/exp-doc-backlinks-grouped.js](https://github.com/frostime/sy-query-view/blob/main/public/example/exp-doc-backlinks-grouped.js)
+
+​![image](assets/image-20241213161247-f6qm95q.png)​
+
 ### 展示当前文档的大纲
 
 源代码参见：[https://github.com/frostime/sy-query-view/blob/main/public/example/exp-outline.js](https://github.com/frostime/sy-query-view/blob/main/public/example/exp-outline.js)
 
 ​![image](assets/image-20241210172133-ivjwzpc.png)​
 
-### 统计当天今天的文档
+### 展示最近更新的所有文档
+
+源代码参见：[https://github.com/frostime/sy-query-view/blob/main/public/example/exp-outline.js](https://github.com/frostime/sy-query-view/blob/main/public/example/exp-outline.js)
+
+💡 本代码中用到了特殊的  `{{{col }}}`​ 语法，这种语法为思源特有的超级块 Markdown 标记语法，用于创建多行、多列的块结构。
+
+​![image](assets/image-20241213160419-62pwf7s.png)​
+
+### 统计当天今天更新的文档
 
 源代码参见：[https://github.com/frostime/sy-query-view/blob/main/public/example/exp-today-updated.js](https://github.com/frostime/sy-query-view/blob/main/public/example/exp-today-updated.js)
 
@@ -2019,7 +2037,7 @@ dv.render();
 
 ​![image](assets/image-20241209005221-qtytbib.png)​
 
-### ChatGPT
+### ChatGPT 对话
 
 源代码参见：[https://github.com/frostime/sy-query-view/blob/main/public/example/exp-gpt-chat.js](https://github.com/frostime/sy-query-view/blob/main/public/example/exp-gpt-chat.js)
 
@@ -2033,7 +2051,7 @@ dv.render();
 
 ​![image](assets/image-20241211213426-38ws4kk.png)​
 
-### 浏览资源目录下所有的图片
+### 分页查看资源目录下所有的图片
 
 源代码参见：[https://github.com/frostime/sy-query-view/blob/main/public/example/exp-show-asset-images.js](https://github.com/frostime/sy-query-view/blob/main/public/example/exp-show-asset-images.js)
 

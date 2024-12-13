@@ -1,5 +1,5 @@
 
-> 🥺 This README document was originally written in Chinese (see README_zh_CN.md). Due to its length, I used a language model (LLM) to translate it into English. If you find any issues or areas that need improvement, please let me know, and I will be happy to fix them. it.
+> 🥺 This README document was originally written in Chinese (see README_zh_CN.md). Due to its length, I used a language model (LLM) to translate it into English. If you find any issues or areas that need improvement, please let me know, and I will be happy to fix them.
 >
 > Additionally, this document contains a large number of images, and I unfortunately do not have the time or energy to migrate them to English version. I appreciate your understanding in this matter.
 
@@ -357,7 +357,7 @@ Supports SiYuan's own multi-column layout syntax
 This is the second column
 }}}
 
-> The outer border of the double column in the screenshot is my SiYuan code snippet, but the block style is SiYuan's built-in ial syntax
+> The background color style is specified by SiYuan's built-in ial syntax
 {: style="background-color: var(--b3-theme-primary-light); font-size: 20px;"}
 
 `)
@@ -1912,9 +1912,11 @@ Common code editor command-line references:
 
 ### My code in the embed block is not responding, what should I do?
 
-Since the code in the embed block is executed within a `Function`​ object, errors during execution may not appear in the console.
+1. Check if `//!js`​ is added. SiYuan only executes code as a JS program when it reads code prefixed with this.
+2. See if any error logging in console
 
-In such cases, it is essential to learn how to debug your JavaScript code and carefully check if there are any mistakes.
+    Note that, since the code in the embed block is executed within a `Function`​ object, errors during execution may not appear in the console.
+3. Debug your JavaScript code and carefully check if there are any mistakes.（See next part）
 
 If possible, it is more recommended to edit your code in an external editor, where syntax highlighting and other prompts can help avoid many low-level errors.
 
@@ -1983,9 +1985,11 @@ Some example codes are provided. Some cases have actually appeared in the above 
 
 The following example codes will be downloaded locally with the plugin. You can: view these scripts in `plugins/sy-query-view/example`​.
 
-💡 Of course, it's more convenient to click "Examples" in the top-left plugin menu to view the sample code in a new tab.
+> 💡 **The full example code**: Click "Examples" in the top-left plugin menu to view the sample code in a new tab.
 
 ​![image](assets/image-20241211194155-oc0yj5l.png)​
+
+Here shows part of the examples:
 
 ### Display the Backlink Table of the Current Document
 
@@ -1993,11 +1997,25 @@ Source code reference: [https://github.com/frostime/sy-query-view/blob/main/publ
 
 ​![image](assets/image-20241210183914-5nm5w4r.png)​
 
+### Display the Backlink Table of the Current Document, Grouped by Block Type
+
+Source code reference: [https://github.com/frostime/sy-query-view/blob/main/public/example/exp-doc-backlinks-grouped.js](https://github.com/frostime/sy-query-view/blob/main/public/example/exp-doc-backlinks-grouped.js)
+
+​![image](assets/image-20241213161247-f6qm95q.png)​
+
 ### Display the Outline of the Current Document
 
 Source code reference: [https://github.com/frostime/sy-query-view/blob/main/public/example/exp-outline.js](https://github.com/frostime/sy-query-view/blob/main/public/example/exp-outline.js)
 
 ​![image](assets/image-20241210172133-ivjwzpc.png)​
+
+### Display the Latest Updated Documents
+
+Source code reference: [https://github.com/frostime/sy-query-view/blob/main/public/example/exp-latest-update-doc.js](https://github.com/frostime/sy-query-view/blob/main/public/example/exp-latest-update-doc.js)
+
+💡 In this code, the special `{{{col }}}`​ syntax is used. This syntax is the unique super-block Markdown markup syntax of SiYuan, which is used to create block structures with multiple rows or columns.
+
+​![image](assets/image-20241213160419-62pwf7s.png)​
 
 ### Count the Documents Updated Today
 
@@ -2019,7 +2037,7 @@ Source code reference: [https://github.com/frostime/sy-query-view/blob/main/publ
 
 ​![image](assets/image-20241209005221-qtytbib.png)​
 
-### ChatGPT
+### Chat with GPT
 
 Source code reference: [https://github.com/frostime/sy-query-view/blob/main/public/example/exp-gpt-chat.js](https://github.com/frostime/sy-query-view/blob/main/public/example/exp-gpt-chat.js)
 
