@@ -35,6 +35,8 @@ Example: Create dynamic document content using JavaScript.
 
 And more rich rendering components.
 
+​![image](assets/image-20241213214945-r6p1je6.png "Kanban")​
+
 ​![image](assets/image-20241130151900-0n7ku7o.png)​
 
 3️⃣ Simplify the processing and access of query results.
@@ -1072,7 +1074,54 @@ Changing `type: 'flowchart'`​ to `mindmap`​ can also display it in the form 
 ​`MermaidRelation`​ specifies the corresponding view through the `type`​ parameter. For convenience, `dv`​ provides two equivalent components:
 
 * ​`dv.mflowchart`​: Equivalent to the flowchart Relation diagram.
-* ​`dv.mmindmap`​: Equivalent to the mindmap Relation diagram.
+* ​`dv.mmindmap`​: Equivalent to the mindmap Relation diagram..
+
+### MermaidKanban
+
+```ts
+mermaidKanban(groupedBlocks: Record<string, Block[]>, options: {
+    priority?: (b: Block) => 'Very High' | 'High' | 'Low' | 'Very Low',
+    clip?: number,
+    width?: string
+});
+```
+
+mermaidKanban is mainly used to display blocks in the form of kanban, and it has an alias of `mKanban`​.
+
+* ​`groupedBlocks`​: A structure of `group name: array of Blocks`​, and each group will be displayed separately as a column in the Kanban.
+* ​`options`​
+
+  * ​`priority`​: Used to specify the priority parameter of the block. For details, see [https://mermaid.js.org/syntax/kanban.html#supported-metadata-keys](https://mermaid.js.org/syntax/kanban.html#supported-metadata-keys).
+  * ​`clip`​: The maximum length of the text of each block in the kanban. The default is 50, and the text exceeding this length will be truncated.
+  * ​`width`​: The width of the kanban; 💡 It is recommended to pass in a value of `<number of groups> x <width of each group>`​.
+
+The options.type parameter can be specified as two types, "flowchart" or "mindmap", which respectively correspond to two different mermaid diagrams.
+
+The following case will retrieve the unfinished Todos of each month and display them in the Kanban.
+
+```js
+//!js
+const query = async () => {
+    let dv = Query.Dataview(protyle, item, top);
+    // null: no `after` filter, query all task block
+    // 128: max number of result
+    let blocks = await Query.task(null, 128);
+    let grouped = blocks.groupby((b) => {
+        return b.createdDate.slice(0, -3)
+    });
+    let N = Object.keys(grouped).length;
+    // each group with a fixed witdh 200px
+    dv.addmkanban(grouped, {
+        width: `${N * 200}px`
+    });
+    dv.render();
+}
+return query();
+```
+
+​![image](assets/image-20241213214406-rfj8yqh.png)​
+
+> 😃 Each block in the Kanban diagram can also **hover** to display content and **click to jump** to the corresponding document.
 
 ### ECharts Series
 

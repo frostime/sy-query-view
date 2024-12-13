@@ -31,6 +31,8 @@
 
 以及更多丰富的可渲染组件。
 
+​![image](assets/image-20241213214945-r6p1je6.png "Kanban")​
+
 ​![image](assets/image-20241130151900-0n7ku7o.png)​
 
 3️⃣ 简化对查询结果的处理、访问。
@@ -1069,6 +1071,55 @@ return query();
 
 * ​`dv.mflowchart`​：等价于 flowchart 的 Relation 图
 * ​`dv.mmindmap`​：等价于 mindmap 的 Relation 图
+
+### mermaidKanban
+
+```ts
+mermaidKanban(groupedBlocks: Record<string, Block[]>, options: {
+      priority?: (b: Block) => 'Very High' | 'High' | 'Low' | 'Very Low',
+      clip?: number,
+      width?: string
+  });
+```
+
+mermaidKanban 主要用于用于将块以 kanban 的形式展示出来，它有一个 `mKanban`​ 的别名。
+
+* ​`groupedBlocks`​：一个 `分组名称: Block 数组`​ 的结构，每个分组会被单独显示为 Kanban 中的一栏
+* ​`options`​
+
+  * ​`priority`​：用于指定块的 priority 参数，详情见 [https://mermaid.js.org/syntax/kanban.html#supported-metadata-keys](https://mermaid.js.org/syntax/kanban.html#supported-metadata-keys)
+  * ​`clip`​：看板中每个块的文本的最大长度，默认 50，超过这个长度的文本会被截断
+  * ​`width`​：看板的宽度；💡 建议可以传入一个 `<分组数量> x <每组宽度>`​ 的值进去
+
+可以将 options.type 参数指定为 "flowchart" 或者 "mindmap" 两种类型，分别对应了两种不同的 mermaid 图表。
+
+下面的案例会检索每个月未完成的 Todo，并在 Kanban 中展示。
+
+```js
+//!js
+const query = async () => {
+    let dv = Query.Dataview(protyle, item, top);
+    // null: no `after` filter, query all task block
+    // 128: max number of result
+    let blocks = await Query.task(null, 128);
+    let grouped = blocks.groupby((b) => {
+        return b.createdDate.slice(0, -3)
+    });
+    let N = Object.keys(grouped).length;
+    // each group with a fixed witdh 200px
+    dv.addmkanban(grouped, {
+        width: `${N * 200}px`
+    });
+    dv.render();
+}
+return query();
+```
+
+大致效果如下：
+
+​![image](assets/image-20241213214406-rfj8yqh.png)​
+
+> 😃 Kanban 图中每个块同样可以**悬浮显示内容**以及**点击跳转**到对应文档。
 
 ### echarts 系列
 

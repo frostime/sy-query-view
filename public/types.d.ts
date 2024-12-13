@@ -1,8 +1,8 @@
 /**
  * @name sy-query-view
  * @author frostime
- * @version 1.0.0-beta11
- * @updated 2024-12-13T13:26:30.292Z
+ * @version 1.0.0
+ * @updated 2024-12-13T13:51:48.807Z
  */
 
 declare module 'siyuan' {
@@ -651,7 +651,7 @@ export declare class DataView implements IDataView {
      * @param options
      * @param options.priority - Function to determine priority of each block, see {@link https://mermaid.js.org/syntax/kanban.html#supported-metadata-keys}
      * @param options.clip - Maximum length of text to display in each item, default as 50
-     * @param options.maxWidth - If true, the kanban will be displayed in a maximum width
+     * @param options.width - The width of kanban
      * @returns
      * @alias mKanban
      */
@@ -659,7 +659,6 @@ export declare class DataView implements IDataView {
         priority?: (b: Block) => 'Very High' | 'High' | 'Low' | 'Very Low';
         clip?: number;
         width?: string;
-        center?: boolean;
     }): HTMLElement;
     /**
      * Embeds blocks into the DataView
