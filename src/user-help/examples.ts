@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-12-11 18:24:00
  * @FilePath     : /src/user-help/examples.ts
- * @LastEditTime : 2024-12-13 18:27:27
+ * @LastEditTime : 2024-12-13 21:11:37
  * @Description  : 
  */
 import { getFileBlob, readDir } from "@/api";
@@ -38,6 +38,7 @@ const Description = {
     "exp-daily-sentence.js": () => i18n.src_userhelp_examplests.daily_quote,
     "exp-gpt-translate.js": () => i18n.src_userhelp_examplests.random_text_translate,
     "exp-doc-tree.js": () => i18n.src_userhelp_examplests.query_doc_tree,
+    "exp-month-todo-kanban.js": () => i18n.src_userhelp_examplests.unfinished_task_monthly
 };
 
 const addSection = (title: string, content: string) => {

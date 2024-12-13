@@ -46,6 +46,7 @@ interface I18n {
         recent_docs: string;
         simple_chatgpt: string;
         sql_exec_result: string;
+        unfinished_task_monthly: string;
         updated_docs_today: string;
         view_assets_images: string;
     };

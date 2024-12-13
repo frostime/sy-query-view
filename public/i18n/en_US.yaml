@@ -65,6 +65,8 @@ src_userhelp_examplests:
     in SiYuan
   sql_exec_result: Enter an SQL statement in the input box, click the execute button,
     and display the execution result in a table format
+  unfinished_task_monthly: Query unfinished Tasks for each month and display them
+    in summary on the board
   updated_docs_today: 'Query all documents updated today and display them in a list
     format; this example uses state, so after today, the table will no longer update
     and will only display cached records. In the actual use process, in fact, it is

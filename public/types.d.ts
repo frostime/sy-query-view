@@ -1,8 +1,8 @@
 /**
  * @name sy-query-view
  * @author frostime
- * @version 1.0.0
- * @updated 2024-12-13T10:34:42.020Z
+ * @version 1.0.0-beta11
+ * @updated 2024-12-13T13:26:30.292Z
  */
 
 declare module 'siyuan' {
@@ -51,9 +51,9 @@ declare const Query: {
         /**
          * Gets timestamp for current time with optional day offset
          * @param days - Number of days to offset (positive or negative)
-         * - {number} Use numbers, such as 1 to represent 1 day, -2 to represent 2 days ago, and 3 to represent 3 days in the future.
-         * - {string} Use strings, such as '1d' to represent 1 day, '2w' to represent 2 weeks, '3m' to represent 3 months, and '4y' to represent 4 years.
-         * - Can be negative
+         * - {number} 直接用数字
+         * - {string} 使用字符串，如 '1d' 表示 1 天，'2w' 表示 2 周，'3m' 表示 3 个月，'4y' 表示 4 年
+         * - 可以为负数
          * @returns Timestamp string in yyyyMMddHHmmss format
          */
         now: (days?: number | string, hms?: boolean) => any;
@@ -632,7 +632,7 @@ export declare class DataView implements IDataView {
     /**
      * Creates a Mermaid flowchart from block relationships
      * @description Equivalent to `dv.mermaidRelation(tree, { type: 'flowchart' })`
-     * @alias mflowchart
+     * @alias mFlowchart
      */
     mermaidFlowchart(tree: IBlockWithChilds, options?: {
         renderer?: (b: Block) => string;
@@ -640,10 +640,26 @@ export declare class DataView implements IDataView {
     /**
      * Creates a Mermaid mindmap from block relationships
      * @description Equivalent to `dv.mermaidRelation(tree, { type: 'mindmap' })`
-     * @alias mmindmap
+     * @alias mMindmap
      */
     mermaidMindmap(tree: IBlockWithChilds, options?: {
         renderer?: (b: Block) => string;
+    }): HTMLElement;
+    /**
+     * Creates a Mermaid gantt chart from block relationships
+     * @param groupedBlocks { [Group Name]: Blocks Array }
+     * @param options
+     * @param options.priority - Function to determine priority of each block, see {@link https://mermaid.js.org/syntax/kanban.html#supported-metadata-keys}
+     * @param options.clip - Maximum length of text to display in each item, default as 50
+     * @param options.maxWidth - If true, the kanban will be displayed in a maximum width
+     * @returns
+     * @alias mKanban
+     */
+    mermaidKanban(groupedBlocks: Record<string, Block[]>, options: {
+        priority?: (b: Block) => 'Very High' | 'High' | 'Low' | 'Very Low';
+        clip?: number;
+        width?: string;
+        center?: boolean;
     }): HTMLElement;
     /**
      * Embeds blocks into the DataView

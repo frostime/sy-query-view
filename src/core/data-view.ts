@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-12-02 10:15:04
  * @FilePath     : /src/core/data-view.ts
- * @LastEditTime : 2024-12-12 01:29:42
+ * @LastEditTime : 2024-12-13 21:17:22
  * @Description  : 
  */
 import {
@@ -12,7 +12,7 @@ import {
     Lute
 } from "siyuan";
 import { getLute } from "./lute";
-import { BlockList, BlockTable, MermaidRelation, EmbedNodes, Echarts, MermaidBase, errorMessage } from './components';
+import { BlockList, BlockTable, MermaidRelation, EmbedNodes, Echarts, MermaidBase, errorMessage, MermaidKanban } from './components';
 import { registerProtyleGC } from "./finalize";
 import { openBlock } from "@/utils";
 import { getCustomView } from "./custom-view";
@@ -254,6 +254,7 @@ export class DataView extends UseStateMixin implements IDataView {
         this.register(this.mermaidRelation);
         this.register(this.mermaidFlowchart, { aliases: ['mFlowchart'] });
         this.register(this.mermaidMindmap, { aliases: ['mMindmap'] });
+        this.register(this.mermaidKanban, { aliases: ['mKanban'] });
         this.register(this.embed);
         this.register(this.echarts);
         this.register(this.echartsLine, { aliases: ['eLine'] });
@@ -724,7 +725,7 @@ export class DataView extends UseStateMixin implements IDataView {
     /**
      * Creates a Mermaid flowchart from block relationships
      * @description Equivalent to `dv.mermaidRelation(tree, { type: 'flowchart' })`
-     * @alias mflowchart
+     * @alias mFlowchart
      */
     mermaidFlowchart(tree: IBlockWithChilds, options: {
         renderer?: (b: Block) => string;
@@ -735,12 +736,38 @@ export class DataView extends UseStateMixin implements IDataView {
     /**
      * Creates a Mermaid mindmap from block relationships
      * @description Equivalent to `dv.mermaidRelation(tree, { type: 'mindmap' })`
-     * @alias mmindmap
+     * @alias mMindmap
      */
     mermaidMindmap(tree: IBlockWithChilds, options: {
         renderer?: (b: Block) => string;
     } = {}) {
         return this.mermaidRelation(tree, { ...options, type: 'mindmap' });
+    }
+
+    /**
+     * Creates a Mermaid gantt chart from block relationships
+     * @param groupedBlocks { [Group Name]: Blocks Array }
+     * @param options
+     * @param options.priority - Function to determine priority of each block, see {@link https://mermaid.js.org/syntax/kanban.html#supported-metadata-keys}
+     * @param options.clip - Maximum length of text to display in each item, default as 50
+     * @param options.width - The width of kanban
+     * @returns
+     * @alias mKanban
+     */
+    mermaidKanban(groupedBlocks: Record<string, Block[]>, options: {
+        priority?: (b: Block) => 'Very High' | 'High' | 'Low' | 'Very Low',
+        clip?: number,
+        width?: string
+    }) {
+        let mermaidContainer = newViewWrapper();
+
+        const mermaid = new MermaidKanban({
+            target: mermaidContainer,
+            groupedBlocks,
+            ...options
+        });
+        this.addDisposer(() => mermaid.dispose(), mermaidContainer.dataset.id);
+        return mermaidContainer;
     }
 
     /**

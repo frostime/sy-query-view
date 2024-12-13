@@ -42,6 +42,7 @@ src_userhelp_examplests:
   recent_docs: 展示最近更新的 32 篇文档，这个案例中使用了思源的超级块的 markdown 方言语法，用于在同一个列表项中横向展示多列的信息
   simple_chatgpt: 一个非常简单的 ChatGPT 对话框，使用思源内部设置的 GPT API
   sql_exec_result: 在输入框中输入 SQL 语句，点击执行按钮，将执行结果以表格的形式展示
+  unfinished_task_monthly: 查询每个月尚未完成的 Task，汇总显示在看板上
   updated_docs_today: '查询今天更新的所有文档，并以列表的形式展示；这个案例中使用了 state，今天之后将不会再更新表格而只会显示缓存的记录。
     实际使用过程中，其实更加建议配合模板使用，在创建的时候直接配置 now 为当天的日期，而非通过 state 来维护日期状态。
 

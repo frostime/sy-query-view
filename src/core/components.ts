@@ -1,6 +1,6 @@
 import { formatDateTime, sy2Date } from "@/utils/time";
 import { BlockTypeShort } from "@/utils/const";
-import { getNotebook } from "@/utils";
+import { getNotebook, openBlock } from "@/utils";
 import { getLute } from "./lute";
 import { request } from "@/api";
 
@@ -12,6 +12,24 @@ import styles from './index.module.scss';
 import { i18n } from "@/index";
 import { setting } from "@/setting";
 
+
+const escape = window.Lute.EscapeHTMLStr;
+const oneline = (text: string, method: 'join' | 'first' = 'join') => {
+    let lineCnt = text.split('\n').length;
+    if (lineCnt <= 1) {
+        return text;
+    }
+    if (method === 'join') {
+        return text.split('\n').map(line => line.trim()).join(' ');
+    } else {
+        let lines = text.split('\n').map(line => line.trim()).filter(line => line);
+        if (lines.length > 0) {
+            return lines[0];
+        } else {
+            return '';
+        }
+    }
+}
 
 /**
  * Renders the value of a block attribute as markdown format
@@ -353,9 +371,6 @@ class BlockTable {
     }
 }
 
-const oneline = (text: string) => {
-    return text.split('\n').map(line => line.trim()).join(' ');
-}
 
 class MermaidBase {
     element: HTMLElement;
@@ -593,8 +608,8 @@ class MermaidRelation extends MermaidBase {
                 const syNode = element.closest(`.${styles['mindmap-node-siyuan']}`) as HTMLElement;
                 if (!syNode) return;
                 const id = syNode.dataset.id;
-                if (!id) return;
-                window.open(`siyuan://blocks/${id}`, '_blank');
+                if (!id || !matchIDFormat(id)) return;
+                openBlock(id);
             }
 
             this.element.addEventListener('click', clickHandler);
@@ -624,6 +639,171 @@ class MermaidRelation extends MermaidBase {
                 id = id.split('-').slice(0, 2).join('-');
                 anchor.dataset.id = id;
             });
+        }
+    }
+
+}
+
+
+
+class MermaidKanban extends MermaidBase {
+
+    static readonly PREFIX = `
+---
+config:
+    kanban:
+        ticketBaseUrl: 'siyuan://blocks/#TICKET#'
+---
+`.trim();
+
+    private groupedBlocks: Record<string, Block[]>;
+    private clipStr: number;
+    private priorityMapper: (b: Block) => 'Very High' | 'High' | 'Low' | 'Very Low';
+    private width: string;
+    private center: boolean;
+
+
+    private DEFAULT_RENDERER = (b: Block | string) => {
+        let text = ''
+        if (typeof b === 'string') {
+            return oneline(b);
+        }
+        if ((b as Block)?.type === 'query_embed') {
+            return 'Query Embed';
+        }
+        if ((b as Block)?.type === 'c') {
+            return 'Code Block';
+        }
+        if (b.type === 'h') {
+            let text = b.markdown;
+            text.replace(/^(#+)/, (match, p1) => `H${p1.length} Text`);
+        } else {
+            text = b.name || b.fcontent || b?.markdown || b?.id || 'empty';
+        }
+
+        const imageRegex = /!\[([^\]]*)\]\(([^)\s"]+)(?:\s+"([^"]*)")?\)/g;
+
+        text = text.replace(
+            imageRegex,
+            (match, alt, url, title) => {
+                if (title) {
+                    return `Image: [${title}]`;
+                }
+                return `Image`;
+            }
+        );
+
+        let str = oneline(text, 'first');
+        str = str.replace(/siyuan:\/\/blocks\/\d{14}-[a-z0-9]{7}/g, '');
+        str = str.replaceAll(/[{(\[]/g, '').replaceAll(/[})\]]/g, '');
+
+        if (str === '') {
+            str = 'Empty';
+        }
+        // str = window.Lute.EscapeHTMLStr(str);
+        return str;
+    }
+
+    constructor(options: {
+        target: HTMLElement,
+        groupedBlocks: Record<string, Block[]>,
+        priority?: (b: Block) => 'Very High' | 'High' | 'Low' | 'Very Low',
+        clip?: number,
+        width?: string,
+        center?: boolean,
+
+    }) {
+        super(options.target, "");
+        this.groupedBlocks = options.groupedBlocks;
+        this.clipStr = options.clip ?? 50;
+        this.priorityMapper = options.priority;
+        this.width = options.width;
+        this.render();
+        this.center = options.center ?? true;
+    }
+
+    async render() {
+        this.buildKanbanCode();
+
+        await super.render();
+        this.postProcess();
+    }
+
+    private clip(str: string, len: number) {
+        if (len <= 0) return str;
+        if (str.length > len - 2) {
+            return str.slice(0, len) + '...';
+        } else {
+            return str;
+        }
+    }
+
+    private assignPriority(b: Block) {
+        if (this.priorityMapper) {
+            return this.priorityMapper(b);
+        } else {
+            return null;
+        }
+    }
+
+    buildKanbanCode() {
+        let kanbanCode = `${MermaidKanban.PREFIX}\nkanban\n`;
+
+        for (const columnName in this.groupedBlocks) {
+            const blocks = this.groupedBlocks[columnName];
+            // Add column definition
+            kanbanCode += `    ${columnName}\n`;
+            // Add cards to the column
+            blocks.forEach(block => {
+                let escapedContent = this.DEFAULT_RENDERER(block);
+                escapedContent = this.clip(escapedContent, this.clipStr);
+                let priority = this.assignPriority(block);
+                let meta = '';
+                if (priority) {
+                    meta = `@{ priority: '${priority}' }`;
+                }
+                kanbanCode += `        ${block.id}[${escapedContent}]${meta}\n`;
+            });
+        }
+        // console.log(kanbanCode);
+        this.code = kanbanCode;
+    }
+
+    private postProcess() {
+
+        const onClickHandler = (event: MouseEvent) => {
+            const element = event.target as HTMLElement;
+            const syNode = element.closest(`g.node`) as HTMLElement;
+            if (!syNode) return;
+            const id = syNode.dataset.id;
+            if (!id || !matchIDFormat(id)) return;
+            openBlock(id);
+        }
+
+        this.element.querySelectorAll('g.items>g.node').forEach(node => {
+            let id = node.id;
+            if (!id || !matchIDFormat(id)) return;
+            node.setAttribute('data-id', id);
+            node.classList.add('popover__block');
+        });
+
+        this.element.addEventListener('click', onClickHandler);
+        this.disposeCb.push(() => {
+            this.element.removeEventListener('click', onClickHandler);
+        });
+
+        const svg = this.element.querySelector('svg');
+        if (svg) {
+            svg.style.maxWidth = 'unset';
+            svg.classList.add('query-view__mkanban');
+        }
+        if (this.width) {
+            if (typeof this.width === 'string') {
+                svg.setAttribute('width', this.width);
+            } else if (typeof this.width === 'number') {
+                svg.setAttribute('width', `${this.width}px`);
+            }
+
         }
     }
 
@@ -898,6 +1078,7 @@ export {
     BlockTable,
     MermaidBase,
     MermaidRelation,
+    MermaidKanban,
     EmbedNodes,
     renderAttr,
     Echarts
