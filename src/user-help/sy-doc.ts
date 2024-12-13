@@ -1,7 +1,7 @@
 import { createDocWithMd, removeDoc, renameDoc, request, setBlockAttrs, sql, updateBlock } from "@/api";
 import type QueryViewPlugin from "@/index";
 import { openBlock } from "@/utils";
-import { showMessage } from "siyuan";
+import { confirm, showMessage } from "siyuan";
 import { i18n } from "@/index";
 
 
@@ -44,8 +44,7 @@ const createReadmeText = async (plugin: QueryViewPlugin) => {
     return readme;
 }
 
-const createReadme = async (plugin: QueryViewPlugin) => {
-    const title = `${plugin.displayName}@${plugin.version} ` + i18n.src_userhelp_indexts.help_doc;
+const createReadme = async (plugin: QueryViewPlugin, title: string) => {
     const notebooks = window.siyuan.notebooks.filter(n => n.closed === false);
     if (notebooks.length === 0) {
         showMessage(i18n.src_userhelp_indexts.create_notebook);
@@ -74,7 +73,9 @@ const useUserReadme = async (plugin: QueryViewPlugin) => {
     let targetDocId: DocumentId = null;
 
     if (!docs || docs.length === 0) {
-        targetDocId = await createReadme(plugin);
+        const title = `${plugin.displayName}@${plugin.version} ` + i18n.src_userhelp_indexts.help_doc;
+        targetDocId = await createReadme(plugin, title);
+        showMessage(i18n.src_userhelp_sydocts.create_user_doc + ' ' + title);
     } else if (docs.length === 1) {
         targetDocId = docs[0].id;
     } else {
@@ -97,7 +98,8 @@ const useUserReadme = async (plugin: QueryViewPlugin) => {
     `);
     if (attrVer.length === 0) return;
     const attrVerStr = attrVer[0].value;
-    if (compareVersion(attrVerStr, plugin.version) < 0) {
+
+    const updateDoc = async () => {
         showMessage(i18n.src_userhelp_sydocts.plugin_update_doc, 5000)
         let newText = await createReadmeText(plugin);
         const title = `${plugin.displayName}@${plugin.version} ` + i18n.src_userhelp_indexts.help_doc;
@@ -110,7 +112,12 @@ const useUserReadme = async (plugin: QueryViewPlugin) => {
         });
     }
 
-    openBlock(targetDocId);
+    if (attrVerStr.trim() !== plugin.version.trim()) {
+        await updateDoc();
+    }
+    setTimeout(() => {
+        openBlock(targetDocId);
+    }, 0);
 }
 
 export {

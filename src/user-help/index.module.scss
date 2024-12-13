@@ -1,0 +1,29 @@
+.link {
+    color: var(--b3-protyle-inline-link-color);
+    cursor: pointer;
+    transition: var(--b3-transition);
+}
+
+.to-top {
+    position: absolute;
+    bottom: 50px;
+    right: 50px;
+    width: 50px;
+    height: 50px;
+    background-color: var(--b3-theme-primary-lighter);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+
+    &:hover {
+        background-color: var(--b3-theme-primary);
+    }
+
+    svg {
+        fill: var(--b3-theme-on-primary);
+        width: 24px;
+        height: 24px;
+    }
+}

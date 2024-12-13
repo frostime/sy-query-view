@@ -37,9 +37,9 @@ src_setting_indexts:
   user_self_written_view: User self-written View component, stored under '/data/public/custom-query-view.js'
 src_userhelp_examplests:
   backlinks_table: Display backlinks of the current document in a table format
-  daily_quote: 'Daily sentence, this example uses state, so only one quote will be
+  daily_quote: Daily sentence, this example uses state, so only one quote will be
     displayed per day; note that this example uses an API found randomly online, which
-    may not be stable, just consider it a case study'
+    may not be stable, just consider it a case study
   doc_backlinks_grouping: View the backlinks of the current document grouped by the
     type of reference blocks, and display them in a collapsible list
   doc_outline_tree: Query the outline of the current document and display it in a
@@ -53,6 +53,7 @@ src_userhelp_examplests:
   query_doc_tree: Query the document tree structure under the current document and
     display it using a nested list; the maximum depth is controlled by the MAX_DEPTH
     variable.
+  query_this_month_todo: Query all unfinished TODO lists of this month
   random_text_translate: Randomly select a piece of text from SiYuan and translate
     it into English using GPT, with the GPT API set internally in SiYuan
   recent_docs: 'Displays the 32 most recently updated documents. This example uses
@@ -79,6 +80,7 @@ src_userhelp_indexts:
   help_doc: Help Document
   help_doc_2: Help Document
 src_userhelp_sydocts:
+  create_user_doc: 'Create user documentation:'
   plugin_update_doc: Detected plugin version update, updating documentation, please
     wait...
 user_help:

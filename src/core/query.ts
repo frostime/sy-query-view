@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-12-01 22:34:55
  * @FilePath     : /src/core/query.ts
- * @LastEditTime : 2024-12-12 17:22:52
+ * @LastEditTime : 2024-12-13 17:36:20
  * @Description  : 
  */
 import { IProtyle } from "siyuan";
@@ -359,7 +359,7 @@ const Query = {
      * @param protyle - Protyle instance
      * @returns Wrapped document block
      */
-    thisdoc: async (protyle: IProtyle) => {
+    thisDoc: async (protyle: IProtyle) => {
         let docId = protyle.block.rootID;
         let doc = await sql(`select * from blocks where id = '${docId}'`);
         return wrapBlock(doc[0]);
@@ -444,15 +444,21 @@ const Query = {
 
     /**
      * Find unsolved task blocks
+     * @param after - After which the blocks were udpated
      * @param limit - Maximum number of results
      * @returns Array of unsolved task blocks
+     * @example
+     * Query.task()
+     * Query.task('2024101000')
+     * Query.task(Query.utils.thisMonth(), 32)
      */
-    task: async (limit: number = 64) => {
+    task: async (after?: string, limit?: number) => {
         const sql = `select * from blocks
         where type = 'i' and subtype = 't'
         and markdown like '* [ ] %'
+        ${after? ` and updated >= ${after}` : ''}
         order by updated desc
-        limit ${limit};`
+        ${limit? `limit ${limit}` : ''};`
         return Query.sql(sql);
     },
 
@@ -513,16 +519,24 @@ const Query = {
         return wrapList(docs);
     },
 
+    keyword: async (keywords: string | string[], join: 'or' | 'and' = 'or') => {
+        keywords = Array.isArray(keywords) ? keywords : [keywords];
+        const sql = `select * from blocks where ${keywords.map(keyword => `content like '%${keyword}%'`).join(` ${join} `)}`;
+        let results = await Query.sql(sql);
+        return results;
+    },
+
     /**
      * Search the document that contains all the keywords
      * @param keywords 
      * @returns The document blocks that contains all the given keywords
      */
-    keywordDoc: async (...keywords: string[]) => {
-        const sql = `select * from blocks where ${keywords.map(keyword => `content like '%${keyword}%'`).join(' or ')}`;
+    keywordDoc: async (keywords: string | string[], join: 'or' | 'and' = 'or') => {
+        keywords = Array.isArray(keywords) ? keywords : [keywords];
+        const sql = `select * from blocks where ${keywords.map(keyword => `content like '%${keyword}%'`).join(` ${join} `)}`;
         let results = await Query.sql(sql);
         let matchedDocs = [];
-        let docs = results.groupby(b => b.root_id, (root_id: string, blocks: Block[]) => {
+        results.groupby(b => b.root_id, (root_id: string, blocks: Block[]) => {
             let contains = { ...keywords.map(keyword => ({ [keyword]: false })) };
             blocks.forEach(block => {
                 keywords.forEach(keyword => {
@@ -817,10 +831,8 @@ addAlias(Query, 'DataView', ['Dataview']);
 addAlias(Query, 'Utils', ['utils']);
 addAlias(Query, 'getBlocksByIds', ['getBlocksByIDs', 'id2block']);
 addAlias(Query, 'root_id', ['docId']);
-addAlias(Query, 'thisdoc', ['thisDoc']);
 addAlias(Query, 'backlink', ['backlinks']);
-addAlias(Query, 'childDoc', ['childDocs']);
-addAlias(Query, 'wrapBlocks', ['wrapblocks']);
+addAlias(Query, 'wrapBlocks', ['wrapit']);
 addAlias(Query, 'fb2p', ['redirect']);
 const utils = Object.keys(Query.Utils);
 utils.forEach(key => {

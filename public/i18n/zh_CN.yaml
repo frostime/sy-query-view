@@ -37,6 +37,7 @@ src_userhelp_examplests:
   echarts_graph_ref: 使用 Echarts Graph 展示当前文档的反链引用块
   query_attr_views: 查询所在文档下，所有的属性视图 (Attribute View) 然后汇总显示在嵌入块中
   query_doc_tree: 查询当前文档下属的文档树结构，并使用嵌套列表展示; 最大深度由 MAX_DEPTH 变量控制
+  query_this_month_todo: 查询本月所有未完成的 TODO 列表
   random_text_translate: 随机从思源中选取一段文字，然后使用 GPT 翻译成英文，使用思源内部设置的 GPT API
   recent_docs: 展示最近更新的 32 篇文档，这个案例中使用了思源的超级块的 markdown 方言语法，用于在同一个列表项中横向展示多列的信息
   simple_chatgpt: 一个非常简单的 ChatGPT 对话框，使用思源内部设置的 GPT API
@@ -52,6 +53,7 @@ src_userhelp_indexts:
   help_doc: 帮助文档
   help_doc_2: 帮助文档
 src_userhelp_sydocts:
+  create_user_doc: '创建用户文档:'
   plugin_update_doc: 检查到插件版本已更新，正在更新文档，请稍等...
 user_help:
   ahead_hint: |

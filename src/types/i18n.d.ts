@@ -41,6 +41,7 @@ interface I18n {
         echarts_graph_ref: string;
         query_attr_views: string;
         query_doc_tree: string;
+        query_this_month_todo: string;
         random_text_translate: string;
         recent_docs: string;
         simple_chatgpt: string;
@@ -55,6 +56,7 @@ interface I18n {
         help_doc_2: string;
     };
     src_userhelp_sydocts: {
+        create_user_doc: string;
         plugin_update_doc: string;
     };
     user_help: {
