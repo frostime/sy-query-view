@@ -2,7 +2,7 @@
  * @name sy-query-view
  * @author frostime
  * @version 1.0.0
- * @updated 2024-12-13T08:29:45.374Z
+ * @updated 2024-12-13T10:34:42.020Z
  */
 
 declare module 'siyuan' {
@@ -51,9 +51,9 @@ declare const Query: {
         /**
          * Gets timestamp for current time with optional day offset
          * @param days - Number of days to offset (positive or negative)
-         * - {number} 直接用数字
-         * - {string} 使用字符串，如 '1d' 表示 1 天，'2w' 表示 2 周，'3m' 表示 3 个月，'4y' 表示 4 年
-         * - 可以为负数
+         * - {number} Use numbers, such as 1 to represent 1 day, -2 to represent 2 days ago, and 3 to represent 3 days in the future.
+         * - {string} Use strings, such as '1d' to represent 1 day, '2w' to represent 2 weeks, '3m' to represent 3 months, and '4y' to represent 4 years.
+         * - Can be negative
          * @returns Timestamp string in yyyyMMddHHmmss format
          */
         now: (days?: number | string, hms?: boolean) => any;
@@ -183,7 +183,7 @@ declare const Query: {
      * @param protyle - Protyle instance
      * @returns Wrapped document block
      */
-    thisdoc: (protyle: IProtyle) => Promise<IWrappedBlock>;
+    thisDoc: (protyle: IProtyle) => Promise<IWrappedBlock>;
     /**
      * Executes SQL query and optionally wraps results
      * @param fmt - SQL query string
@@ -219,10 +219,15 @@ declare const Query: {
     tag: (tags: string | string[], join?: "or" | "and", limit?: number) => Promise<IWrappedList<IWrappedBlock>>;
     /**
      * Find unsolved task blocks
+     * @param after - After which the blocks were udpated
      * @param limit - Maximum number of results
      * @returns Array of unsolved task blocks
+     * @example
+     * Query.task()
+     * Query.task('2024101000')
+     * Query.task(Query.utils.thisMonth(), 32)
      */
-    task: (limit?: number) => Promise<IWrappedList<IWrappedBlock>>;
+    task: (after?: string, limit?: number) => Promise<IWrappedList<IWrappedBlock>>;
     /**
      * Randomly roam blocks
      * @param limit - Maximum number of results
@@ -243,12 +248,13 @@ declare const Query: {
      * @returns Array of child document blocks
      */
     childDoc: (b: BlockId | Block) => Promise<Block[]>;
+    keyword: (keywords: string | string[], join?: "or" | "and") => Promise<IWrappedList<IWrappedBlock>>;
     /**
      * Search the document that contains all the keywords
      * @param keywords
      * @returns The document blocks that contains all the given keywords
      */
-    keywordDoc: (...keywords: string[]) => Promise<any[]>;
+    keywordDoc: (keywords: string | string[], join?: "or" | "and") => Promise<any[]>;
     /**
      * Return the markdown content of the document of the given block
      * @param block - Block

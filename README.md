@@ -133,52 +133,53 @@ It's easy to see that since the code can automatically obtain the ID of the docu
 
 ```ts
 /**
- * Execute SQL query
- * @returns Query results
+ * Search blocks by tags
+ * @param tags - Tags to search for; can provide multiple tags
+ * @returns Array of blocks matching the tags
+ * @example
+ * Query.tag('tag1') // Search for blocks with 'tag1'
+ * Query.tag(['tag1', 'tag2'], 'or') // Search for blocks with 'tag1' or 'tag2'
+ * Query.tag(['tag1', 'tag2'], 'and') // Search for blocks with 'tag1' and 'tag2'
  */
-sql: (fmt: string) => Promise<any[]>;
-/**
- * Query all backlinks of a specified block ID
- * @returns Array of blocks linking to the specified block
- */
-backlink: (id: BlockId, limit?: number) => Promise<Block[]>;
-/**
- * Query all blocks with a certain attribute
- * @returns Array of matching blocks
- */
-attr: (name: string, val?: string, valMatch?: "=" | "like", limit?: number) => Promise<Block[]>;
+tag: (tags: string | string[], join?: "or" | "and", limit?: number) => Promise<IWrappedList<IWrappedBlock>>;
 /**
  * Find unsolved task blocks
+ * @param after - After which the blocks were udpated
  * @param limit - Maximum number of results
  * @returns Array of unsolved task blocks
+ * @example
+ * Query.task()
+ * Query.task('2024101000')
+ * Query.task(Query.utils.thisMonth(), 32)
  */
-task: (limit?: number) => Promise<any[]>;
+task: (after?: string, limit?: number) => Promise<IWrappedList<IWrappedBlock>>;
 /**
  * Randomly roam blocks
  * @param limit - Maximum number of results
  * @param type - Block type
  * @returns Array of randomly roamed blocks
  */
-random: (limit?: number, type?: BlockType) => Promise<any[]>;
+random: (limit?: number, type?: BlockType) => Promise<IWrappedList<IWrappedBlock>>;
 /**
  * Gets the daily notes document
- * @param limit - Maximum number of results
  * @param notebook - Notebook ID, if not specified, all daily notes documents will be returned
+ * @param limit - Maximum number of results
  * @returns Array of daily notes document blocks
  */
-dailynote: (limit?: number, notebook?: NotebookId) => Promise<any[]>;
+dailynote: (notebook?: NotebookId, limit?: number) => Promise<IWrappedList<IWrappedBlock>>;
 /**
  * Gets child documents of a block
  * @param b - Parent block or block ID
  * @returns Array of child document blocks
  */
-childdoc: (b: BlockId | Block) => Promise<IWrappedList<IWrappedBlock>>;
+childDoc: (b: BlockId | Block) => Promise<Block[]>;
+keyword: (keywords: string | string[], join?: "or" | "and") => Promise<IWrappedList<IWrappedBlock>>;
 /**
- * Gets blocks by their IDs
- * @param ids - Block IDs to retrieve
- * @returns Array of wrapped blocks
+ * Search the document that contains all the keywords
+ * @param keywords
+ * @returns The document blocks that contains all the given keywords
  */
-getBlocksByIds: (...ids: BlockId[]) => Promise<IWrappedBlock[]>;
+keywordDoc: (keywords: string | string[], join?: "or" | "and") => Promise<any[]>;
 ```
 
 These functions can be accessed directly via `Query`​. The most general one is `Query.sql`​, which simply takes the SQL query statement as input.
@@ -282,7 +283,7 @@ Similarly, the table also has some configurable fields:
     fullwidth?: boolean; // Full width
     index?: boolean;  // Show row number
     cols?: (string | Record<string, string>)[] | Record<string, string>;
-    renderer?: (b: Block, attr: keyof Block) => string | number | undefined | null;
+    renderer?: (b: Block, attr: keyof Block) => string | undefined | null;
 }
 ```
 
@@ -311,7 +312,7 @@ return query();
 
 > In the first table above, since it's too wide, we turn off `fullwidth`​ so that you can scroll horizontally to view.
 
-The renderer function is used to specify the rendering scheme for each column (key). If not specified, the default cell rendering scheme is used. If the return value is null, the default scheme will be used.
+💡 (For advanced usage, can be omitted if you do not know much about js code) The renderer function is used to specify the rendering scheme for each column (key). If not specified, the default cell rendering scheme is used. If the return value is null, the default scheme will be used.
 
 Comparing the following examples, it's clear that one uses the default scheme for all columns, while the other customizes the rendering scheme for the id and box columns.
 
@@ -366,11 +367,11 @@ dv.render();
 
 ​![image](assets/image-20241204004702-va0yg1n.png)​
 
-> ⚠️ Unfortunately, the markdown component does not support content that requires additional rendering, such as mathematical formulas.
+> 🙁 Unfortunately, the markdown component does not support content that requires additional rendering, such as mathematical formulas.
 
 Despite some limitations, the markdown component, combined with JavaScript's [template literals](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals), can still be quite powerful and effectively enrich the content of DataView. Here's a small example: fetching resources from the web and displaying a daily quote in the embedded block.
 
-⚠️ Note that due to the use of a (randomly found) web API, you may not be able to retrieve data when testing locally.
+🙄 Note that due to the use of a web API (randomly found, just for exampling), you may not be able to retrieve data when testing locally.
 
 ```js
 //!js
@@ -473,11 +474,39 @@ All properties can be grouped into several categories:
 2. Timestamp-related: Additional properties are extended for updated, created, etc., to facilitate direct display of block timestamps.
 3. ​`attr`​ function:
 
-    * Takes a block and block attribute and returns a markdown text rendered attribute (as mentioned in the table section earlier).
+    * Takes a block and block attribute and the return will be rendered as suitable markdown text (as mentioned in the table section earlier).
     * You can also pass a custom renderer and return a markdown text. If no return or return null, the default rendering scheme is used.
 4. ​`custom-xxx`​ properties: Directly access the block's custom attributes, e.g., `block['custom-b']`​, which accesses the `custom-b`​ attribute of the corresponding block.
 
-​![image](assets/image-20241025223457-hi94ial.png)​
+You can try the following code, and get to know there differences.
+
+```js
+//!js
+const query = async () => {
+    let dv = Query.DataView(protyle, item, top);
+  
+    let blocks = await Query.random(1);
+    let b = blocks[0];
+
+    dv.addmd(`
+- aslink: ${b.aslink}
+- created: ${b.created}
+- createdDate: ${b.createdDate}
+- createdTime: ${b.createdTime}
+- createdDatetime: ${b.createdDatetime}
+- attr:
+    - ${b.box} vs ${b.attr('box')}
+    - ${b.type} vs ${b.attr('type')}
+    `)
+
+    dv.render();
+
+}
+
+return query();
+```
+
+​![image](assets/image-20241213184747-0ma9dj4.png)​
 
 > 🔔 The above introduction may not be complete; for the complete API documentation, refer to `repo/public/types.d.ts`​.
 
@@ -488,14 +517,20 @@ All result lists returned by `Query`​ API queries are `IWrappedList`​ object
 🔔 IWrappedList is stateless; all APIs return a modified copy rather than performing in-place modifications.
 
 ```ts
-// Not necessarily complete, for the complete API documentation, refer to repo/public/types.d.ts
+// 不一定完整，完整 API 文档以 repo/public/types.d.ts 为准
 export interface IWrappedList<T> extends Array<T> {
     /** Method to return the original array */
     unwrap(): T[];
 
     /** Original array */
     unwrapped: T[];
-
+    /**
+     * Converts the array to a map object, where the key is specified by the key parameter.
+     * Equivalent to calling `array.reduce((acc, cur) => ({...acc, [cur[key]]: cur }), {})`
+     * @param key
+     * @returns
+     */
+    asMap: (key: string) => Record<string, Block>;
     /**
      * Returns a new array containing only specified properties
      * @param attrs - Property names to keep
@@ -609,6 +644,10 @@ The additional methods in IWrappedList can be grouped into these categories:
 ### Query.Utils
 
 Query.Utils contains some potentially useful utility functions.
+
+> 🙂 Every function inside `Query.Utils`​ is sync function, no need to await
+>
+> ​`Query.Utils`​ has an lowercase alias `Query.utils`​
 
 #### Time-related Utility Functions
 
@@ -760,7 +799,7 @@ declare interface Partial<Query['Utils'] > {
 
 > 🖋️ This function has an alias `redirect`​.
 
-The purpose of fb2p (or reference relationship redirection) is to handle nested container blocks and paragraph blocks. It redirects the first paragraph block ID of a container block to the container block's ID.
+The purpose of fb2p (or reference relationship redirection) is to **handle nested container blocks and paragraph blocks**. It **redirects the first paragraph block ID of a container block to the container block's ID**.
 
 📣 First, let's explain the background of this API. Suppose there is a list block that references another block:
 
@@ -816,7 +855,7 @@ Especially the latter can help achieve basic document references. The following 
 
 ​![image](assets/image-20241204130826-j6rwpyx.png)​
 
-✨ **Special Usage**: Force redirection to the document. fb2p has a built-in rule: when the paragraph contains a tag named `#DOCREF#`​ or `#文档引用#`​, the block will be forcibly redirected to the document block.
+✨ **Special Usage**: Force redirection to the document. `fb2p`​ has a built-in rule: when the paragraph contains a tag named `#DOCREF#`​ or `#文档引用#`​, the block will be forcibly redirected to the document block.
 
 ## 4. Advanced Usage - DataView Various View Components
 
@@ -1024,7 +1063,7 @@ Changing `type: 'flowchart'`​ to `mindmap`​ can also display it in the form 
 
 ​![image](assets/image-20241206190618-bb58ls6.png)​
 
-😃 In addition, if the node in the relation diagram corresponds to a SiYuan content block, it can be **hovered to display content** and **clicked to jump** to the corresponding document.
+> 😃 If the node in the relation diagram corresponds to a SiYuan content block, it can be **hovered to display content** and **clicked to jump** to the corresponding document.
 
 ​![image](assets/image-20241206190600-fu09ywo.png)​
 
@@ -1268,8 +1307,8 @@ return query();
 
 😃 As long as the content block of SiYuan is bound, the nodes are interactive:
 
-* Ctrl + Click can **jump** to the corresponding block.
-* Hovering will pop up a tooltip, where the first line of the block ID can **hover to view** the full block content or **click to jump**.
+* **Ctrl + Click** can **jump** to the corresponding block.
+* **Hovering** will pop up a tooltip, where the first line of the block ID can **hover to view** the full block content or **click to jump**.
 
   ​![image](assets/image-20241207171409-l4z5ffo.png)​
 
@@ -1325,7 +1364,9 @@ Input data parameters:
 
   * ​`source`​: The ID of the source node.
   * ​`target`​: The ID of the target node.
-  * 🔔 Generally, you need to **build the association relationship yourself in the code**. For simplicity, the component allows `target`​ to be a list of IDs (in the original echart graph parameters, target can only be a single ID, but in DataView, you can pass in multiple target IDs at once).
+  * 🔔 Generally, you **need to build the association relationship yourself in the code**. 
+
+    For simplicity, the component allows `target`​ to be a list of IDs (in the original echart graph parameters, target can only be a single ID, but in DataView, you can pass in multiple target IDs at once).
 
 Options parameters:
 
@@ -1407,7 +1448,7 @@ return query();
 
 ```
 
-The effect is as follows. Like the tree diagram, each node in the graph can be **Ctrl + Clicked to jump**, and hovering will display node details.
+The effect is as follows. Like the tree diagram, each node in the graph can be **Ctrl + Clicked to jump**, and **hovering** will display node details.
 
 ​![image](assets/image-20241207193310-9gpfbtk.png)​
 
@@ -1537,7 +1578,7 @@ removeView(id: string)
 
 Given a view component's id (`container.dataset.id`​), you can call the `removeView`​ method to delete it.
 
-If the component has a `dispose`​ function, it will automatically execute the corresponding component's `dispose`​ operation before deletion.
+> 🔔 The advantage of `reviewView`​ over directly using `ele.remove()`​ in your js code is: if the component has bound with a `dispose`​ function, it will be automatically executed before deletion.
 
 ```js
 //!js
@@ -1578,12 +1619,12 @@ replaceView(id: string, viewContainer: HTMLElement, disposer?: () => void)
 ```
 
 * Given a view component's id (`container.dataset.id`​), you can call the `replaceView`​ method to replace it with a new component.
-* If the old component has a `dispose`​ function, it will automatically execute the corresponding component's `dispose`​ operation before replacement (essentially deletion).
-* You can pass a `disposer`​ function as an additional `dispose`​ function for the component (though generally not necessary).
+* If the old component has a `dispose`​ function, it will automatically be executed before replacement (essentially deletion).
+* You can pass a `disposer`​ function as an additional `dispose`​ function for the component (<u>generally not necessary</u>).
 * Note:
 
   1. The passed `viewContainer`​ must also be a View Container element.
-  2. After replacing the original component's position, the `data-id`​ field of the passed `viewContainer`​ will be corrected to the original ID, not the new ID generated before passing.
+  2. After replacing the original component's position, the `data-id`​ field of the passed `viewContainer`​ will be modified to the original ID (not the new ID generated before passing).
 
 We modify the above example: after clicking the button, display the deletion prompt message in the original counter position.
 
@@ -1631,9 +1672,7 @@ return query();
 
 ### Custom View Components
 
-The plugin automatically creates a `query-view.custom.js`​ script in the `/data/public`​ directory. Using this script, you can create your own custom components. The default script
-
-You can write your own components in custom:
+The plugin automatically creates a `query-view.custom.js`​ script in the `/data/public`​ directory. Using this script, you can create your own custom components. Following this:
 
 ```ts
 /**
@@ -1667,7 +1706,7 @@ Each component structure is as follows:
     * The reason is that the plugin needs to check whether the component function structure is correct when importing the script, passing a `null`​ to check the return value of `use`​.
   * **Return**:
 
-    * ​`render`​: Required return value. The first `container`​ parameter is the component's container element, and the following parameters are the component's call parameters. You can:
+    * ​`render`​: Required. The first `container`​ parameter is the component's container element, and the following parameters are the component's call parameters. You can:
 
       1. Create your own elements in render and call `container.append`​ to add elements to the container.
       2. Return custom elements (or just strings), and the return value will be added to the container by default.
@@ -1711,13 +1750,15 @@ dv.render();
 
 > 🔔 **Note**: `DataView`​ automatically adds **the lowercase version of the component name as an alias**, so two components named `Add`​ and `add`​ may overwrite each other!
 
-Custom components are automatically imported when the plugin starts. If you change the js file during the plugin's runtime, you can click the "**Reimport**" button in the settings panel or the top-bar menu to update the component status.
+Custom components are automatically imported when the plugin starts. If you change the js file during the plugin's runtime, you can click the "**Reload Custom**" button in the settings panel or the top-bar menu to update the component status.
 
 ### DataView.useState
 
-> 🔔 **Note**: `useState`​ is an experimental advanced feature, and the current test cases are not sufficient to fully guarantee that no issues will occur in multi-device synchronization. <u>Not recommended</u> for newcomers without programming experience (to use extensively)!
+> 🔔 **Note**: `useState`​ is an experimental feature, and the current test cases are not sufficient to guarantee that no issues will occur in multi-device synchronization.
+>
+> <u>Not recommended</u> for newcomers without programming experience (to use extensively)!
 
-Embedded blocks are automatically repainted (repainted) every time the document is opened or the embedded block is dynamically loaded, meaning that each DataView is **stateless**.
+Embedded blocks are automatically repainted (re-exeucute) every time the document is opened or the embedded block is dynamically loaded, meaning that each DataView is **stateless**.
 
 The `dv.useState`​ method provides some **persistence** functionality for DataView, returning a `State`​ object. It has two usage styles: `getter/setter`​ style similar to `signal`​ and `.value`​ style similar to `vue`​.
 
@@ -1731,7 +1772,7 @@ state(2)
 state.value = 2;
 ```
 
-Each state will write the current state **to the cache** and eventually **save it to the block's custom attributes** during the embedded block refresh, achieving state persistence.
+Each state will write the current state to the **cache** and **eventually** save it to the **block's custom attributes** during the embedded block refresh, achieving state persistence.
 
 The following is an example. You can keep clicking the button, and the number on the left will keep increasing.
 
@@ -1766,10 +1807,10 @@ const today = Query.Utils.today();
 const state = dv.useState(today);
 // If the state exists, use the previous cache
 if (state()) {
-  dv.addmd('Today\'s daily quote')
+  dv.addmd('今天的每日一句')
   dv.addmd(`> ${state()}`)
 } else {
-// Note: Due to network environment issues, you may not be able to access this API when running
+// Note: According to your network environment, you may not be able to access this API when you try to test locally
 fetch('https://api.xygeng.cn/one').then(async ans => {
  console.log(ans)
  if (ans.ok) {
@@ -1777,7 +1818,7 @@ fetch('https://api.xygeng.cn/one').then(async ans => {
     console.log(data)
     // Update the state
     state.value = `${data.data.content} —— ${data.data.origin}`;
-    dv.addmd('Today\'s daily quote')
+    dv.addmd('今天的每日一句') // Today\'s daily quote
     dv.addmd(`> ${state.value}`)
  }
 });
@@ -1795,9 +1836,9 @@ Since we used the timestamp as the state key, if you run it for several days and
 
 DataView's state uses a cache + block attribute storage method for persistence.
 
-1. **Cache**: When staying on the document page, the state will be written to the Session Storage cache. Even if `state()`​ is called to update the state or the embedded block is repainted, only the state data in the Session cache will be changed.
-2. **Document-level Write**: When a document is closed, all states used by the embedded blocks in the document will be written to the block attributes and deleted from the Session Storage cache.
-3. **Full Write**: When the plugin is disabled or the desktop window is closed (specifically, the click event of the top-right X button is monitored), all states in the cache will be written to the block attributes and cleared from the entire Session Storage cache.
+1. **Cache**: When staying on the document page, the state will be written to the Session Storage. Everytime  `state()`​ is called to update the state or the embedded block is repainted, only the state data in the Session cache will be changed.
+2. **Document-level Write**: When a document is closed, all states used by the embedded blocks in the document will be written to the block attributes and deleted from the Session Storage.
+3. **Full Write**: When the plugin is disabled or the desktop window is closed (specifically, the click event of the top-right "X" button is monitored), all states in the cache will be written to the block attributes and cleared from the entire Session Storage.
 
 🤔 **Why not save to the block attributes directly every time the state is updated in the code?**
 
@@ -1871,21 +1912,21 @@ It can be seen that the most direct problem causing the conflict is: SiYuan will
       ];
       ```
     * If you encounter abnormal situations related to user input during the process of writing custom dv, you should stop and not continue to try, to avoid adverse effects on important data.
-2. <u>In multi-device synchronization</u>, use `useState`​ with caution. It is recommended to enable "**Settings-Cloud-Generate Conflict Documents**" ![image](assets/image-20241210133627-mnp2zup.png)​
+2. <u>In multi-device synchronization</u>, use `useState`​ with caution. It is highly recommended to enable "**Settings-Cloud-Generate Conflict Documents**" ![image](assets/image-20241210133627-mnp2zup.png)​
 
     ​![image](assets/image-20241211194757-74vrp7m.png)​
 
-    Although the state function avoids the "conflict hell" problem, **data conflicts may still occur in some special multi-device synchronization situations**.
+    Although the state function avoids the "loop conflict" problem, **data conflicts may still occur** in some special multi-device synchronization situations.
 
     To avoid data state loss, it is recommended to enable the "Generate Conflict Documents" setting in SiYuan's synchronization settings. In case of problems, manual processing is still possible.
 
 ## 6. Editing Code in an External Editor
 
-SiYuan's built-in embedded block floating window is not user-friendly, and the experience is very poor when editing slightly complex code. Therefore, the plugin provides the function of opening js code in an external editor.
+SiYuan's built-in embedded block' editing dialog is not user-friendly. Therefore, the plugin provides the function of opening js code in an external editor.
 
   **⚠️ Note! This feature is only available on the desktop.**
 
-Users need to configure the default parameters for opening the external editor in the plugin settings:
+Users need to configure the command for opening the external editor in the plugin settings:
 
 ​![image](assets/image-20241202164246-vla7mo8.png)​
 
@@ -1895,7 +1936,7 @@ When using it, you need to click the "Edit Code" button in the block's plugin me
 
 ​![image](assets/image-20241202164442-588f7d7.png)​
 
-The plugin will automatically create a temporary code file locally and then open the code file using the above command. The plugin will **track the editing updates of the code file** and update the latest content in the file to the embedded block, refreshing the rendered content of the embedded block.
+The plugin will automatically create a temporary code file locally and then open the code file using the above command. The plugin will **track the editing updates** of the code file and update the latest content in the file to the embedded block, refreshing the rendered content of the embedded block.
 
 ​![image](assets/image-20241206211503-q3b2uk5.png)​
 
@@ -1918,11 +1959,11 @@ Common code editor command-line references:
     Note that, since the code in the embed block is executed within a `Function`​ object, errors during execution may not appear in the console.
 3. Debug your JavaScript code and carefully check if there are any mistakes.（See next part）
 
-If possible, it is more recommended to edit your code in an external editor, where syntax highlighting and other prompts can help avoid many low-level errors.
+If possible, it is more recommended to edit your code in an external editor, where syntax highlighting can help avoid many low-level mistakes.
 
 ### How to Debug DataView Code?
 
-You can add `debugger`​ in the code and open the developer mode. When it runs to this line, it will automatically enter the breakpoint mode, and then you can debug the program.
+You can add `debugger`​ in the code and open the developer mode. When it runs to this line, it will automatically enter breakpoint here, and then you can debug the program.
 
 ​![image](assets/image-20241207204410-a231unc.png)​
 
@@ -1953,7 +1994,9 @@ The plugin provides a button in the block menu to directly perform the above con
 
 ## Complete API
 
-> Note: Since the interface file will change with development, the README itself does not include the interface code but some placeholders. Then, during compilation and runtime, the automatically generated interface code will be replaced into the packaged README file.
+> Note: Since the interface file will change with development, the README itself does not include the interface code but some placeholders.
+>
+> During compilation and runtime, the automatically generated interface code will be replaced into the packaged README file.
 >
 > For the latest complete interface file, please visit [https://github.com/frostime/sy-query-view/blob/main/public/types.d.ts](https://github.com/frostime/sy-query-view/blob/main/public/types.d.ts).
 >
@@ -2024,6 +2067,8 @@ Source code reference: [https://github.com/frostime/sy-query-view/blob/main/publ
 In this example, `state`​ is used to store the date information. After today, the content of the table will remain unchanged rather than fetching documents updated on a future day.
 
 ​![image](assets/image-20241210172746-kbxtfhr.png)​
+
+‍
 
 ### Create the Change Curve of Documents
 
