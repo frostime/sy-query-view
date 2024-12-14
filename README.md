@@ -57,7 +57,7 @@ The results obtained using the Query API have some additional convenient propert
 >
 > ​![image](assets/image-20241211194155-oc0yj5l.png)​
 >
-> In the "Examples" tab, you can copy the sample code from the text box and paste it into an embedded block to instantly see its effect.
+> In the "Examples" tab, you can<u> copy the sample code from the text box and paste it into an embedded block</u> to instantly see its effect.
 >
 > ​![image](assets/image-20241214152215-p163uhs.png)​
 
@@ -115,6 +115,36 @@ flowchart TD
 ```
 
 For the complete interface file, please visit: [https://github.com/frostime/sy-query-view/blob/main/public/types.d.ts](https://github.com/frostime/sy-query-view/blob/main/public/types.d.ts)
+
+> 🖋️ **Using Skeleton Template**
+>
+> Using the Query View requires writing JavaScript code within an embedded block. You can quickly insert a skeleton template by typing `/qv`​ in the editor, eliminating the need to start from scratch each time with the usual program structures like `//!js...`​, allowing you to focus on writing the core logic.
+>
+> ​![image](assets/image-20241214183258-vdarhfx.png)​
+>
+> The default basic template function is to randomly query five blocks, which you can modify to suit your desired query logic.
+>
+> ```js
+> //!js
+> const query = async () => {
+>     //If you want to use DataView, please uncomment the following line
+>     //let dv = Query.DataView(protyle, item, top);
+>
+>     const SQL = `
+>         select * from blocks
+>         order by random()
+>         limit 5;
+>     `;
+>     let blocks = await Query.sql(SQL);
+>
+>     return blocks.pick('id');
+>     //If you want to use DataView, please comment out the above return and uncomment the following two lines
+>     //dv.addlist(blocks);
+>     //dv.render();
+> }
+>
+> return query();
+> ```
 
 ## 2. Basic Usage
 
@@ -1516,9 +1546,10 @@ The effect is as follows. Like the tree diagram, each node in the graph can be *
 ### Columns and Rows
 
 ```js
-columns(elements: HTMLElement[], options?: {
+columns(elements: HTMLElement[], options: {
     gap?: string;
     flex?: number[];
+    minWidth?: string | number
 }): HTMLDivElement;
 
 rows(elements: HTMLElement[], options?: {
@@ -1531,6 +1562,9 @@ You can add multi-column or multi-row layouts (based on flex) via columns and ro
 
 * ​`gap`​: The spacing between multiple rows or columns, default is 5px.
 * ​`flex`​: The ratio of multiple rows or columns, default is unspecified, meaning equal spacing.
+* columns
+
+  * `minWidth`​: In a multi-column layout, the minimum width of each column; default is 350px. This parameter primarily comes into play when there are many columns, exceeding the container's range and requiring horizontal scrolling.
 
 Here is an example of a multi-column layout:
 

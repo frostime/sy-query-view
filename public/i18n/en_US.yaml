@@ -83,6 +83,10 @@ src_userhelp_indexts:
   download: Download
   help_doc: Help Document
   help_doc_2: Help Document
+  queryview: Query View Basic Template
+  useview: If you want to use DataView, please uncomment the following line
+  useview2: If you want to use DataView, please comment out the above return and uncomment
+    the following two lines
 src_userhelp_sydocts:
   create_user_doc: 'Create user documentation:'
   plugin_update_doc: Detected plugin version update, updating documentation, please

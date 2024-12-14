@@ -34,7 +34,7 @@ export default class QueryViewPlugin extends Plugin {
     declare version: string;
 
     private init() {
-
+        this.protyleSlash = [];
         this.addIcons(ICON);
         const showMenu = () => {
             let menu = new Menu("query-view");

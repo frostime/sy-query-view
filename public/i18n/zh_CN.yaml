@@ -55,6 +55,9 @@ src_userhelp_indexts:
   download: 下载
   help_doc: 帮助文档
   help_doc_2: 帮助文档
+  queryview: Query View 基本模板
+  useview: 如果要使用 DataView 请取消下面这行的注释
+  useview2: 如果要使用 DataView 请注释上面的 return, 并取消下方两行注释
 src_userhelp_sydocts:
   create_user_doc: '创建用户文档:'
   plugin_update_doc: 检查到插件版本已更新，正在更新文档，请稍等...

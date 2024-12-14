@@ -58,6 +58,9 @@ interface I18n {
         download: string;
         help_doc: string;
         help_doc_2: string;
+        queryview: string;
+        useview: string;
+        useview2: string;
     };
     src_userhelp_sydocts: {
         create_user_doc: string;

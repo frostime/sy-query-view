@@ -53,7 +53,7 @@
 >
 > ​![image](assets/image-20241211194155-oc0yj5l.png)​
 >
-> 在 Examples 标签页中，您可以将文本框内的样例代码复制并粘贴到一个嵌入块中，以便快速查看其效果。
+> 在 Examples 标签页中，您可以<u>将文本框内的样例代码复制并粘贴到一个嵌入块</u>中，以便快速查看其效果。
 >
 > ​![image](assets/image-20241214152215-p163uhs.png)​
 
@@ -111,6 +111,36 @@ flowchart TD
 ```
 
 完整的接口文件请查看：[https://github.com/frostime/sy-query-view/blob/main/public/types.d.ts](https://github.com/frostime/sy-query-view/blob/main/public/types.d.ts)
+
+> 🖋️ **使用骨架模板**
+>
+> 使用 Query View 需要在嵌入块中编写 js 代码，你可以在编辑器中输入 `/qv`​ 快速插入一个骨架模板，无需每次都从头编写 `//!js...`​ 这些常规的程序结构，而专注与编写核心逻辑。
+>
+> ​![image](assets/image-20241214183258-vdarhfx.png)​
+>
+> 默认的基础模板的功能是随机查询五个块，你可以自行修改成你想要的查询逻辑。
+>
+> ```js
+> //!js
+> const query = async () => {
+>     //如果要使用 DataView 请取消下面这行的注释
+>     //let dv = Query.DataView(protyle, item, top);
+>
+>     const SQL = `
+>         select * from blocks
+>         order by random()
+>         limit 5;
+>     `;
+>     let blocks = await Query.sql(SQL);
+>
+>     return blocks.pick('id');
+>     //如果要使用 DataView 请注释上面的 return, 并取消下方两行注释
+>     //dv.addlist(blocks);
+>     //dv.render();
+> }
+>
+> return query();
+> ```
 
 ## 2. 基础用法
 
@@ -1516,9 +1546,10 @@ return query();
 ### columns 和 rows
 
 ```js
-columns(elements: HTMLElement[], options?: {
+columns(elements: HTMLElement[], options: {
     gap?: string;
     flex?: number[];
+    minWidth?: string | number
 }): HTMLDivElement;
 
 rows(elements: HTMLElement[], options?: {
@@ -1531,6 +1562,9 @@ rows(elements: HTMLElement[], options?: {
 
 * ​`gap`​：多行或者多列之间的间距，默认 5px
 * ​`flex`​：多行或者多列容器的比例，默认不指定表示等距
+* columns
+
+  * `minWidth`​：多列布局的时候，每列最窄的宽度；默认 350px；这个参数主要在列数较多，超出容器范围需要横向滚动的情况下发挥作用
 
 以下是一个多列布局的案例：
 
