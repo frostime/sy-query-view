@@ -58,7 +58,9 @@ interface I18n {
         download: string;
         help_doc: string;
         help_doc_2: string;
+        open_locally: string;
         queryview: string;
+        unable_open_d_ts: string;
         useview: string;
         useview2: string;
     };

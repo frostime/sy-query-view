@@ -55,7 +55,9 @@ src_userhelp_indexts:
   download: 下载
   help_doc: 帮助文档
   help_doc_2: 帮助文档
+  open_locally: 在本地打开
   queryview: Query View 基本模板
+  unable_open_d_ts: 无法打开 d.ts 文件
   useview: 如果要使用 DataView 请取消下面这行的注释
   useview2: 如果要使用 DataView 请注释上面的 return, 并取消下方两行注释
 src_userhelp_sydocts:

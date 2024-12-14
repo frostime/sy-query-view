@@ -83,7 +83,9 @@ src_userhelp_indexts:
   download: Download
   help_doc: Help Document
   help_doc_2: Help Document
+  open_locally: Open local
   queryview: Query View Basic Template
+  unable_open_d_ts: Unable to open d.ts file
   useview: If you want to use DataView, please uncomment the following line
   useview2: If you want to use DataView, please comment out the above return and uncomment
     the following two lines

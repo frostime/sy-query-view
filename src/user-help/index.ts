@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-12-10 18:46:12
  * @FilePath     : /src/user-help/index.ts
- * @LastEditTime : 2024-12-14 18:25:15
+ * @LastEditTime : 2024-12-14 18:58:46
  * @Description  : 
  */
 import { i18n } from "@/index";
@@ -11,6 +11,10 @@ import type QueryViewPlugin from "@/index";
 import { useUserReadme } from "./sy-doc";
 import { useExamples } from "./examples";
 import { insertBlock } from "@/api";
+import { setting } from "@/setting";
+import { showMessage } from "siyuan";
+
+const child_process = require("child_process");
 
 const BASIC_TEMPLATE = () => `
 //!js
@@ -37,6 +41,26 @@ return query();
 const toEmbed = (code: string) => {
     code = code.trim();
     return '{{' + code.replaceAll('\n', '_esc_newline_') + '}}\n{: breadcrumb="true" }';
+}
+
+const openLocalDTSFile = () => {
+    if (!child_process) return;
+    const endpoint = '/plugins/sy-query-view/types.d.ts'
+    const dataDir = window.siyuan.config.system.dataDir;
+
+    const path = window?.require('path');
+    const filepath = path.join(dataDir, endpoint);
+
+    const codeEditor = setting.codeEditor;
+    const command = codeEditor.replace('{{filepath}}', filepath);
+    child_process.exec(command, (err, stdout, stderr) => {
+        if (err) {
+            console.warn('Error executing command:', err);
+        } else {
+            // console.debug('Command executed successfully:', stdout);
+        }
+    });
+
 }
 
 export const load = async (plugin: QueryViewPlugin) => {
@@ -67,6 +91,21 @@ export const load = async (plugin: QueryViewPlugin) => {
             }, 500);
         }
     });
+
+    if (child_process) {
+        plugin.registerMenuItem({
+            label: i18n.src_userhelp_indexts.open_locally + ' d.ts',
+            icon: 'iconEdit',
+            click: () => {
+                try {
+                    openLocalDTSFile();
+                } catch (error) {
+                    console.error(error);
+                    showMessage(i18n.src_userhelp_indexts.unable_open_d_ts, 3000, 'error');
+                }
+            }
+        })
+    }
 
     plugin.registerMenuItem({
         label: i18n.src_userhelp_indexts.download + ' d.ts',
