@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-11-28 21:29:40
  * @FilePath     : /src/core/utils.ts
- * @LastEditTime : 2024-12-07 17:05:34
+ * @LastEditTime : 2024-12-14 16:36:00
  * @Description  : 
  */
 //https://github.com/siyuan-note/siyuan/blob/master/app/src/protyle/util/addScript.ts

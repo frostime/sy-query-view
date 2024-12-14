@@ -3,10 +3,11 @@
 }
 
 .data-view-component {
-    margin: 5px auto;
+    margin-top: 5px;
+    margin-bottom: 5px;
     padding-left: 0.5em;
     padding-right: 0.5em;
-    overflow-x: auto;
+    // overflow-x: hidden;
 }
 
 .embed-container[data-node-id] {
@@ -49,11 +50,13 @@
         justify-content: center;
         margin-top: 0;
         height: 1em;
+
         &>svg {
             height: 100%;
             transform: rotate(90deg);
             opacity: 0.6;
         }
+
         &:hover {
             background-color: var(--b3-theme-primary-lightest);
         }
@@ -67,4 +70,40 @@
 
 .mindmap-node-siyuan {
     cursor: pointer;
+}
+
+.columns {
+
+    --flex-grow: 1;
+    --col-min-width: 350px;
+    --col-gap: 5px;
+
+    gap: var(--col-gap);
+
+    display: flex;
+    flex-wrap: nowrap;
+    min-width: min-content;
+
+    // 所有直接子元素作为列
+    >.column {
+        flex-grow: var(--flex-grow);
+        min-width: var(--col-min-width); // 最小列宽
+        word-break: break-word;
+    }
+}
+
+.rows {
+    // --flex-grow: initial;
+    --row-gap: 5px;
+
+    gap: var(--row-gap);
+
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+
+    > .row {
+        flex-grow: var(--flex-grow);
+        word-break: break-word;
+    }
 }

@@ -49,6 +49,18 @@ The results obtained using the Query API have some additional convenient propert
 
 ​![image](assets/image-20241130145358-bqvwgmb.png)​
 
+> 🖋️ **Start Learning from Examples**
+>
+> The best way to learn about this plugin is to begin with some examples, allowing you to quickly grasp its basic functionalities.
+>
+> You can click on "Examples" in the plugin's menu located at the top-left corner.
+>
+> ​![image](assets/image-20241211194155-oc0yj5l.png)​
+>
+> In the "Examples" tab, you can copy the sample code from the text box and paste it into an embedded block to instantly see its effect.
+>
+> ​![image](assets/image-20241214152215-p163uhs.png)​
+
 ## 1. Basic Concepts: What is a JS Embedded Block?
 
 SiYuan's default embedded blocks use SQL syntax to query blocks, which are then automatically rendered into content.
@@ -1076,7 +1088,7 @@ Changing `type: 'flowchart'`​ to `mindmap`​ can also display it in the form 
 * ​`dv.mflowchart`​: Equivalent to the flowchart Relation diagram.
 * ​`dv.mmindmap`​: Equivalent to the mindmap Relation diagram..
 
-### MermaidKanban
+#### MermaidKanban
 
 ```ts
 mermaidKanban(groupedBlocks: Record<string, Block[]>, options: {

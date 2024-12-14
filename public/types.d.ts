@@ -2,7 +2,7 @@
  * @name sy-query-view
  * @author frostime
  * @version 1.0.0
- * @updated 2024-12-13T13:59:49.236Z
+ * @updated 2024-12-14T09:23:39.406Z
  */
 
 declare module 'siyuan' {
@@ -584,6 +584,7 @@ export declare class DataView implements IDataView {
      * @param options - Configuration options
      * @param options.gap - Style of gap between columns; default is '5px'
      * @param options.flex - Flex ratio of each column; default is [1, 1, 1, ...]
+     * @param options.minWidth - The minimum width of each column; default is '350px'; This is useful when the columns number is quite large
      * @returns HTMLElement containing the column layout
      * @example
      * dv.addcolumns([dv.md('# Hello'), dv.md('# World')], { gap: '10px', flex: [1, 2] });
@@ -591,6 +592,7 @@ export declare class DataView implements IDataView {
     columns(elements: HTMLElement[], options?: {
         gap?: string;
         flex?: number[];
+        minWidth?: string | number;
     }): HTMLElement;
     /**
      * Arranges elements in rows

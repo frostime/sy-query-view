@@ -1,3 +1,5 @@
+src_core_dataviewts:
+  blank: 空白
 src_core_editorts:
   ext_code_editor_closed: 外部代码编辑器进程 {0} 已关闭
   show_as_template_format: 显示为模板格式

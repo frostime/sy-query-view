@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-12-02 10:15:04
  * @FilePath     : /src/core/data-view.ts
- * @LastEditTime : 2024-12-13 21:17:22
+ * @LastEditTime : 2024-12-14 17:31:06
  * @Description  : 
  */
 import {
@@ -22,6 +22,7 @@ import styles from './index.module.scss';
 import { matchIDFormat } from "./utils";
 import { BlockTypeShort } from "@/utils/const";
 import { deepMerge } from "./utils";
+import { i18n } from "..";
 
 const getCSSVar = (name: string) => getComputedStyle(document.documentElement).getPropertyValue(name);
 
@@ -527,8 +528,16 @@ export class DataView extends UseStateMixin implements IDataView {
     list(data: (IBlockWithChilds | ScalarValue)[], options: IListOptions<Block> = {}) {
         let defaultRenderer = (x: any) => {
             if (typeof x === 'object') {
-                if (x.id && x.content) {
-                    return `[${x?.fcontent || x.content}](siyuan://blocks/${x.id})`;
+                if (x.id && matchIDFormat(x.id)) {
+                    if (x.type === 'c' || x.type === 'query_embed') {
+                        return `[${BlockTypeShort[x.type]}](siyuan://blocks/${x.id})`;
+                    }
+                    let text = x?.fcontent || x.content || "";
+                    if (text !== "") {
+                        return `[${text}](siyuan://blocks/${x.id})`;
+                    } else {
+                        return `[${i18n.src_core_dataviewts.blank}${BlockTypeShort[x.type]}](siyuan://blocks/${x.id})`;
+                    }
                 } else {
                     return JSON.stringify(x);
                 }
@@ -595,6 +604,7 @@ export class DataView extends UseStateMixin implements IDataView {
         if (options.fullwidth) {
             table.element.querySelector('table').style.width = '100%';
         }
+        tableContainer.style.overflowX = 'auto';
         return tableContainer;
     }
 
@@ -604,6 +614,7 @@ export class DataView extends UseStateMixin implements IDataView {
      * @param options - Configuration options
      * @param options.gap - Style of gap between columns; default is '5px'
      * @param options.flex - Flex ratio of each column; default is [1, 1, 1, ...]
+     * @param options.minWidth - The minimum width of **each column**; default is '350px'; This is useful when the columns number is quite large
      * @returns HTMLElement containing the column layout
      * @example
      * dv.addcolumns([dv.md('# Hello'), dv.md('# World')], { gap: '10px', flex: [1, 2] });
@@ -611,30 +622,33 @@ export class DataView extends UseStateMixin implements IDataView {
     columns(elements: HTMLElement[], options: {
         gap?: string;
         flex?: number[];
+        minWidth?: string | number
     } = {}) {
-        let columns = newViewWrapper();
-        Object.assign(columns.style, {
-            display: "flex",
-            flexDirection: "row",
-            gap: options.gap ?? '5px'
-        });
+        const container = newViewWrapper();
+
+        const asWidth = (width: string | number) => {
+            if (typeof width === 'number') {
+                return `${width}px`;
+            }
+            return width;
+        }
+        const columns = document.createElement('div');
+        columns.classList.add(styles['columns']);
+        options?.gap && columns.style.setProperty('--col-gap', options.gap);
+        options?.minWidth && columns.style.setProperty('--col-min-width', asWidth(options.minWidth));
+
         const flex = options.flex ?? Array(elements.length).fill(1);
         const column = (ele: HTMLElement, i: number) => {
-            const div = document.createElement("div");
-            Object.assign(div.style, {
-                flex: flex[i]?.toString(),
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
-                display: "flex",
-                flexDirection: "column"
-            });
-            div.append(ele);
-            return div;
+            ele.classList.add(styles['column']);
+            flex[i] !== 1 && columns.style.setProperty('--flex-grow', flex[i]);
+            return ele;
         }
 
         elements.forEach((e, i) => columns.append(column(e, i)));
-        return columns;
+
+        container.append(columns)
+        container.style.overflowX = 'auto';
+        return container;
     }
 
     /**
@@ -642,25 +656,41 @@ export class DataView extends UseStateMixin implements IDataView {
      * @param elements - Array of HTMLElements to arrange
      * @param options - Configuration options
      * @param options.gap - Style of gap between rows; default is '5px'
-     * @param options.flex - Flex ratio of each row; default is [1, 1, 1, ...]
+     * @param options.maxHeight - Maximum height of the container; default not set
+     * @param options.flex - Flex ratio of each row; default not set
      * @returns HTMLElement containing the row layout
      */
     rows(elements: HTMLElement[], options: {
         gap?: string;
+        maxHeight?: string;
         flex?: number[];
     } = {}) {
-        let rows = newViewWrapper();
-        Object.assign(rows.style, {
-            display: "flex",
-            flexDirection: "column",
-            gap: options.gap ?? '5px'
-        });
-        const flex = options.flex ?? Array(elements.length).fill(1);
-        elements.forEach((e, i) => {
-            e.style.flex = flex[i].toString();
-            rows.append(e);
-        });
-        return rows;
+        const container = newViewWrapper();
+
+        const rows = document.createElement('div');
+        rows.classList.add(styles['rows']);
+        options?.gap && rows.style.setProperty('--row-gap', options.gap);
+
+        const asHeight = (height: string | number) => {
+            if (typeof height === 'number') {
+                return `${height}px`;
+            }
+            return height;
+        }
+
+        options?.maxHeight && rows.style.setProperty('max-height', asHeight(options.maxHeight));
+
+
+        const row = (ele: HTMLElement, i: number) => {
+            ele.classList.add(styles['row']);
+            //@ts-ignore
+            options?.flex?.[i] && ele.style.setProperty('--flex-grow', options.flex[i]);
+            return ele;
+        }
+
+        elements.forEach((e, i) => rows.append(row(e, i)));
+        container.appendChild(rows);
+        return container;
     }
 
     /**

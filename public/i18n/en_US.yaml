@@ -1,3 +1,5 @@
+src_core_dataviewts:
+  blank: Blank
 src_core_editorts:
   ext_code_editor_closed: The external code editor process {0} has been closed
   show_as_template_format: Display as template format

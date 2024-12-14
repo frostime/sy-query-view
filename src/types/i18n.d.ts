@@ -1,4 +1,7 @@
 interface I18n {
+    src_core_dataviewts: {
+        blank: string;
+    };
     src_core_editorts: {
         ext_code_editor_closed: string;
         show_as_template_format: string;
