@@ -267,8 +267,8 @@ function replaceMDImgUrl(dirname: string) {
                 }
 
                 const prefix_github = 'https://github.com/frostime/sy-query-view/raw/main';
-                // const prefix_cdn = 'https://cdn.jsdelivr.net/gh/frostime/sy-query-view@main';
-                const prefix_cdn = 'https://ghp.ci/https://github.com/frostime/sy-query-view/raw/main';
+                const prefix_cdn = 'https://cdn.jsdelivr.net/gh/frostime/sy-query-view@main';
+                // const prefix_cdn = 'https://ghgo.xyz/https://github.com/frostime/sy-query-view/raw/main';
 
                 let readmePath = resolve(dirname, 'README.md');
                 await replace(readmePath, prefix_github);

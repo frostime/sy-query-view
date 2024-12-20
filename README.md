@@ -12,6 +12,9 @@ The embedded block feature of SiYuan supports querying using JavaScript syntax. 
 > You can download it and click the "Help Document" button in the top-left menu. The plugin will automatically create a help document within SiYuan.
 >
 > ​![image](assets/image-20241211194348-sfzl8pc.png)​
+>
+> The help documentation will include the latest API type definitions for the plugin.  
+> If you are only interested in reviewing the interface content and not the other parts of the help documentation, you can set "User documentation only imports type references" to `true`​ in the plugin settings.
 
 ## 0. Quick Overview of Features
 
@@ -488,6 +491,12 @@ interface IWrappedBlock extends Block {
     /** Block's SiYuan reference format text */
     asref: string;
 
+    /** Blocks's ial list, as object
+     * @example
+     * let icon = block.asial['icon'];
+    */
+    asial: Record<string, string>;
+
     /**
      * Returns a rendered SiYuan attribute
      * @param attr - Attribute name
@@ -515,12 +524,13 @@ interface IWrappedBlock extends Block {
 All properties can be grouped into several categories:
 
 1. Rendering as links or references, i.e., `aslink`​, `asref`​ (however, since rendering as a reference does not actually create a relationship in the ref table, most of the time using link is sufficient, and ref is not very meaningful).
-2. Timestamp-related: Additional properties are extended for updated, created, etc., to facilitate direct display of block timestamps.
-3. ​`attr`​ function:
+2. ​`asial`​: The ial list of the block itself is a string field. Using this method, the ial can be parsed into an object of type `{ [key: string]: string}`​
+3. Timestamp-related: Additional properties are extended for updated, created, etc., to facilitate direct display of block timestamps.
+4. ​`attr`​ function:
 
     * Takes a block and block attribute and the return will be rendered as suitable markdown text (as mentioned in the table section earlier).
     * You can also pass a custom renderer and return a markdown text. If no return or return null, the default rendering scheme is used.
-4. ​`custom-xxx`​ properties: Directly access the block's custom attributes, e.g., `block['custom-b']`​, which accesses the `custom-b`​ attribute of the corresponding block.
+5. ​`custom-xxx`​ properties: Directly access the block's custom attributes, e.g., `block['custom-b']`​, which accesses the `custom-b`​ attribute of the corresponding block.
 
 You can try the following code, and get to know there differences.
 
@@ -2087,7 +2097,9 @@ The plugin provides a button in the block menu to directly perform the above con
 
 ​![image](assets/image-20241209001506-1j38x18.png)​
 
-## Complete API
+## Reference
+
+​`<!-- REFERENCE-START -->`​
 
 > Note: Since the interface file will change with development, the README itself does not include the interface code but some placeholders.
 >
@@ -2105,17 +2117,19 @@ The plugin provides a button in the block menu to directly perform the above con
 {{Query}}
 ```
 
+### IWrapBlock & IWrapList
+
+```ts
+{{Proxy}}
+```
+
 ### DataView
 
 ```ts
 {{DataView}}
 ```
 
-### IWrapBlock & IWrapList
-
-```ts
-{{Proxy}}
-```
+​`<!-- REFERENCE-END -->`​
 
 ## Example Demonstrations
 

@@ -25,9 +25,12 @@ src_setting_indexts:
   local_command_desc: 本地用于打开代码编辑器的命令, 默认为 "code -w {{filepath}}" 代表使用 VSCode 打开, 其中
     {{filepath}} 在运行时会被替换为真实的代码文件
   open_local_editor: ✒️ 打开本地编辑器
+  plugin_import_help_doc: 插件允许将帮助文档导入到思源笔记中，默认情况下会导入完整的 README 文档以及 Tyepscript Reference；如果开启了这个选项，那么在导入的时候将只导入
+    Reference 部分而不会导入其余部分
   reload: 重新加载
   table_default_columns: 🔑 表格视图默认显示列
   user_custom_view: 用户自定义视图
+  user_doc_import_type_ref: 用户文档只导入类型参考
   user_self_written_view: 用户自行编写的 View 组件, 存放在 '/data/public/custom-query-view.js'
     下
 src_userhelp_examplests:
@@ -64,6 +67,7 @@ src_userhelp_indexts:
   useview2: 如果要使用 DataView 请注释上面的 return, 并取消下方两行注释
 src_userhelp_sydocts:
   create_user_doc: '创建用户文档:'
+  plugin_setting_doc: '> 🖊️ 由于你在插件中的设置，此帮助文档只包含了 API 的类型定义。'
   plugin_update_doc: 检查到插件版本已更新，正在更新文档，请稍等...
 user_help:
   ahead_hint: |

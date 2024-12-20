@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-12-01 16:25:57
  * @FilePath     : /src/setting/index.ts
- * @LastEditTime : 2024-12-13 12:48:22
+ * @LastEditTime : 2024-12-20 21:58:58
  * @Description  : 
  */
 
@@ -17,7 +17,8 @@ import { loadUserCustomView } from "@/core/custom-view";
 let defaultSetting = {
     codeEditor: 'code -w {{filepath}}',
     defaultTableColumns: ['type', 'content', 'hpath', 'box'].join(','),
-    echartsRenderer: 'svg'
+    echartsRenderer: 'svg',
+    onlyImportDtsInUserDoc: true
 };
 
 let settingUtils: SettingUtils;
@@ -57,6 +58,13 @@ export const load = async (plugin: Plugin) => {
         description: i18n.src_setting_indexts.apitypedefinition + `<a href="https://github.com/frostime/sy-query-view/blob/main/public/types.d.ts" target="_blank">frostime/sy-query-view/public/types.d.ts</a>`,
         key: 'apiDoc',
         value: '',
+    });
+    settingUtils.addItem({
+        type: 'checkbox',
+        title: i18n.src_setting_indexts.user_doc_import_type_ref,
+        description: i18n.src_setting_indexts.plugin_import_help_doc,
+        key: 'onlyImportDtsInUserDoc',
+        value: defaultSetting.onlyImportDtsInUserDoc,
     });
     settingUtils.addItem({
         type: 'textinput',

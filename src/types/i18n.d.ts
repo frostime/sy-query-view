@@ -30,9 +30,11 @@ interface I18n {
         import_success: string;
         local_command_desc: string;
         open_local_editor: string;
+        plugin_import_help_doc: string;
         reload: string;
         table_default_columns: string;
         user_custom_view: string;
+        user_doc_import_type_ref: string;
         user_self_written_view: string;
     };
     src_userhelp_examplests: {
@@ -68,6 +70,7 @@ interface I18n {
     };
     src_userhelp_sydocts: {
         create_user_doc: string;
+        plugin_setting_doc: string;
         plugin_update_doc: string;
     };
     user_help: {

@@ -33,9 +33,14 @@ src_setting_indexts:
     is "code -w {{filepath}}" which represents opening with VSCode, where {{filepath}}
     will be replaced with the actual code file at runtime
   open_local_editor: ✒️ Open Local Editor
+  plugin_import_help_doc: The plugin allows the help documentation to be imported
+    into SiYuan. By default, the complete README document and TypeScript Reference
+    will be imported. If this option is enabled, only the Reference part will be imported
+    during the import and no other parts.
   reload: Reload
   table_default_columns: 🔑 Default columns displayed in table view
   user_custom_view: User custom view
+  user_doc_import_type_ref: User documentation only imports type references
   user_self_written_view: User self-written View component, stored under '/data/public/custom-query-view.js'
 src_userhelp_examplests:
   backlinks_table: Display backlinks of the current document in a table format
@@ -95,6 +100,8 @@ src_userhelp_indexts:
     the following two lines
 src_userhelp_sydocts:
   create_user_doc: 'Create user documentation:'
+  plugin_setting_doc: '> 🖊️ Due to your settings in the plugin, this help document only
+    contains the type definitions of the API.'
   plugin_update_doc: Detected plugin version update, updating documentation, please
     wait...
 user_help:

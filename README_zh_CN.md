@@ -8,6 +8,9 @@
 > 你可以在下载下来之后，点击左上角菜单按钮中的“帮助文档”按钮，插件会自动在思源内创建一个帮助文档。
 >
 > ​![image](assets/image-20241211194348-sfzl8pc.png)​
+>
+> 帮助文档中会包含插件最新的 API 类型定义接口。  
+> 如果你只想要查阅接口内容而对帮助文档的其他部分不感兴趣，可以在插件中将“用户文档只导入类型参考”设置为 `true`​。
 
 ## 0. 功能速览
 
@@ -484,6 +487,12 @@ interface IWrappedBlock extends Block {
     /** Block's SiYuan reference format text */
     asref: string;
 
+    /** Blocks's ial list, as object
+     * @example
+     * let icon = block.asial['icon'];
+    */
+    asial: Record<string, string>;
+
     /**
      * Returns a rendered SiYuan attribute
      * @param attr - Attribute name
@@ -511,12 +520,13 @@ interface IWrappedBlock extends Block {
 以上所有的属性可以分为几组来理解：
 
 1. 渲染为链接或者引用，也就是 `aslink`​, `asref`​ 这些（不过实际上由于渲染成为引用并不会真的在 ref 表中创建关联关系，所以大部分时候使用 link 就可以了，ref 的意义不大）
-2. 时间戳相关：额外为 updated，created 这些拓展了一些属性，方便直接用来展示块的时间戳
-3. ​`attr`​ 函数：
+2. ​`asial`​：块的 ial 列表本身为一个字符串字段，使用这个方法，可以把 ial 解析为一个 `{ [key: string]: string}`​ 的对象
+3. 时间戳相关：额外为 updated，created 这些拓展了一些属性，方便直接用来展示块的时间戳
+4. ​`attr`​ 函数：
 
     * 传入块和块的属性，会讲块的属性渲染为合适的 markdown 文本（就像我们前面在 table 小节提到的那样）
     * 你也可以自己传入一个自定义的 renderer，然后返回一段 markdown 文本，如果没有返回或者返回 null，则回退到默认的渲染方案
-4. ​`custom-xxx`​ 属性，可以直接访问块的自定义属性，例如 `block['custom-b']`​，会访问对应块的 `custom-b`​ 属性。
+5. ​`custom-xxx`​ 属性，可以直接访问块的自定义属性，例如 `block['custom-b']`​，会访问对应块的 `custom-b`​ 属性。
 
 你可以尝试一下下面的代码，会有直观的区别:
 
@@ -2087,7 +2097,9 @@ dv.render();
 
 ​![image](assets/image-20241209001506-1j38x18.png)​
 
-## 完整 API
+## Reference
+
+​`<!-- REFERENCE-START -->`​
 
 > 注：由于接口文件会随着开发而变动，所以 README 本体中并不包含 interface 代码，而是放了一些 placeholder 。
 >
@@ -2105,17 +2117,19 @@ dv.render();
 {{Query}}
 ```
 
+### IWrapBlock & IWrapList
+
+```ts
+{{Proxy}}
+```
+
 ### DataView
 
 ```ts
 {{DataView}}
 ```
 
-### IWrapBlock & IWrapList
-
-```ts
-{{Proxy}}
-```
+​`<!-- REFERENCE-END -->`​
 
 ## 案例演示
 

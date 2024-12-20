@@ -3,6 +3,7 @@ import type QueryViewPlugin from "@/index";
 import { openBlock } from "@/utils";
 import { confirm, showMessage } from "siyuan";
 import { i18n } from "@/index";
+import { setting } from "@/setting";
 
 
 const CUSTOM_USER_README_ATTR = 'custom-query-view-user-readme';
@@ -37,6 +38,22 @@ const createReadmeText = async (plugin: QueryViewPlugin) => {
 
     const response = await fetch(`/plugins/sy-query-view/${fname}`);
     let readme = await response.text();
+
+    if (setting.onlyImportDtsInUserDoc) {
+        // 找到 ​`<!-- REFERENCE-START -->`​ 和 ​`<!-- REFERENCE-END -->`​ 之间的内容
+        const start = '`<!-- REFERENCE-START -->`';
+        const end = '`<!-- REFERENCE-END -->`';
+        const startIndex = readme.indexOf(start);
+        const endIndex = readme.indexOf(end);
+
+        const hint = i18n.src_userhelp_sydocts.plugin_setting_doc;
+
+        if (startIndex !== -1 && endIndex !== -1) {
+            readme = readme.substring(startIndex + start.length, endIndex).trim();
+        }
+
+        readme = hint + '\n\n' + readme;
+    }
 
     const AheadHint = i18n.user_help.ahead_hint.trim();
     let ahead = AheadHint.replace('{{version}}', plugin.version);
