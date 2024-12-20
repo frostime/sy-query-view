@@ -4,6 +4,7 @@ const query = async () => {
     let ans = await Query.request('/api/outline/getDocOutline', {
         id: Query.root_id(protyle)
     });
+    ans = Query.wrapit(ans);
     const iterate = (data) => {
         for (let item of data) {
             if (item.count > 0) {
