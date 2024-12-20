@@ -42,9 +42,11 @@ interface I18n {
         doc_outline_tree: string;
         docs_per_month: string;
         echarts_graph_ref: string;
+        list_doc_subsections: string;
         query_attr_views: string;
         query_doc_tree: string;
         query_this_month_todo: string;
+        query_unfinished_tasks: string;
         random_text_translate: string;
         recent_docs: string;
         simple_chatgpt: string;

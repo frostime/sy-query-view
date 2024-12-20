@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-12-01 22:34:55
  * @FilePath     : /src/core/query.ts
- * @LastEditTime : 2024-12-13 17:36:20
+ * @LastEditTime : 2024-12-20 21:12:40
  * @Description  : 
  */
 import { IProtyle } from "siyuan";
@@ -308,6 +308,28 @@ const Query = {
         typeName: (type: BlockType) => BlockTypeShort[type] ?? type,
 
         /**
+         * Given a document block (type='d'), return its emoji icon
+         * @param document 
+         * @returns emoji icon; if block is not with type='d', return null
+         */
+        docIcon: (document: Block) => {
+            if (document.type !== 'd') return null;
+            let icon = wrapBlock(document).asial['icon'];
+            return icon ?  Query.Utils.emoji(icon) : '📄';
+        },
+
+        /**
+         * Given emoji code, returl emoji icon
+         * @param code 
+         * @returns 
+         */
+        emoji: (code: string) => {
+            let codePoint = parseInt(code, 16);
+            if (Number.isNaN(codePoint)) return null;
+            return String.fromCodePoint(codePoint);
+        },
+
+        /**
          * Renders the value of a block attribute as markdown format
          */
         renderAttr: renderAttr,
@@ -560,15 +582,36 @@ const Query = {
     },
 
     /**
-     * Return the markdown content of the document of the given block
+     * Return the markdown content of the given block
+     * * For normal block, return the markdown attribute of the block
+     * * For document block, return the markdown content of the document
+     * * For heading block, return the children blocks' markdown content
      * @param block - Block
      * @returns Markdown content of the document
      */
-    docMd: async (id: BlockId) => {
-        const { content } = await request('/api/export/exportMdContent', {
-            id: id
-        });
-        return content;
+    markdown: async (input: BlockId | Block) => {
+        let block: Block = null;
+        if (typeof input === 'string') {
+            const _ = await getBlocksByIds(input);
+            block = _[0];
+        } else {
+            block = input;
+        }
+        const id = block.id;
+        if (block.type === 'd') {
+            const { content } = await request('/api/export/exportMdContent', {
+                id: id
+            });
+            return content;
+        } else if (block.type === 'h') {
+            let dom = await request('/api/block/getHeadingChildrenDOM', {
+                id
+            });
+            const lute = getLute();
+            return lute.BlockDOM2StdMd(dom);
+        } else {
+            return block.markdown;
+        }
     },
 
     /**

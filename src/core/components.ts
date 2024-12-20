@@ -109,6 +109,10 @@ const renderAttr = (b: Block & { [key: string | number]: string | number }, attr
             let ialObj: Record<string, string> = {};
             ial.split(' ').forEach(item => {
                 let [key, value] = item.split('=');
+                // 如果 value 前后有 " 符号，就去掉
+                if (value?.startsWith('"') && value?.endsWith('"')) {
+                    value = value.slice(1, -1);
+                }
                 ialObj[key] = value;
             });
             v = JSON.stringify(ialObj);

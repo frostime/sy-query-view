@@ -1,8 +1,8 @@
 /**
  * @name sy-query-view
  * @author frostime
- * @version 1.0.1
- * @updated 2024-12-14T11:02:38.794Z
+ * @version 1.0.2
+ * @updated 2024-12-20T13:21:00.445Z
  */
 
 declare module 'siyuan' {
@@ -140,6 +140,18 @@ declare const Query: {
          */
         typeName: (type: BlockType) => any;
         /**
+         * Given a document block (type='d'), return its emoji icon
+         * @param document
+         * @returns emoji icon; if block is not with type='d', return null
+         */
+        docIcon: (document: Block) => string;
+        /**
+         * Given emoji code, returl emoji icon
+         * @param code
+         * @returns
+         */
+        emoji: (code: string) => string;
+        /**
          * Renders the value of a block attribute as markdown format
          */
         renderAttr: (b: Block & {
@@ -256,11 +268,14 @@ declare const Query: {
      */
     keywordDoc: (keywords: string | string[], join?: "or" | "and") => Promise<any[]>;
     /**
-     * Return the markdown content of the document of the given block
+     * Return the markdown content of the given block
+     * * For normal block, return the markdown attribute of the block
+     * * For document block, return the markdown content of the document
+     * * For heading block, return the children blocks' markdown content
      * @param block - Block
      * @returns Markdown content of the document
      */
-    docMd: (id: BlockId) => Promise<any>;
+    markdown: (input: BlockId | Block) => Promise<any>;
     /**
      * Return the statistics of the document with given document ID
      * @param docId The ID of document
@@ -328,12 +343,12 @@ declare const Query: {
  * @interface IListOptions
  * @property {string} type - List type: 'u' for unordered, 'o' for ordered
  * @property {number} columns - Number of columns to display
- * @property {(b: T) => string | number | undefined | null} renderer - Custom function to render each list item; if not provided or return null, the default renderer will be used
+ * @property {(b: T, defaultRenderer?: (b: T) => string) => string | number | undefined | null} renderer - Custom function to render each list item; if not provided or return null, the default renderer will be used; The second parameter is the default renderer, you can call it to get the default rendering result
  */
 interface IListOptions<T> {
     type?: 'u' | 'o';
     columns?: number;
-    renderer?: (b: T) => string | number | undefined | null;
+    renderer?: (b: T, defaultRenderer?: (b: T) => string) => string | number | undefined | null;
 }
 
 /**
@@ -848,6 +863,11 @@ export interface IWrappedBlock extends Block {
     aslink: string;
     /** Block's SiYuan reference format text */
     asref: string;
+    /** Blocks's ial list, as object
+     * @example
+     * let icon = block.asial['icon'];
+    */
+    asial: Record<string, string>;
     /**
      * Returns a rendered SiYuan attribute
      * @param attr - Attribute name

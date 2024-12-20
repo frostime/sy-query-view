@@ -17,6 +17,12 @@ export interface IWrappedBlock extends Block {
     /** Block's SiYuan reference format text */
     asref: string;
 
+    /** Blocks's ial list, as object
+     * @example
+     * let icon = block.asial['icon'];
+    */
+    asial: Record<string, string>;
+
     /**
      * Returns a rendered SiYuan attribute
      * @param attr - Attribute name
@@ -200,6 +206,10 @@ export const wrapBlock = (block: Block): IWrappedBlock => {
                         }
                         return ans ?? renderAttr(block, attr);
                     }
+
+                case 'asial':
+                    let ialjson = renderAttr(block, 'ial');
+                    return JSON.parse(ialjson);
 
                 case 'updatedDate':
                     /** @returns {string} YYYY-MM-DD 格式的更新日期 */

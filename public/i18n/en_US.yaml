@@ -50,12 +50,16 @@ src_userhelp_examplests:
     using an echarts line chart
   echarts_graph_ref: Using Echarts Graph to Display Backlink Reference Blocks in the
     Current Document
+  list_doc_subsections: List all the sub-documents of the current document. The effect
+    is similar to software such as notion
   query_attr_views: Query all attribute views under the current document and summarize
     them in an embedded block
   query_doc_tree: Query the document tree structure under the current document and
     display it using a nested list; the maximum depth is controlled by the MAX_DEPTH
     variable.
   query_this_month_todo: Query all unfinished TODO lists of this month
+  query_unfinished_tasks: Query all unfinished task blocks and arrange them horizontally
+    grouped by monthly timelines
   random_text_translate: Randomly select a piece of text from SiYuan and translate
     it into English using GPT, with the GPT API set internally in SiYuan
   recent_docs: 'Displays the 32 most recently updated documents. This example uses

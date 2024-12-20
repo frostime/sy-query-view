@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-12-02 10:15:04
  * @FilePath     : /src/core/data-view.ts
- * @LastEditTime : 2024-12-14 17:31:06
+ * @LastEditTime : 2024-12-15 01:40:24
  * @Description  : 
  */
 import {
@@ -546,7 +546,7 @@ export class DataView extends UseStateMixin implements IDataView {
         };
 
         const renderer = (val: any) => {
-            return options?.renderer?.(val) ?? defaultRenderer(val);
+            return options?.renderer?.(val, defaultRenderer) ?? defaultRenderer(val);
         }
 
         // Recursive function to convert blocks to ListItem format
@@ -1412,7 +1412,7 @@ export class DataView extends UseStateMixin implements IDataView {
             // el.preventDefault(); //去掉, 否则 siyuan 链接 a 无法点击跳转
             const target = el.target as HTMLElement;
             if (target.tagName === 'SPAN') {
-                if (target.dataset.type === 'a') {
+                if (target.dataset.type === 'a' || target.dataset.type.split(' ').includes('a')) {
                     // 点击了链接、引用的时候跳转
                     const href = target.dataset.href;
                     if (href) {

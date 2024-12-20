@@ -3,12 +3,12 @@
  * @interface IListOptions
  * @property {string} type - List type: 'u' for unordered, 'o' for ordered
  * @property {number} columns - Number of columns to display
- * @property {(b: T) => string | number | undefined | null} renderer - Custom function to render each list item; if not provided or return null, the default renderer will be used
+ * @property {(b: T, defaultRenderer?: (b: T) => string) => string | number | undefined | null} renderer - Custom function to render each list item; if not provided or return null, the default renderer will be used; The second parameter is the default renderer, you can call it to get the default rendering result
  */
 interface IListOptions<T> {
     type?: 'u' | 'o';
     columns?: number;
-    renderer?: (b: T) => string | number | undefined | null;
+    renderer?: (b: T, defaultRenderer?: (b: T) => string) => string | number | undefined | null;
 }
 
 /**

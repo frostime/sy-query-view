@@ -37,9 +37,11 @@ src_userhelp_examplests:
   doc_outline_tree: 查询当前文档的大纲，并以树状结构展示
   docs_per_month: 查询每个月创建的文档的数量，并使用 echarts 折线图展示出来
   echarts_graph_ref: 使用 Echarts Graph 展示当前文档的反链引用块
+  list_doc_subsections: 列出当前文档的所有子文裆，效果类似 notion 等软件
   query_attr_views: 查询所在文档下，所有的属性视图 (Attribute View) 然后汇总显示在嵌入块中
   query_doc_tree: 查询当前文档下属的文档树结构，并使用嵌套列表展示; 最大深度由 MAX_DEPTH 变量控制
   query_this_month_todo: 查询本月所有未完成的 TODO 列表
+  query_unfinished_tasks: 查询所有未完成的任务块，以月份时间线分组横向排列
   random_text_translate: 随机从思源中选取一段文字，然后使用 GPT 翻译成英文，使用思源内部设置的 GPT API
   recent_docs: 展示最近更新的 32 篇文档，这个案例中使用了思源的超级块的 markdown 方言语法，用于在同一个列表项中横向展示多列的信息
   simple_chatgpt: 一个非常简单的 ChatGPT 对话框，使用思源内部设置的 GPT API
