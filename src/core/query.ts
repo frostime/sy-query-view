@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-12-01 22:34:55
  * @FilePath     : /src/core/query.ts
- * @LastEditTime : 2024-12-20 21:12:40
+ * @LastEditTime : 2025-01-14 14:32:34
  * @Description  : 
  */
 import { IProtyle } from "siyuan";
@@ -549,21 +549,28 @@ const Query = {
     },
 
     /**
-     * Search the document that contains all the keywords
+     * Search the document that contains all the keywords.
      * @param keywords 
-     * @returns The document blocks that contains all the given keywords
+     * @returns The document blocks that contains all the given keywords; the blocks will attached a 'keywords' property, which is the matched keyword blocks
+     * @example
+     * let docs = await Query.keywordDoc(['Keywords A', 'Keywords B']);
+     * //each block in docs is a document block that contains all the keywords
+     * docs[0].keywords['Keywords A'] // get the matched keyword block by using `keywords` property
      */
     keywordDoc: async (keywords: string | string[], join: 'or' | 'and' = 'or') => {
         keywords = Array.isArray(keywords) ? keywords : [keywords];
         const sql = `select * from blocks where ${keywords.map(keyword => `content like '%${keyword}%'`).join(` ${join} `)}`;
         let results = await Query.sql(sql);
-        let matchedDocs = [];
+
+        let matchedDocs = {};
         results.groupby(b => b.root_id, (root_id: string, blocks: Block[]) => {
-            let contains = { ...keywords.map(keyword => ({ [keyword]: false })) };
+            // root_id 中检索到的含有关键字的块
+            // 检查一下是不是所有的关键字都有匹配到
+            let contains = { ...keywords.map(keyword => ({ [keyword]: null })) };
             blocks.forEach(block => {
                 keywords.forEach(keyword => {
                     if (block.content.includes(keyword)) {
-                        contains[keyword] = true;
+                        contains[keyword] = block;
                     }
                 });
             });
@@ -575,10 +582,16 @@ const Query = {
                 }
             }
             if (matched) {
-                matchedDocs.push(root_id);
+                // matchedDocs.push(root_id);
+                matchedDocs[root_id] = contains;
             }
         });
-        return getBlocksByIds(...matchedDocs);
+        let matchedDocsRootIds = Object.keys(matchedDocs);
+        let documents: Block[] = await Query.getBlocksByIds(...matchedDocsRootIds);
+        documents.forEach(doc => {
+            doc['keywords'] = matchedDocs[doc.root_id];
+        });
+        return documents;
     },
 
     /**
@@ -757,12 +770,12 @@ const Query = {
      * @param options.streamInterval - Interval for calling options.streamMsg on each chunk, default: 1
      * @returns GPT response
      */
-    gpt: async (prompt: string, options?: {
+    gpt: async (input: string | { role: 'user' | 'assistant', content: string }[], options?: {
         url?: string,
         model?: string,
         apiKey?: string,
-        returnRaw?: boolean,
         history?: { role: 'user' | 'assistant', content: string }[],
+        returnRaw?: boolean,
         stream?: boolean,
         streamMsg?: (msg: string) => void,
         streamInterval?: number
@@ -777,12 +790,23 @@ const Query = {
             url = `${apiBaseURL.endsWith('/') ? apiBaseURL : apiBaseURL + '/'}chat/completions`;
         }
 
+        let messages: { role: 'user' | 'assistant', content: string }[] = [];
+        if (typeof input === 'string') {
+            messages = [{
+                "role": "user",
+                "content": input
+            }];
+        } else {
+            messages = [...input];
+        }
+
+        if (options?.history) {
+            messages = [...options.history, ...messages];
+        }
+
         const payload = {
             "model": apiModel,
-            "messages": [{
-                "role": "user",
-                "content": prompt
-            }, ...(options?.history ?? [])],
+            "messages": messages,
             "stream": options?.stream ?? false
         };
 

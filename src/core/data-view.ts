@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-12-02 10:15:04
  * @FilePath     : /src/core/data-view.ts
- * @LastEditTime : 2024-12-15 01:40:24
+ * @LastEditTime : 2025-01-17 22:17:01
  * @Description  : 
  */
 import {
@@ -1408,7 +1408,6 @@ export class DataView extends UseStateMixin implements IDataView {
 
 
         this._element.onclick = (el) => {
-            el.stopImmediatePropagation();
             // el.preventDefault(); //去掉, 否则 siyuan 链接 a 无法点击跳转
             const target = el.target as HTMLElement;
             if (target.tagName === 'SPAN') {
@@ -1416,16 +1415,16 @@ export class DataView extends UseStateMixin implements IDataView {
                     // 点击了链接、引用的时候跳转
                     const href = target.dataset.href;
                     if (href) {
-                        const id = href.split('/').pop();
-                        openBlock(id);
+                        return;
                     }
                 } else if (target.dataset.type === 'block-ref') {
                     const id = target.dataset.id;
                     if (id) {
-                        openBlock(id);
+                        return;
                     }
                 }
             }
+            el.stopImmediatePropagation();
             const selection = window.getSelection();
             const length = selection.toString().length;
             if (length === 0 && (el.target as HTMLElement).tagName === "SPAN") {

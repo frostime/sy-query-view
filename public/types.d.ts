@@ -2,7 +2,7 @@
  * @name sy-query-view
  * @author frostime
  * @version 1.0.2
- * @updated 2024-12-20T14:21:48.772Z
+ * @updated 2025-01-17T14:24:25.768Z
  */
 
 declare module 'siyuan' {
@@ -160,7 +160,12 @@ declare const Query: {
             onlyDate?: boolean;
             onlyTime?: boolean;
         }) => string;
-        openBlock: (id: BlockId) => void;
+        openBlock: (id: BlockId, options?: {
+            zoomIn?: boolean;
+            action?: import("siyuan").TProtyleAction[];
+            position?: Parameters<typeof import("siyuan").openTab>[0]["position"];
+            keepCursor?: boolean;
+        }) => void;
     };
     /**
      * Wraps blocks with additional functionality
@@ -262,11 +267,15 @@ declare const Query: {
     childDoc: (b: BlockId | Block) => Promise<Block[]>;
     keyword: (keywords: string | string[], join?: "or" | "and") => Promise<IWrappedList<IWrappedBlock>>;
     /**
-     * Search the document that contains all the keywords
+     * Search the document that contains all the keywords.
      * @param keywords
-     * @returns The document blocks that contains all the given keywords
+     * @returns The document blocks that contains all the given keywords; the blocks will attached a 'keywords' property, which is the matched keyword blocks
+     * @example
+     * let docs = await Query.keywordDoc(['Keywords A', 'Keywords B']);
+     * //each block in docs is a document block that contains all the keywords
+     * docs[0].keywords['Keywords A'] // get the matched keyword block by using `keywords` property
      */
-    keywordDoc: (keywords: string | string[], join?: "or" | "and") => Promise<any[]>;
+    keywordDoc: (keywords: string | string[], join?: "or" | "and") => Promise<Block[]>;
     /**
      * Return the markdown content of the given block
      * * For normal block, return the markdown attribute of the block
@@ -322,15 +331,18 @@ declare const Query: {
      * @param options.streamInterval - Interval for calling options.streamMsg on each chunk, default: 1
      * @returns GPT response
      */
-    gpt: (prompt: string, options?: {
+    gpt: (input: string | {
+        role: "user" | "assistant";
+        content: string;
+    }[], options?: {
         url?: string;
         model?: string;
         apiKey?: string;
-        returnRaw?: boolean;
         history?: {
             role: "user" | "assistant";
             content: string;
         }[];
+        returnRaw?: boolean;
         stream?: boolean;
         streamMsg?: (msg: string) => void;
         streamInterval?: number;

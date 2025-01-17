@@ -3,11 +3,11 @@
  * @Author       : frostime
  * @Date         : 2024-04-18 21:05:32
  * @FilePath     : /src/utils/index.ts
- * @LastEditTime : 2024-12-11 16:26:50
+ * @LastEditTime : 2025-01-14 14:28:41
  * @Description  : 
  */
 import * as api from '../api';
-import { getFrontend, openMobileFileById, openTab, type Plugin } from 'siyuan';
+import { getFrontend, openMobileFileById, openTab, TProtyleAction, type Plugin } from 'siyuan';
 import { app } from '@/index';
 
 
@@ -23,7 +23,12 @@ export const isMobile = () => {
     return getFrontend().endsWith('mobile');
 }
 
-export const openBlock = (id: BlockId) => {
+export const openBlock = (id: BlockId, options?: {
+    zoomIn?: boolean;
+    action?: TProtyleAction[];
+    position?: Parameters<typeof openTab>[0]['position'];
+    keepCursor?: boolean;
+}) => {
     if (isMobile()) {
         openMobileFileById(app, id);
     } else {
@@ -31,8 +36,11 @@ export const openBlock = (id: BlockId) => {
             app: app,
             doc: {
                 id: id,
-                zoomIn: false,
+                zoomIn: options?.zoomIn ?? false,
+                action: options?.action ?? [],
             },
+            position: options?.position,
+            keepCursor: options?.keepCursor,
         });
     }
 };
