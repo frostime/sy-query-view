@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-12-02 10:15:04
  * @FilePath     : /src/core/data-view.ts
- * @LastEditTime : 2025-01-17 22:17:01
+ * @LastEditTime : 2025-01-17 22:43:12
  * @Description  : 
  */
 import {
@@ -790,6 +790,9 @@ export class DataView extends UseStateMixin implements IDataView {
         width?: string
     }) {
         let mermaidContainer = newViewWrapper();
+        Object.assign(mermaidContainer.style, {
+            'overflow-x': 'auto'
+        });
 
         const mermaid = new MermaidKanban({
             target: mermaidContainer,
