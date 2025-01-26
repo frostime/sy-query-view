@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-12-01 22:34:55
  * @FilePath     : /src/core/query.ts
- * @LastEditTime : 2025-01-14 14:32:34
+ * @LastEditTime : 2025-01-20 23:51:42
  * @Description  : 
  */
 import { IProtyle } from "siyuan";
@@ -65,7 +65,8 @@ function mergeBlocks(blocks: Block[], mode: 'leaf' | 'root' = 'leaf') {
 
 async function getBlocksByIds(...ids: BlockId[]) {
     let idList = ids.map((id) => `"${id}"`);
-    let sqlCode = `select * from blocks where id in (${idList.join(",")})`;
+    let N = ids.length;
+    let sqlCode = `select * from blocks where id in (${idList.join(",")}) limit ${N + 1}`;
     let data = await sql(sqlCode);
     return data;
 }
@@ -364,8 +365,9 @@ const Query = {
      * @returns Array of wrapped blocks
      * @alias `id2block`
      */
-    getBlocksByIds: async (...ids: BlockId[]): Promise<IWrappedList<IWrappedBlock>> => {
-        let blocks = await getBlocksByIds(...ids);
+    getBlocksByIds: async (...ids: (BlockId | BlockId[])[]): Promise<IWrappedList<IWrappedBlock>> => {
+        let flattenedIds: BlockId[] = ids.flat() as BlockId[];
+        let blocks = await getBlocksByIds(...flattenedIds);
         return Query.wrapBlocks(blocks) as IWrappedList<IWrappedBlock>;
     },
 

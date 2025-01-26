@@ -1,8 +1,8 @@
 /**
  * @name sy-query-view
  * @author frostime
- * @version 1.0.3
- * @updated 2025-01-17T14:56:39.077Z
+ * @version 1.0.4
+ * @updated 2025-01-26T10:00:43.019Z
  */
 
 declare module 'siyuan' {
@@ -188,7 +188,7 @@ declare const Query: {
      * @returns Array of wrapped blocks
      * @alias `id2block`
      */
-    getBlocksByIds: (...ids: BlockId[]) => Promise<IWrappedList<IWrappedBlock>>;
+    getBlocksByIds: (...ids: (BlockId | BlockId[])[]) => Promise<IWrappedList<IWrappedBlock>>;
     /**
      * Gets the current document's ID
      * @param protyle - Protyle instance
