@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-12-01 22:34:55
  * @FilePath     : /src/core/query.ts
- * @LastEditTime : 2025-02-10 14:41:32
+ * @LastEditTime : 2025-02-10 18:07:50
  * @Description  : 
  */
 import { IProtyle } from "siyuan";
@@ -117,6 +117,15 @@ class SiYuanDate extends Date {
 
     static fromString(timestr: string) {
         return new SiYuanDate(timestr.replace(/(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})/, '$1-$2-$3 $4:$5:$6'));
+    }
+
+    /**
+     * Format date
+     * @param fmt default as 'yyyy-MM-dd HH:mm:ss'
+     * @returns 
+     */
+    format(fmt: string = 'yyyy-MM-dd HH:mm:ss') {
+        return formatDateTime(fmt, this);
     }
 
 
@@ -238,20 +247,13 @@ const Query = {
         },
 
         /**
+        /**
          * Converts SiYuan timestamp string to Date object
          * @param timestr - SiYuan timestamp (yyyyMMddHHmmss)
          * @returns Date object
          */
         asDate: (timestr: string) => {
             return SiYuanDate.fromString(timestr);
-            // const year = parseInt(timestr.slice(0, 4), 10);
-            // const month = parseInt(timestr.slice(4, 6), 10) - 1;
-            // const day = parseInt(timestr.slice(6, 8), 10);
-            // const hour = parseInt(timestr.slice(8, 10), 10);
-            // const minute = parseInt(timestr.slice(10, 12), 10);
-            // const second = parseInt(timestr.slice(12, 14), 10);
-
-            // return new Date(year, month, day, hour, minute, second);
         },
 
         /**
@@ -568,7 +570,7 @@ const Query = {
         results.groupby(b => b.root_id, (root_id: string, blocks: Block[]) => {
             // root_id 中检索到的含有关键字的块
             // 检查一下是不是所有的关键字都有匹配到
-            let contains = { ...keywords.map(keyword => ({ [keyword]: null })) };
+            let contains = Object.fromEntries(keywords.map(keyword => [keyword, null]));
             blocks.forEach(block => {
                 keywords.forEach(keyword => {
                     if (block.content.includes(keyword)) {
@@ -590,9 +592,10 @@ const Query = {
         });
         let matchedDocsRootIds = Object.keys(matchedDocs);
         let documents: Block[] = await Query.getBlocksByIds(...matchedDocsRootIds);
-        documents.forEach(doc => {
+        for (let i = 0; i < documents.length; i++) {
+            const doc = documents[i];
             doc['keywords'] = matchedDocs[doc.root_id];
-        });
+        }
         return documents;
     },
 

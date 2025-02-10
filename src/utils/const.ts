@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-04-02 22:43:02
  * @FilePath     : /src/utils/const.ts
- * @LastEditTime : 2024-12-11 19:06:04
+ * @LastEditTime : 2025-02-10 17:43:09
  * @Description  : 
  */
 export const Href = {
@@ -34,12 +34,23 @@ const BlockTypeShort_ZH = {
     "m": "数学公式",
     "t": "表格",
     "b": "引述",
-    "s": "超级块",
+    "sb": "超级块",
     "p": "段落",
     "html": "HTML块",
     "query_embed": "嵌入块",
     'av': '属性视图',
-    'widget': '挂件'
+    'widget': '挂件',
+    'tb': '分割线',
+    'audio': '音频',
+    'video': '视频',
+    'iframe': 'IFrame',
+    // h1 ~ h6
+    'h1': '一级标题',
+    'h2': '二级标题',
+    'h3': '三级标题',
+    'h4': '四级标题',
+    'h5': '五级标题',
+    'h6': '六级标题',
 }
 
 const BlockTypeShort_EN = {
@@ -53,12 +64,23 @@ const BlockTypeShort_EN = {
     "m": "Math",
     "t": "Table",
     "b": "Blockquote",
-    "s": "SuperBlock",
+    "sb": "SuperBlock",
     "p": "Paragraph",
     "html": "HTML",
     "query_embed": "Embed",
     'av': 'Attribute View',
-    'widget': 'Widget'
+    'widget': 'Widget',
+    'tb': 'Thematic Break',
+    'audio': 'Audio',
+    'video': 'Video',
+    'iframe': 'IFrame',
+    // h1 ~ h6
+    'h1': 'Heading 1',
+    'h2': 'Heading 2',
+    'h3': 'Heading 3',
+    'h4': 'Heading 4',
+    'h5': 'Heading 5',
+    'h6': 'Heading 6',
 }
 
 export const BlockTypeShort = window.siyuan.config.lang.startsWith('zh') ? BlockTypeShort_ZH : BlockTypeShort_EN;
@@ -67,7 +89,7 @@ export const BlockType2NodeType = {
     av: 'NodeAttributeView',
     c: 'NodeCodeBlock',
     d: 'NodeDocument',
-    s: 'NodeSuperBlock',
+    sb: 'NodeSuperBlock',
     h: 'NodeHeading',
     t: 'NodeTable',
     i: 'NodeListItem',

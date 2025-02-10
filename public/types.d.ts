@@ -1,8 +1,8 @@
 /**
  * @name sy-query-view
  * @author frostime
- * @version 1.0.4
- * @updated 2025-01-26T10:00:43.019Z
+ * @version 1.0.6
+ * @updated 2025-02-10T10:12:19.204Z
  */
 
 declare module 'siyuan' {
@@ -30,6 +30,12 @@ declare class SiYuanDate extends Date {
     toString(hms?: boolean): string;
     [Symbol.toPrimitive](hint: string): any;
     static fromString(timestr: string): SiYuanDate;
+    /**
+     * Format date
+     * @param fmt default as 'yyyy-MM-dd HH:mm:ss'
+     * @returns
+     */
+    format(fmt?: string): string;
     add(days: number | string): SiYuanDate;
 }
 
@@ -89,6 +95,7 @@ declare const Query: {
          * @returns Timestamp string in yyyyMMddHHmmss format
          */
         thisYear: (hms?: boolean) => string;
+        /**
         /**
          * Converts SiYuan timestamp string to Date object
          * @param timestr - SiYuan timestamp (yyyyMMddHHmmss)
