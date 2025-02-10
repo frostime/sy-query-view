@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-12-01 22:34:55
  * @FilePath     : /src/core/query.ts
- * @LastEditTime : 2025-01-20 23:51:42
+ * @LastEditTime : 2025-02-10 14:41:32
  * @Description  : 
  */
 import { IProtyle } from "siyuan";
@@ -316,7 +316,7 @@ const Query = {
         docIcon: (document: Block) => {
             if (document.type !== 'd') return null;
             let icon = wrapBlock(document).asial['icon'];
-            return icon ?  Query.Utils.emoji(icon) : '📄';
+            return icon ? Query.Utils.emoji(icon) : '📄';
         },
 
         /**
@@ -480,9 +480,9 @@ const Query = {
         const sql = `select * from blocks
         where type = 'i' and subtype = 't'
         and markdown like '* [ ] %'
-        ${after? ` and updated >= ${after}` : ''}
+        ${after ? ` and updated >= ${after}` : ''}
         order by updated desc
-        ${limit? `limit ${limit}` : ''};`
+        ${limit ? `limit ${limit}` : ''};`
         return Query.sql(sql);
     },
 
@@ -732,11 +732,11 @@ const Query = {
 
             if (
                 info.previousID === '' &&
-                ['NodeBlockquote', 'NodeListItem'].includes(info.parentType) // 容器块的第一个段落块
+                ['NodeBlockquote', 'NodeListItem', 'NodeSuperBlock'].includes(info.parentType) // 容器块的第一个段落块
             ) {
                 let resultp = result[result.length - 1];
                 resultp.id = info.parentID;
-                resultp.type = { 'NodeBlockquote': 'b', 'NodeListItem': 'i' }[info.parentType];
+                resultp.type = { 'NodeBlockquote': 'b', 'NodeListItem': 'i', 'NodeSuperBlock': 'sb' }[info.parentType];
             } else if (enable.heading && info.previousType === "NodeHeading") { // 标题块下方第一个段落
                 let resultp = result[result.length - 1];
                 resultp.id = info.previousID;
