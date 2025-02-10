@@ -2,7 +2,7 @@
  * @name sy-query-view
  * @author frostime
  * @version 1.0.6
- * @updated 2025-02-10T10:12:19.204Z
+ * @updated 2025-02-10T10:19:10.800Z
  */
 
 declare module 'siyuan' {
@@ -356,7 +356,7 @@ declare const Query: {
     }) => Promise<any>;
 };
 
-///@data-view.d.ts
+///@data-view-types.d.ts
 /**
  * List Options
  * @interface IListOptions

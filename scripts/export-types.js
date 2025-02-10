@@ -101,7 +101,7 @@ query = replaceSomething(query, [
 writer.append(query);
 writer.append('\n');
 
-writer.append('///@data-view.d.ts\n');
+writer.append('///@data-view-types.d.ts\n');
 let dataviewdts = readFile('./src/types/data-view.d.ts');
 dataviewdts = replaceSomething(dataviewdts);
 writer.append(dataviewdts);
@@ -138,7 +138,7 @@ writer.close();
 
 const cache = {
     '{{Query}}': query,
-    '{{DataView}}': dataview,
+    '{{DataView}}': dataview + '\n\n' + dataviewdts,
     '{{Proxy}}': proxy,
 }
 // 写入 json
