@@ -1,8 +1,8 @@
 /**
  * @name sy-query-view
  * @author frostime
- * @version 1.0.6
- * @updated 2025-02-10T10:19:10.800Z
+ * @version 1.0.7
+ * @updated 2025-03-04T14:43:25.200Z
  */
 
 declare module 'siyuan' {
@@ -959,12 +959,6 @@ export interface IWrappedList<T> extends Array<T> {
      * @param end - End index
      */
     slice(start: number, end: number): IWrappedList<T>;
-    /**
-     * Returns a new array with the results of calling a provided function on every element in the calling array
-     * @param fn
-     * @param useWrapBlock  - If true, the result will be wrapped as a IWrappedBlock
-     */
-    map<U>(callbackfn: (value: T, index: number, array: T[]) => U, useWrapBlock: boolean): IWrappedList<U>;
     /**
      * Returns a new array with unique elements
      * @param {keyof Block | Function} key - Unique criteria, can be property name or function

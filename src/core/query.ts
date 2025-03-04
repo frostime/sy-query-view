@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-12-01 22:34:55
  * @FilePath     : /src/core/query.ts
- * @LastEditTime : 2025-02-10 18:07:50
+ * @LastEditTime : 2025-02-19 22:59:28
  * @Description  : 
  */
 import { IProtyle } from "siyuan";
@@ -618,7 +618,8 @@ const Query = {
         const id = block.id;
         if (block.type === 'd') {
             const { content } = await request('/api/export/exportMdContent', {
-                id: id
+                id: id,
+                yfm: false
             });
             return content;
         } else if (block.type === 'h') {
@@ -667,6 +668,9 @@ const Query = {
      * @alias `redirect`
      */
     fb2p: async (inputs: Block[], enable?: { heading?: boolean, doc?: boolean }) => {
+        // 深度拷贝，防止修改原始输入
+        // inputs = structuredClone(inputs);
+        inputs = [...inputs];
         /**
          * 处理输入参数
          */

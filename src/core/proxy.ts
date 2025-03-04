@@ -108,12 +108,6 @@ export interface IWrappedList<T> extends Array<T> {
      */
     slice(start: number, end: number): IWrappedList<T>;
     /**
-     * Returns a new array with the results of calling a provided function on every element in the calling array
-     * @param fn 
-     * @param useWrapBlock  - If true, the result will be wrapped as a IWrappedBlock
-     */
-    map<U>(callbackfn: (value: T, index: number, array: T[]) => U, useWrapBlock: boolean) : IWrappedList<U>;
-    /**
      * Returns a new array with unique elements
      * @param {keyof Block | Function} key - Unique criteria, can be property name or function
      * @example
@@ -267,7 +261,7 @@ export const wrapList = (list: Block[], useWrapBlock: boolean = true) => {
 
     let proxy = new Proxy(list, {
         get(target: Block[], prop: any) {
-            if (prop in target) {
+            if (prop in target && !['filter', 'slice'].includes(prop)) {
                 return Reflect.get(target, prop);
             }
             switch (prop) {
@@ -412,19 +406,22 @@ export const wrapList = (list: Block[], useWrapBlock: boolean = true) => {
                      * 返回过滤后的新数组
                      */
                     return (predicate: (value: Block, index: number, array: Block[]) => boolean) => {
-                        return wrapList(target.filter(predicate));
+                        const filter = Reflect.get(target, 'filter');
+                        return wrapList(filter(predicate));
                     }
                 case 'slice':
                     /**
                      * 返回指定区间的子数组
                      */
                     return (start: number, end: number) => {
-                        return wrapList(target.slice(start, end));
+                        const slice = Reflect.get(target, 'slice');
+                        return wrapList(slice(start, end));
                     }
-                case 'map':
-                    return (fn: (b: Block, index: number) => any, useWrapBlock: boolean = true) => {
-                        return wrapList(target.map(fn), useWrapBlock);
-                    }
+                // case 'map':
+                //     return (fn: (b: Block, index: number) => any, useWrapBlock: boolean = true) => {
+                //         const map = Reflect.get(target, prop);
+                //         return wrapList(map(fn), useWrapBlock);
+                //     }
                 case 'unique':
                     /**
                      * 返回一个去重后的新数组
