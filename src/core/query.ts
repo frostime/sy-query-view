@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-12-01 22:34:55
  * @FilePath     : /src/core/query.ts
- * @LastEditTime : 2025-03-08 17:24:16
+ * @LastEditTime : 2025-03-08 17:41:46
  * @Description  : 
  */
 import { IProtyle } from "siyuan";
@@ -611,9 +611,9 @@ const Query = {
         return wrapList(docs);
     },
 
-    keyword: async (keywords: string | string[], join: 'or' | 'and' = 'or') => {
+    keyword: async (keywords: string | string[], join: 'or' | 'and' = 'or', limit: number = 999) => {
         keywords = Array.isArray(keywords) ? keywords : [keywords];
-        const sql = `select * from blocks where ${keywords.map(keyword => `content like '%${keyword}%'`).join(` ${join} `)} limit 999`;
+        const sql = `select * from blocks where ${keywords.map(keyword => `content like '%${keyword}%'`).join(` ${join} `)} limit ${limit}`;
         let results = await Query.sql(sql);
         return results;
     },
@@ -621,15 +621,17 @@ const Query = {
     /**
      * Search the document that contains all the keywords.
      * @param keywords 
+     * @param join The join operator between keywords, default is 'or'
+     * @param limit Maximum number of results to return, default is 999
      * @returns The document blocks that contains all the given keywords; the blocks will attached a 'keywords' property, which is the matched keyword blocks
      * @example
      * let docs = await Query.keywordDoc(['Keywords A', 'Keywords B']);
      * //each block in docs is a document block that contains all the keywords
      * docs[0].keywords['Keywords A'] // get the matched keyword block by using `keywords` property
      */
-    keywordDoc: async (keywords: string | string[], join: 'or' | 'and' = 'or') => {
+    keywordDoc: async (keywords: string | string[], join: 'or' | 'and' = 'or', limit: number = 999) => {
         keywords = Array.isArray(keywords) ? keywords : [keywords];
-        const sql = `select * from blocks where ${keywords.map(keyword => `content like '%${keyword}%'`).join(` ${join} `)}`;
+        const sql = `select * from blocks where ${keywords.map(keyword => `content like '%${keyword}%'`).join(` ${join} `)} limit ${limit}`;
         let results = await Query.sql(sql);
 
         let matchedDocs = {};
