@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-12-01 22:34:55
  * @FilePath     : /src/core/query.ts
- * @LastEditTime : 2025-02-19 22:59:28
+ * @LastEditTime : 2025-03-08 17:41:46
  * @Description  : 
  */
 import { IProtyle } from "siyuan";
@@ -17,49 +17,115 @@ import { getNotebook, openBlock } from "@/utils";
 
 import { renderAttr } from "./components";
 import { BlockTypeShort } from "@/utils/const";
+import PromiseLimitPool from "@/libs/promise-pool";
 // import { getSessionStorageSize } from "./gc";
 
 
 /**
- * Filter blocks in sql search scenario to eliminate duplicate blocks
- * @param blocks Block[]
- * @param mode uni 模式;
- *  - 'leaf' 只返回叶子节点
- *  - 'root' 只返回根节点
- * @returns BlockId[]
+ * 在 SQL 搜索场景中过滤块，以消除重复的块。
+ * 思源笔记中的块存在嵌套结构（例如列表、列表项、内部的段落是三个不同的块）。
+ * 因此，如果一个关键字搜索列表内的文字，可能会一次性搜索出三个嵌套的块，导致搜索结果冗余。
+ * 此函数用于解决上述问题，根据指定的模式合并具有父子关系的块。
+ * @param {Block[]} blocks - 待处理的块数组，可能存在潜在的嵌套关系。
+ * @param {('leaf' | 'root')} [keep='leaf'] - 合并模式。
+ *   - 'leaf'：将具有父子关系的块合并到最底层的叶子节点。例如，搜索到多个列表项，则将结果合并为最底层的段落块。
+ *   - 'root'：将具有父子关系的块合并到最顶层的根节点。例如，搜索到多个列表项，则将结果合并为顶部的列表块。
+ * @param {boolean} [advanced=false] - 是否启用高级模式。
+ *   - true：启用高级模式，通过查询块的面包屑来获取完整的块层级关系，从而更精准地识别和合并嵌套块。高级模式下会使用 /api/block/getBlockBreadcrumb 接口进行查询，比非高级模式消耗更多资源。
+ *   - false：禁用高级模式，仅通过 parent_id 属性进行判断和合并，性能更好但是准确率不如高级模式。
+ * @returns {Block[]} - 合并后的块数组。
  */
-function mergeBlocks(blocks: Block[], mode: 'leaf' | 'root' = 'leaf') {
-    // console.log('mergeBlocks', blocks);
-    let p2c = new Map();
-    let blocksMap = new Map();
+async function pruneBlocks(
+    blocks: Block[], keep: 'leaf' | 'root' = 'leaf', advanced: boolean = false
+) {
+
+    let parents = new Set<string>(); // 存储所有作为父块的 blockId
+    let blocksMap = new Map<string, Block>(); // blockId 到 block 的映射
     blocks.forEach(block => {
-        p2c.set(block.parent_id, block.id);
+        parents.add(block.parent_id);
         blocksMap.set(block.id, block);
     });
-    let blockIdsResult: BlockId[] = [];
+    let blockIdsResult: Set<string> = new Set(); // 用于存储最终结果的 blockId 集合
     const pushResult = (block: Block) => {
-        if (!blockIdsResult.includes(block.id)) {
-            blockIdsResult.push(block.id);
+        if (!blockIdsResult.has(block.id)) {
+            blockIdsResult.add(block.id);
         }
     };
-    if (mode === 'root') {
+
+    // 非高级模式下的初步筛选
+    if (keep === 'root') {
         for (let block of blocks) {
             // 找到 block 最顶层的 parent 节点
             while (blocksMap.has(block.parent_id)) {
-                block = blocksMap.get(block.parent_id);
+                block = blocksMap.get(block.parent_id)!;
             }
             pushResult(block);
         }
-    }
-    else if (mode === 'leaf') {
+    } else if (keep === 'leaf') {
         for (let block of blocks) {
-            //如果 block 不在 parent 集合中，则 block 为叶子节点
-            if (!p2c.has(block.id)) {
+            // 如果 block.id 不是任何块的 parent_id，则 block 为叶子节点
+            if (!parents.has(block.id)) {
                 pushResult(block);
             }
         }
     }
-    let retBlocks = blockIdsResult.map(id => blocksMap.get(id));
+
+    if (advanced) {
+        const searchBreakcrumb = async (blockId: BlockId) => {
+            const data: { id: string }[] = await request('/api/block/getBlockBreadcrumb', {
+                id: blockId,
+                excludeTypes: []
+            });
+            const path = data.map(b => b.id).join('/');
+            return path;
+        }
+
+        const pool = new PromiseLimitPool(16);
+        const breadcrumb = new Map<BlockId, string>(); // breadcrumb 应存储 BlockId 到路径的映射
+        // 查询每个块的面包屑
+        for (const blockId of blockIdsResult) {
+            pool.add(async () => {
+                const path = await searchBreakcrumb(blockId);
+                breadcrumb.set(blockId, path);
+            });
+        }
+        await pool.awaitAll();
+
+        const hierarchy = new Map<BlockId, BlockId[]>();
+        // 检查面包屑，查看前缀关系
+        for (const [blockId, path] of breadcrumb.entries()) {
+            for (const [otherBlockId, otherPath] of breadcrumb.entries()) {
+                if (blockId !== otherBlockId && otherPath.startsWith(path)) {
+                    if (!hierarchy.has(blockId)) {
+                        hierarchy.set(blockId, []);
+                    }
+                    hierarchy.get(blockId)?.push(otherBlockId);
+                }
+            }
+        }
+
+        // if root, 则删除所有存在前缀关系的子块
+        if (keep === 'root') {
+            for (const [_, children] of hierarchy.entries()) {
+                if (children.length > 0) {
+                    // 如果当前块是根块，删除所有子块
+                    for (const childId of children) {
+                        blockIdsResult.delete(childId);
+                    }
+                }
+            }
+        } else if (keep === 'leaf') {
+            // if leaf, 则删除所有存在前缀关系的父块
+            for (const [parentId, children] of hierarchy.entries()) {
+                if (children.length > 0) {
+                    blockIdsResult.delete(parentId);
+                }
+            }
+        }
+
+    }
+
+    let retBlocks = Array.from(blockIdsResult).map(id => blocksMap.get(id)!);
     return retBlocks;
 }
 
@@ -545,9 +611,9 @@ const Query = {
         return wrapList(docs);
     },
 
-    keyword: async (keywords: string | string[], join: 'or' | 'and' = 'or') => {
+    keyword: async (keywords: string | string[], join: 'or' | 'and' = 'or', limit: number = 999) => {
         keywords = Array.isArray(keywords) ? keywords : [keywords];
-        const sql = `select * from blocks where ${keywords.map(keyword => `content like '%${keyword}%'`).join(` ${join} `)}`;
+        const sql = `select * from blocks where ${keywords.map(keyword => `content like '%${keyword}%'`).join(` ${join} `)} limit ${limit}`;
         let results = await Query.sql(sql);
         return results;
     },
@@ -555,15 +621,17 @@ const Query = {
     /**
      * Search the document that contains all the keywords.
      * @param keywords 
+     * @param join The join operator between keywords, default is 'or'
+     * @param limit Maximum number of results to return, default is 999
      * @returns The document blocks that contains all the given keywords; the blocks will attached a 'keywords' property, which is the matched keyword blocks
      * @example
      * let docs = await Query.keywordDoc(['Keywords A', 'Keywords B']);
      * //each block in docs is a document block that contains all the keywords
      * docs[0].keywords['Keywords A'] // get the matched keyword block by using `keywords` property
      */
-    keywordDoc: async (keywords: string | string[], join: 'or' | 'and' = 'or') => {
+    keywordDoc: async (keywords: string | string[], join: 'or' | 'and' = 'or', limit: number = 999) => {
         keywords = Array.isArray(keywords) ? keywords : [keywords];
-        const sql = `select * from blocks where ${keywords.map(keyword => `content like '%${keyword}%'`).join(` ${join} `)}`;
+        const sql = `select * from blocks where ${keywords.map(keyword => `content like '%${keyword}%'`).join(` ${join} `)} limit ${limit}`;
         let results = await Query.sql(sql);
 
         let matchedDocs = {};
@@ -764,6 +832,35 @@ const Query = {
         return wrapList(result);
     },
 
+    /**
+     * Prune/Merge blocks from SQL search results to eliminate duplicates.
+     *
+     * SiYuan's block structure is hierarchical, leading to multiple results for nested content (e.g., lists, list items, and their paragraphs).
+     * For example, searching "Hi" in the following list might return three blocks:
+     *  1. The parent list block
+     *  2. The list item block
+     *  3. The paragraph block
+     *
+     * ```md
+     * - Hi
+     * - Hello
+     * ```
+     *
+     * This function resolves this duplication issue by merging related blocks based on a chosen strategy.
+     *
+     * @param {Block[]} blocks - An array of blocks returned from a SQL search, potentially containing nested structures.
+     * @param {('leaf' | 'root')} [keep='leaf'] - The merging mode:
+     *    - `'leaf'`:  Merges results to the deepest (leaf) block. (e.g., the paragraph block in a list item).
+     *    - `'root'`: Merges results to the highest (root) block. (e.g., the parent list block).
+     * @param {boolean} [advanced=false] - Enables advanced filtering using block breadcrumbs for more accurate results (can be resource-intensive).
+     * @returns {Block[]} - A new array containing only the unique (pruned) blocks.
+     */
+    pruneBlocks: async (blocks: Block[], keep: 'leaf' | 'root' = 'leaf', advanced: boolean = false) => {
+        let results = await pruneBlocks(blocks, keep, advanced);
+        return wrapList(results, true);
+    },
+
+
 
     /**
      * Send GPT request, use AI configuration in `siyuan.config.ai.openAI` by default
@@ -910,6 +1007,7 @@ addAlias(Query, 'root_id', ['docId']);
 addAlias(Query, 'backlink', ['backlinks']);
 addAlias(Query, 'wrapBlocks', ['wrapit']);
 addAlias(Query, 'fb2p', ['redirect']);
+addAlias(Query, 'pruneBlocks', ['prune', 'mergeBlocks', 'merge']);
 const utils = Object.keys(Query.Utils);
 utils.forEach(key => {
     addAlias(Query.Utils, key, [key.toLocaleLowerCase()]);

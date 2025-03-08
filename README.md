@@ -1,4 +1,3 @@
-
 > 🥺 This README document was originally written in Chinese (see README_zh_CN.md). Due to its length, I used a language model (LLM) to translate it into English. If you find any issues or areas that need improvement, please let me know, and I will be happy to fix them.
 >
 > Additionally, this document contains a large number of images, and I unfortunately do not have the time or energy to migrate them to English version. I appreciate your understanding in this matter.
@@ -227,6 +226,15 @@ keyword: (keywords: string | string[], join?: "or" | "and") => Promise<IWrappedL
  * @returns The document blocks that contains all the given keywords
  */
 keywordDoc: (keywords: string | string[], join?: "or" | "and") => Promise<any[]>;
+/**
+ * Return the markdown content of the given block
+ * * For normal block, return the markdown attribute of the block
+ * * For document block, return the markdown content of the document
+ * * For heading block, return the children blocks' markdown content
+ * @param block - Block
+ * @returns Markdown content of the document
+ */
+markdown: async (input: BlockId | Block)  => Promise<string>
 ```
 
 These functions can be accessed directly via `Query`​. The most general one is `Query.sql`​, which simply takes the SQL query statement as input.
@@ -910,6 +918,78 @@ Especially the latter can help achieve basic document references. The following 
 ​![image](assets/image-20241204130826-j6rwpyx.png)​
 
 ✨ **Special Usage**: Force redirection to the document. `fb2p`​ has a built-in rule: when the paragraph contains a tag named `#DOCREF#`​ or `#文档引用#`​, the block will be forcibly redirected to the document block.
+
+### pruneBlocks (Handling Containers and Child Blocks)
+
+​`pruneBlocks`​ is used to filter blocks in SQL search scenarios to eliminate redundant blocks.
+
+> 🖋️ Aliases: `prune`​, `mergeBlocks`​, `merge`​
+
+```js
+pruneBlocks(blocks: Block[], keep: 'leaf' | 'root' = 'leaf', advanced: boolean = false)
+```
+
+Blocks in SiYuan Notes have nested structures (e.g., a list, list item, and internal paragraph are three distinct blocks). When searching for keywords within nested text, this may return multiple redundant blocks. This function addresses this issue by merging parent-child related blocks according to specified strategies.
+
+**Parameters:**
+
+* ​`blocks`​: Input block list
+* ​`keep`​: Cleanup and merge strategy:
+
+  * ​`leaf`​: Merge parent-child blocks into the deepest leaf node. For example, when multiple list items are found, keeps the deepest paragraph block while removing upper list item blocks.
+  * ​`root`​: Merge parent-child blocks into the topmost root node. For example, when multiple list items are found, keeps the topmost list block while removing deeper paragraph blocks.
+* ​`advanced`​: Whether to enable advanced cleanup:
+
+  * ​`false`​: Default strategy - only uses the `parent_id`​ attributes of input blocks for merging.
+  * ​`true`​: Additionally queries block breadcrumbs to obtain complete hierarchy. This more aggressive merging requires additional query overhead.
+
+**Example:**
+
+Given a list block:
+
+```js
+1. 重要内容 A
+2. 重要内容 B
+```
+
+A keyword search for "重要内容" may return duplicates: paragraph block (leaf) → list item block → list block (root).
+
+Without pruning:
+
+```js
+//!js
+const query = async () => {
+    let blocks = await Query.keyword('重要内容')
+    return blocks.pick('id');
+}
+return query();
+```
+
+​![image](assets/image-20250308171816-crrru54.png)​
+
+Using `pruneBlocks`​ (default leaf strategy):
+
+```js
+//!js
+const query = async () => {
+    let blocks = await Query.keyword('Important Content');
+    blocks = await Query.pruneBlocks(blocks);
+    return blocks.pick('id');
+}
+return query();
+```
+
+Result: Only leaf paragraph blocks remain.  
+​![image](assets/image-20250308172648-l0q3u5r.png)​
+
+Using root strategy:
+
+```js
+pruneBlocks(blocks, 'root')
+```
+
+Result: Only root list blocks remain.  
+​![image](assets/image-20250308172720-se43ute.png)​
 
 ## 4. Advanced Usage - DataView Various View Components
 

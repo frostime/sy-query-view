@@ -406,16 +406,16 @@ export const wrapList = (list: Block[], useWrapBlock: boolean = true) => {
                      * 返回过滤后的新数组
                      */
                     return (predicate: (value: Block, index: number, array: Block[]) => boolean) => {
-                        const filter = Reflect.get(target, 'filter');
-                        return wrapList(filter(predicate));
+                        const results = Array.prototype.filter.call(target, predicate);
+                        return wrapList(results);
                     }
                 case 'slice':
                     /**
                      * 返回指定区间的子数组
                      */
                     return (start: number, end: number) => {
-                        const slice = Reflect.get(target, 'slice');
-                        return wrapList(slice(start, end));
+                        const results = Array.prototype.slice.call(target, start, end);
+                        return wrapList(results);
                     }
                 // case 'map':
                 //     return (fn: (b: Block, index: number) => any, useWrapBlock: boolean = true) => {
