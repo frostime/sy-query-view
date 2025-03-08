@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-12-01 22:34:55
  * @FilePath     : /src/core/query.ts
- * @LastEditTime : 2025-03-04 22:47:07
+ * @LastEditTime : 2025-03-08 17:24:16
  * @Description  : 
  */
 import { IProtyle } from "siyuan";
@@ -27,7 +27,7 @@ import PromiseLimitPool from "@/libs/promise-pool";
  * 因此，如果一个关键字搜索列表内的文字，可能会一次性搜索出三个嵌套的块，导致搜索结果冗余。
  * 此函数用于解决上述问题，根据指定的模式合并具有父子关系的块。
  * @param {Block[]} blocks - 待处理的块数组，可能存在潜在的嵌套关系。
- * @param {('leaf' | 'root')} [targetLevel='leaf'] - 合并模式。
+ * @param {('leaf' | 'root')} [keep='leaf'] - 合并模式。
  *   - 'leaf'：将具有父子关系的块合并到最底层的叶子节点。例如，搜索到多个列表项，则将结果合并为最底层的段落块。
  *   - 'root'：将具有父子关系的块合并到最顶层的根节点。例如，搜索到多个列表项，则将结果合并为顶部的列表块。
  * @param {boolean} [advanced=false] - 是否启用高级模式。
@@ -36,7 +36,7 @@ import PromiseLimitPool from "@/libs/promise-pool";
  * @returns {Block[]} - 合并后的块数组。
  */
 async function pruneBlocks(
-    blocks: Block[], targetLevel: 'leaf' | 'root' = 'leaf', advanced: boolean = false
+    blocks: Block[], keep: 'leaf' | 'root' = 'leaf', advanced: boolean = false
 ) {
 
     let parents = new Set<string>(); // 存储所有作为父块的 blockId
@@ -53,7 +53,7 @@ async function pruneBlocks(
     };
 
     // 非高级模式下的初步筛选
-    if (targetLevel === 'root') {
+    if (keep === 'root') {
         for (let block of blocks) {
             // 找到 block 最顶层的 parent 节点
             while (blocksMap.has(block.parent_id)) {
@@ -61,7 +61,7 @@ async function pruneBlocks(
             }
             pushResult(block);
         }
-    } else if (targetLevel === 'leaf') {
+    } else if (keep === 'leaf') {
         for (let block of blocks) {
             // 如果 block.id 不是任何块的 parent_id，则 block 为叶子节点
             if (!parents.has(block.id)) {
@@ -105,7 +105,7 @@ async function pruneBlocks(
         }
 
         // if root, 则删除所有存在前缀关系的子块
-        if (targetLevel === 'root') {
+        if (keep === 'root') {
             for (const [_, children] of hierarchy.entries()) {
                 if (children.length > 0) {
                     // 如果当前块是根块，删除所有子块
@@ -114,7 +114,7 @@ async function pruneBlocks(
                     }
                 }
             }
-        } else if (targetLevel === 'leaf') {
+        } else if (keep === 'leaf') {
             // if leaf, 则删除所有存在前缀关系的父块
             for (const [parentId, children] of hierarchy.entries()) {
                 if (children.length > 0) {
@@ -613,7 +613,7 @@ const Query = {
 
     keyword: async (keywords: string | string[], join: 'or' | 'and' = 'or') => {
         keywords = Array.isArray(keywords) ? keywords : [keywords];
-        const sql = `select * from blocks where ${keywords.map(keyword => `content like '%${keyword}%'`).join(` ${join} `)}`;
+        const sql = `select * from blocks where ${keywords.map(keyword => `content like '%${keyword}%'`).join(` ${join} `)} limit 999`;
         let results = await Query.sql(sql);
         return results;
     },
@@ -847,14 +847,15 @@ const Query = {
      * This function resolves this duplication issue by merging related blocks based on a chosen strategy.
      *
      * @param {Block[]} blocks - An array of blocks returned from a SQL search, potentially containing nested structures.
-     * @param {('leaf' | 'root')} [targetLevel='leaf'] - The merging mode:
+     * @param {('leaf' | 'root')} [keep='leaf'] - The merging mode:
      *    - `'leaf'`:  Merges results to the deepest (leaf) block. (e.g., the paragraph block in a list item).
      *    - `'root'`: Merges results to the highest (root) block. (e.g., the parent list block).
      * @param {boolean} [advanced=false] - Enables advanced filtering using block breadcrumbs for more accurate results (can be resource-intensive).
      * @returns {Block[]} - A new array containing only the unique (pruned) blocks.
      */
-    pruneBlocks: async (blocks: Block[], targetLevel: 'leaf' | 'root' = 'root', advanced: boolean = false) => {
-        return pruneBlocks(blocks, targetLevel, advanced);
+    pruneBlocks: async (blocks: Block[], keep: 'leaf' | 'root' = 'leaf', advanced: boolean = false) => {
+        let results = await pruneBlocks(blocks, keep, advanced);
+        return wrapList(results, true);
     },
 
 
@@ -1004,6 +1005,7 @@ addAlias(Query, 'root_id', ['docId']);
 addAlias(Query, 'backlink', ['backlinks']);
 addAlias(Query, 'wrapBlocks', ['wrapit']);
 addAlias(Query, 'fb2p', ['redirect']);
+addAlias(Query, 'pruneBlocks', ['prune', 'mergeBlocks', 'merge']);
 const utils = Object.keys(Query.Utils);
 utils.forEach(key => {
     addAlias(Query.Utils, key, [key.toLocaleLowerCase()]);

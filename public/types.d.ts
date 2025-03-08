@@ -1,8 +1,8 @@
 /**
  * @name sy-query-view
  * @author frostime
- * @version 1.0.7
- * @updated 2025-03-04T14:43:25.200Z
+ * @version 1.1.0
+ * @updated 2025-03-08T09:01:41.847Z
  */
 
 declare module 'siyuan' {
@@ -324,6 +324,30 @@ declare const Query: {
         heading?: boolean;
         doc?: boolean;
     }) => Promise<Block[]>;
+    /**
+     * Prune/Merge blocks from SQL search results to eliminate duplicates.
+     *
+     * SiYuan's block structure is hierarchical, leading to multiple results for nested content (e.g., lists, list items, and their paragraphs).
+     * For example, searching "Hi" in the following list might return three blocks:
+     *  1. The parent list block
+     *  2. The list item block
+     *  3. The paragraph block
+     *
+     * ```md
+     * - Hi
+     * - Hello
+     * ```
+     *
+     * This function resolves this duplication issue by merging related blocks based on a chosen strategy.
+     *
+     * @param {Block[]} blocks - An array of blocks returned from a SQL search, potentially containing nested structures.
+     * @param {('leaf' | 'root')} [keep='leaf'] - The merging mode:
+     *    - `'leaf'`:  Merges results to the deepest (leaf) block. (e.g., the paragraph block in a list item).
+     *    - `'root'`: Merges results to the highest (root) block. (e.g., the parent list block).
+     * @param {boolean} [advanced=false] - Enables advanced filtering using block breadcrumbs for more accurate results (can be resource-intensive).
+     * @returns {Block[]} - A new array containing only the unique (pruned) blocks.
+     */
+    pruneBlocks: (blocks: Block[], keep?: "leaf" | "root", advanced?: boolean) => Promise<Block[]>;
     /**
      * Send GPT request, use AI configuration in `siyuan.config.ai.openAI` by default
      * @param prompt - Prompt
