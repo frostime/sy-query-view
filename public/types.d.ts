@@ -2,7 +2,7 @@
  * @name sy-query-view
  * @author frostime
  * @version 1.1.0
- * @updated 2025-03-08T09:01:41.847Z
+ * @updated 2025-03-08T09:53:29.193Z
  */
 
 declare module 'siyuan' {
@@ -272,17 +272,19 @@ declare const Query: {
      * @returns Array of child document blocks
      */
     childDoc: (b: BlockId | Block) => Promise<Block[]>;
-    keyword: (keywords: string | string[], join?: "or" | "and") => Promise<IWrappedList<IWrappedBlock>>;
+    keyword: (keywords: string | string[], join?: "or" | "and", limit?: number) => Promise<IWrappedList<IWrappedBlock>>;
     /**
      * Search the document that contains all the keywords.
      * @param keywords
+     * @param join The join operator between keywords, default is 'or'
+     * @param limit Maximum number of results to return, default is 999
      * @returns The document blocks that contains all the given keywords; the blocks will attached a 'keywords' property, which is the matched keyword blocks
      * @example
      * let docs = await Query.keywordDoc(['Keywords A', 'Keywords B']);
      * //each block in docs is a document block that contains all the keywords
      * docs[0].keywords['Keywords A'] // get the matched keyword block by using `keywords` property
      */
-    keywordDoc: (keywords: string | string[], join?: "or" | "and") => Promise<Block[]>;
+    keywordDoc: (keywords: string | string[], join?: "or" | "and", limit?: number) => Promise<Block[]>;
     /**
      * Return the markdown content of the given block
      * * For normal block, return the markdown attribute of the block
