@@ -354,7 +354,7 @@ export const wrapList = (list: Block[], useWrapBlock: boolean = true) => {
                      * @returns {ProxyList} 排序后的新代理数组
                      * @example list.sorton('updated', 'desc')
                      */
-                    return (attr: keyof Block, order: 'asc' | 'desc' = 'asc') => {
+                    return (attr: keyof Block, order: 'asc' | 'desc' = 'desc') => {
                         //@ts-ignore
                         let sorted = target.toSorted((a, b) => {
                             if (a[attr] > b[attr]) {
