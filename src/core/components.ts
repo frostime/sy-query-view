@@ -11,6 +11,7 @@ import styles from './index.module.scss';
 
 import { i18n } from "@/index";
 import { setting } from "@/setting";
+import { getBlockTypeIcon } from "@/libs/const";
 
 
 const escape = window.Lute.EscapeHTMLStr;
@@ -394,7 +395,7 @@ class BlockCards {
         if (!options.cardWidth && options['width']) {
             options.cardWidth = options['width'];
         }
-        this.cardWidth = options.cardWidth ?? '200px';
+        this.cardWidth = options.cardWidth ?? '175px';
         this.cardHeight = options.cardHeight ?? this.cardWidth;
         this.fontSize = options.fontSize ?? '14px';
         this.render();
@@ -428,6 +429,11 @@ class BlockCards {
             padding: '8px'
         });
 
+        const svgSymbol = (symbol: string, size?: string) => {
+            size = size ?? this.fontSize;
+            return `<svg style="width: ${size}; height: ${size};"><use href="#${symbol}"></use></svg>`;
+        }
+
         this.blocks.forEach(block => {
             const card = document.createElement('div');
             Object.assign(card.style, {
@@ -436,7 +442,8 @@ class BlockCards {
                 fontSize: this.fontSize,
                 border: '1px solid var(--b3-border-color)',
                 borderRadius: '8px',
-                boxShadow: '0 4px 8px rgba(0, 0, 0, 0.15)',
+                // boxShadow: '0 4px 8px rgba(0, 0, 0, 0.15)',
+                boxShadow: '0 4px 8px var(--b3-theme-surface-lighter)',
                 padding: '16px',
                 transition: 'transform 0.2s, box-shadow 0.2s',
                 backgroundColor: 'var(--b3-theme-background)',
@@ -469,11 +476,18 @@ class BlockCards {
                 color: 'var(--b3-theme-primary)',
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
-                // maxHeight: '3.6em',
-                cursor: 'pointer'
+                cursor: 'pointer',
+                display: 'inline-block',
             });
-            title.title = block.content || '(No content)';
-            title.innerText = block.content || '(No content)';
+            const content = block.content || '(No content)';
+            title.title = content;
+            const blockIcon = getBlockTypeIcon(block);
+            let svg = '';
+            if (blockIcon) {
+                svg = svgSymbol(blockIcon);
+            }
+            title.innerHTML = `${svg} ${content}`;
+
             title.classList.add('popover__block');
             title.dataset.id = block.id;
 
@@ -505,23 +519,21 @@ class BlockCards {
                     fontWeight: '500'
                 });
                 const ico = document.createElement('span');
-                ico.innerHTML = icon;
+                // ico.style.paddingTop = '2px';
+                ico.innerHTML = svgSymbol(icon);
                 div.appendChild(ico);
                 if (typeof body === 'string') {
                     const desc = document.createElement('span');
                     desc.style.flex = '1';
+                    desc.style.lineHeight = `${this.fontSize}`;
                     desc.innerHTML = body;
                     div.appendChild(desc);
                 } else {
+                    body.style.lineHeight = `${this.fontSize}`;
                     div.appendChild(body);
                 }
                 return div;
             }
-
-            metaContainer.appendChild(metaRow(
-                this.getTypeIcon(block.type),
-                BlockTypeShort[block.type] ?? block.type
-            ));
 
             // Only create path container if we have path info
             if (block.box || block.hpath) {
@@ -532,7 +544,7 @@ class BlockCards {
                     (block.hpath || '');
 
                 const contaienr = metaRow(
-                    '📁', displayPath
+                    'iconFolder', displayPath
                 );
                 contaienr.style.alignItems = 'flex-start';
                 (contaienr.lastElementChild as HTMLElement).style.textWrap = 'initial';
@@ -548,7 +560,7 @@ class BlockCards {
             times.innerHTML = `<span>${this.formatTimestamp(block.created)}</span>
                 <span>${this.formatTimestamp(block.updated)}</span>`;
             metaContainer.appendChild(metaRow(
-                '🕒', times
+                'iconClock', times
             ));
 
             contentContainer.appendChild(metaContainer);
@@ -558,25 +570,6 @@ class BlockCards {
 
         this.element.innerHTML = '';
         this.element.appendChild(cardContainer);
-    }
-
-    // Helper method to get icons based on block type
-    private getTypeIcon(blockType: string): string {
-        switch (blockType) {
-            case 'd': return '📄'; // Document
-            case 'h': return '📌'; // Heading
-            case 'p': return '📝'; // Paragraph
-            case 'l': return '📋'; // List
-            case 'i': return '✅'; // List item
-            case 'c': return '💻'; // Code block
-            case 'm': return '📊'; // Math block
-            case 't': return '📊'; // Table
-            case 'b': return '🔳'; // Block quote
-            case 's': return '📏'; // Super block
-            case 'html': return '🌐'; // HTML block
-            case 'query_embed': return '🔍'; // Query embed block
-            default: return '📄'; // Default
-        }
     }
 }
 

@@ -3,12 +3,12 @@
  * @Author       : frostime
  * @Date         : 2024-06-08 20:36:30
  * @FilePath     : /src/libs/const.ts
- * @LastEditTime : 2024-06-08 20:48:06
+ * @LastEditTime : 2025-03-09 21:55:03
  * @Description  : 
  */
 
 
-export const BlockType2NodeType: {[key in BlockType]: string} = {
+export const BlockType2NodeType: { [key in BlockType]: string } = {
     d: 'NodeDocument',
     p: 'NodeParagraph',
     query_embed: 'NodeBlockQueryEmbed',
@@ -97,3 +97,21 @@ export const NodeIcons = {
         icon: "iconBoth"
     }
 };
+
+
+export const getBlockTypeIcon = (block: Block) => {
+    const nodeType = BlockType2NodeType[block.type];
+    const icon = NodeIcons[nodeType];
+    if (!icon) {
+        return '';
+    }
+
+    if (block.subtype) {
+        const subtype = icon.subtypes?.[block.subtype];
+        if (subtype) {
+            return subtype.icon;
+        }
+    }
+
+    return icon.icon;
+}
