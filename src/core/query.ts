@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-12-01 22:34:55
  * @FilePath     : /src/core/query.ts
- * @LastEditTime : 2025-03-08 17:41:46
+ * @LastEditTime : 2025-03-08 18:29:03
  * @Description  : 
  */
 import { IProtyle } from "siyuan";

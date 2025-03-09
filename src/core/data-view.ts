@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-12-02 10:15:04
  * @FilePath     : /src/core/data-view.ts
- * @LastEditTime : 2025-01-17 22:43:12
+ * @LastEditTime : 2025-03-09 19:27:05
  * @Description  : 
  */
 import {
@@ -12,7 +12,7 @@ import {
     Lute
 } from "siyuan";
 import { getLute } from "./lute";
-import { BlockList, BlockTable, MermaidRelation, EmbedNodes, Echarts, MermaidBase, errorMessage, MermaidKanban } from './components';
+import { BlockList, BlockTable, MermaidRelation, EmbedNodes, Echarts, MermaidBase, errorMessage, MermaidKanban, BlockCards } from './components';
 import { registerProtyleGC } from "./finalize";
 import { openBlock } from "@/utils";
 import { getCustomView } from "./custom-view";
@@ -248,6 +248,7 @@ export class DataView extends UseStateMixin implements IDataView {
         this.register(this.details, { aliases: ['Details', 'Detail'] });
         this.register(this.list, { aliases: ['BlockList'] });
         this.register(this.table, { aliases: ['BlockTable'] });
+        this.register(this.cards, { aliases: ['card'] });
         // this.register(this.blockTable);
         this.register(this.columns, { aliases: ['Cols'] });
         this.register(this.rows);
@@ -606,6 +607,28 @@ export class DataView extends UseStateMixin implements IDataView {
         }
         tableContainer.style.overflowX = 'auto';
         return tableContainer;
+    }
+
+    /**
+     * Creates a card view for displaying blocks
+     * @param blocks - Array of Block objects to display
+     * @param options - Configuration options
+     * @param options.cardWidth - Width of each card; default is '300px'
+     * @param options.fontSize - Base font size for the cards; default is '14px'
+     * @returns HTMLElement containing the card layout
+     * @example
+     * const children = await Query.childdoc(block);
+     * dv.cards(children, { cardWidth: '250px', fontSize: '16px' });
+     */
+    cards(blocks: Block[], options?: ICardsOptions) {
+        const cardsContainer = newViewWrapper();
+        const cards = new BlockCards({
+            target: cardsContainer,
+            blocks,
+            ...options
+        });
+        cardsContainer.style.overflowX = 'auto';
+        return cardsContainer;
     }
 
     /**

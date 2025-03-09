@@ -2,7 +2,7 @@
  * @name sy-query-view
  * @author frostime
  * @version 1.1.0
- * @updated 2025-03-08T09:53:29.193Z
+ * @updated 2025-03-09T11:03:41.363Z
  */
 
 declare module 'siyuan' {
@@ -412,6 +412,17 @@ interface ITableOptions {
     renderer?: (b: Block, attr: keyof Block) => string | undefined | null;
 }
 
+/**
+ * Cards Options
+ * @interface ICardsOptions
+ * @property {string} cardWidth - Width of each card; default is '300px'
+ * @property {string} fontSize - Base font size for cards; default is '14px'
+ */
+interface ICardsOptions {
+    cardWidth?: string;
+    fontSize?: string;
+}
+
 interface IHasChildren<T> {
     children?: IHasChildren<T>[];
 }
@@ -638,6 +649,18 @@ export declare class DataView implements IDataView {
      * dv.addtable(children, { cols: ['type', 'content'] , fullwidth: true });
      */
     table(blocks: Block[], options?: ITableOptions): HTMLElement;
+    /**
+     * Creates a card view for displaying blocks
+     * @param blocks - Array of Block objects to display
+     * @param options - Configuration options
+     * @param options.cardWidth - Width of each card; default is '300px'
+     * @param options.fontSize - Base font size for the cards; default is '14px'
+     * @returns HTMLElement containing the card layout
+     * @example
+     * const children = await Query.childdoc(block);
+     * dv.cards(children, { cardWidth: '250px', fontSize: '16px' });
+     */
+    cards(blocks: Block[], options?: ICardsOptions): HTMLElement;
     /**
      * Arranges elements in columns
      * @param elements - Array of HTMLElements to arrange

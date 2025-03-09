@@ -147,7 +147,7 @@ const renderAttr = (b: Block & { [key: string | number]: string | number }, attr
 
 /**************************************** 重构几个默认显示组件 ****************************************/
 
-export const errorMessage = (element: HTMLElement, message: string) => {
+const errorMessage = (element: HTMLElement, message: string) => {
     element.innerHTML = `<span style="color: var(--b3-card-error-color);background-color: var(--b3-card-error-background);">${message}</span>`;
 }
 
@@ -375,6 +375,210 @@ class BlockTable {
     }
 }
 
+class BlockCards {
+    element: HTMLElement;
+    blocks: Block[];
+    private cardWidth: string;
+    private cardHeight: string;
+    private fontSize: string;
+
+    constructor(options: {
+        target: HTMLElement,
+        blocks: Block[],
+        cardWidth?: string,
+        cardHeight?: string,
+        fontSize?: string,
+    }) {
+        this.element = options.target;
+        this.blocks = options.blocks;
+        if (!options.cardWidth && options['width']) {
+            options.cardWidth = options['width'];
+        }
+        this.cardWidth = options.cardWidth ?? '200px';
+        this.cardHeight = options.cardHeight ?? this.cardWidth;
+        this.fontSize = options.fontSize ?? '14px';
+        this.render();
+    }
+
+    // Helper method to format SiYuan timestamps (yyyyMMddHHmmss) to readable date
+    private formatTimestamp(timestamp: string): string {
+        if (!timestamp || timestamp.length < 14) return '';
+
+        const year = timestamp.substring(0, 4);
+        const month = timestamp.substring(4, 6);
+        const day = timestamp.substring(6, 8);
+        const hour = timestamp.substring(8, 10);
+        const minute = timestamp.substring(10, 12);
+
+        return `${year}-${month}-${day} ${hour}:${minute}`;
+    }
+
+    render() {
+        if (!this.blocks || this.blocks.length === 0) {
+            errorMessage(this.element, 'No blocks to display');
+            return;
+        }
+
+        const cardContainer = document.createElement('div');
+        Object.assign(cardContainer.style, {
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: '12px',
+            justifyContent: 'flex-start',
+            padding: '8px'
+        });
+
+        this.blocks.forEach(block => {
+            const card = document.createElement('div');
+            Object.assign(card.style, {
+                width: this.cardWidth,
+                height: this.cardHeight,
+                fontSize: this.fontSize,
+                border: '1px solid var(--b3-border-color)',
+                borderRadius: '8px',
+                boxShadow: '0 4px 8px rgba(0, 0, 0, 0.15)',
+                padding: '16px',
+                transition: 'transform 0.2s, box-shadow 0.2s',
+                backgroundColor: 'var(--b3-theme-background)',
+                overflow: 'hidden',
+                position: 'relative',
+                display: 'flex',
+                flexDirection: 'column'
+            });
+            card.dataset.blockId = block.id;
+
+            // Content container
+            const contentContainer = document.createElement('div');
+            Object.assign(contentContainer.style, {
+                flexGrow: '1',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '10px',
+                overflow: 'hidden'
+            });
+
+            // Title/Content - with fixed height and proper overflow handling
+            const title = document.createElement('div');
+            Object.assign(title.style, {
+                flex: '1',
+                fontWeight: 'bold',
+                fontSize: '1.15em',
+                marginBottom: '4px',
+                borderBottom: '1px solid var(--b3-border-color)',
+                paddingBottom: '8px',
+                color: 'var(--b3-theme-primary)',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                // maxHeight: '3.6em',
+                cursor: 'pointer'
+            });
+            title.title = block.content || '(No content)';
+            title.innerText = block.content || '(No content)';
+            title.classList.add('popover__block');
+            title.dataset.id = block.id;
+
+            // Make title clickable to navigate to the block
+            title.addEventListener('click', (e) => {
+                e.stopPropagation();
+                window.open(`siyuan://blocks/${block.id}`, '_blank');
+            });
+
+            contentContainer.appendChild(title);
+
+            // Metadata container
+            const metaContainer = document.createElement('div');
+            Object.assign(metaContainer.style, {
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '4px',
+                fontSize: '0.95em',
+                color: 'var(--b3-theme-on-surface)',
+                flex: 'none'
+            });
+
+            const metaRow = (icon: string, body: string | HTMLElement) => {
+                const div = document.createElement('div');
+                Object.assign(div.style, {
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    gap: '6px',
+                    fontWeight: '500'
+                });
+                const ico = document.createElement('span');
+                ico.innerHTML = icon;
+                div.appendChild(ico);
+                if (typeof body === 'string') {
+                    const desc = document.createElement('span');
+                    desc.style.flex = '1';
+                    desc.innerHTML = body;
+                    div.appendChild(desc);
+                } else {
+                    div.appendChild(body);
+                }
+                return div;
+            }
+
+            metaContainer.appendChild(metaRow(
+                this.getTypeIcon(block.type),
+                BlockTypeShort[block.type] ?? block.type
+            ));
+
+            // Only create path container if we have path info
+            if (block.box || block.hpath) {
+                // First show notebook name if available, then path
+                const notebook = block.box ? getNotebook(block.box)?.name : '';
+                const displayPath = notebook ?
+                    (block.hpath ? `[${notebook}]${block.hpath}` : notebook) :
+                    (block.hpath || '');
+
+                const contaienr = metaRow(
+                    '📁', displayPath
+                );
+                contaienr.style.alignItems = 'flex-start';
+                (contaienr.lastElementChild as HTMLElement).style.textWrap = 'initial';
+                metaContainer.appendChild(contaienr);
+            }
+
+            const times = document.createElement('div');
+            Object.assign(times.style, {
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '1px'
+            });
+            times.innerHTML = `<span>${this.formatTimestamp(block.created)}</span>
+                <span>${this.formatTimestamp(block.updated)}</span>`;
+            metaContainer.appendChild(metaRow(
+                '🕒', times
+            ));
+
+            contentContainer.appendChild(metaContainer);
+            card.appendChild(contentContainer);
+            cardContainer.appendChild(card);
+        });
+
+        this.element.innerHTML = '';
+        this.element.appendChild(cardContainer);
+    }
+
+    // Helper method to get icons based on block type
+    private getTypeIcon(blockType: string): string {
+        switch (blockType) {
+            case 'd': return '📄'; // Document
+            case 'h': return '📌'; // Heading
+            case 'p': return '📝'; // Paragraph
+            case 'l': return '📋'; // List
+            case 'i': return '✅'; // List item
+            case 'c': return '💻'; // Code block
+            case 'm': return '📊'; // Math block
+            case 't': return '📊'; // Table
+            case 'b': return '🔳'; // Block quote
+            case 's': return '📏'; // Super block
+            case 'html': return '🌐'; // HTML block
+            case 'query_embed': return '🔍'; // Query embed block
+            default: return '📄'; // Default
+        }
+    }
+}
 
 class MermaidBase {
     element: HTMLElement;
@@ -909,8 +1113,10 @@ class EmbedNodes {
             // this.element.style.gridTemplateColumns = `repeat(${this.columns}, 1fr)`;
             // this.element.style.gap = '0px';
             //多列瀑布流
-            this.element.style.columnCount = this.columns.toString();
-            this.element.style.columnGap = '0px';
+            Object.assign(this.element.style, {
+                columnCount: this.columns.toString(),
+                columnGap: '0px'
+            });
         }
         //@ts-ignore
         this.element.style.zoom = `${this.zoom}`;
@@ -925,7 +1131,7 @@ class EmbedNodes {
         `
         const div = document.createElement('div');
         Object.assign(div.style, {
-            'font-size': '0.85rem',
+            'fontSize': '0.85rem'
         });
         div.innerHTML = template;
         return div;
@@ -1085,5 +1291,7 @@ export {
     MermaidKanban,
     EmbedNodes,
     renderAttr,
-    Echarts
+    Echarts,
+    errorMessage,
+    BlockCards
 }

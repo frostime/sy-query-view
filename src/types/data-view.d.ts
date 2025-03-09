@@ -27,6 +27,17 @@ interface ITableOptions {
     renderer?: (b: Block, attr: keyof Block) => string | undefined | null;
 }
 
+/**
+ * Cards Options
+ * @interface ICardsOptions
+ * @property {string} cardWidth - Width of each card; default is '300px'
+ * @property {string} fontSize - Base font size for cards; default is '14px'
+ */
+interface ICardsOptions {
+    cardWidth?: string;
+    fontSize?: string;
+}
+
 interface IHasChildren<T> {
     children?: IHasChildren<T>[];
 }
