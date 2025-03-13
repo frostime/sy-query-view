@@ -128,38 +128,3 @@ export const initKatex = async () => {
     return window.katex !== undefined && window.katex !== null;
 }
 
-export const renderMathBlock = (element: HTMLElement) => {
-    try {
-        // protyle dom 里面的是把公式放在 dataset.content 里面
-        let formula = element.dataset.content || '';
-        if (!formula.trim()) {
-            return;
-        }
-        formula = window.Lute.UnEscapeHTMLStr(formula);
-
-        const isBlock = element.tagName.toUpperCase() === 'DIV';
-
-        // 使用 KaTeX 渲染公式
-        const html = window.katex.renderToString(formula, {
-            throwOnError: false, // 发生错误时不抛出异常
-            displayMode: isBlock,   // 使用显示模式（居中显示）
-            strict: (errorCode) => errorCode === "unicodeTextInMathMode" ? "ignore" : "warn",
-            trust: true
-        });
-
-        // 清空原始内容并插入渲染后的内容
-        element.innerHTML = html;
-        // pointer-events
-        element.style.pointerEvents = 'none';
-        element.style.cursor = 'default';
-        element.style.userSelect = 'text';
-        if (isBlock) {
-            element.classList.add(styles['katex-center-display']);
-        }
-
-    } catch (error) {
-        console.error('Error rendering math formula:', error);
-        // 可以在这里添加错误处理逻辑，比如显示错误提示
-        element.innerHTML = `<span style="color: red;">Error rendering formula: ${error.message}</span>`;
-    }
-}

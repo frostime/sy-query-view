@@ -10,6 +10,14 @@
     // overflow-x: hidden;
 }
 
+.markdown-component {
+    :global(.protyle-action) {
+        // display: none !important;
+        cursor: default;
+        pointer-events: none !important;
+    }
+}
+
 .embed-container[data-node-id] {
     border: 1px solid var(--b3-border-color);
     padding: 0.5em;

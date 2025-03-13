@@ -12,14 +12,14 @@ import {
     Lute
 } from "siyuan";
 import { getLute } from "./lute";
-import { BlockList, BlockTable, MermaidRelation, EmbedNodes, Echarts, MermaidBase, errorMessage, MermaidKanban, BlockCards } from './components';
+import { BlockList, BlockTable, BlockCards, MermaidRelation, MermaidKanban, EmbedNodes, Echarts, MarkdownComponent, errorMessage, MermaidBase } from './components';
 import { registerProtyleGC } from "./finalize";
 import { openBlock } from "@/utils";
 import { getCustomView } from "./custom-view";
 import UseStateMixin from "./use-state";
 
 import styles from './index.module.scss';
-import { initKatex, matchIDFormat, renderMathBlock } from "./utils";
+import { matchIDFormat } from "./utils";
 import { BlockTypeShort } from "@/utils/const";
 import { deepMerge } from "./utils";
 import { i18n } from "..";
@@ -496,32 +496,7 @@ export class DataView extends UseStateMixin implements IDataView {
      */
     markdown(md: string) {
         let elem = newViewWrapper();
-        // md = window.Lute.EscapeHTMLStr(md);
-        elem.innerHTML = this.lute.Md2BlockDOM(md);
-
-        let inlineMathElems: HTMLElement[] = Array.from(elem.querySelectorAll('[data-type="inline-math"]'));
-        let blockMathElems: HTMLElement[] = Array.from(elem.querySelectorAll('[data-type="NodeMathBlock"]'));
-        let mathElements = [...inlineMathElems, ...blockMathElems];
-
-        if (mathElements.length > 0) {
-            const renderAll = () => {
-                mathElements.forEach((element) => {
-                    renderMathBlock(element);
-                });
-            }
-
-            if (!window.katex) {
-                initKatex().then(renderAll);
-            } else {
-                renderAll();
-            }
-        }
-
-        let editableNodeList = elem.querySelectorAll('[contenteditable="true"]');
-        editableNodeList.forEach(node => {
-            node.setAttribute('contenteditable', 'false');
-        });
-
+        new MarkdownComponent({ target: elem, markdown: md });
         return elem;
     }
 

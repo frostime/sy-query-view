@@ -5,7 +5,7 @@ import { getLute } from "./lute";
 import { request } from "@/api";
 
 import { Constants, Lute, showMessage } from "siyuan";
-import { addScript, matchIDFormat } from "./utils";
+import { addScript, matchIDFormat, initKatex } from "./utils";
 // import './index.css';
 import styles from './index.module.scss';
 
@@ -1274,16 +1274,102 @@ class Echarts {
     dispose = () => { }
 }
 
+/**
+ * Markdown 渲染组件
+ */
+class MarkdownComponent {
+    element: HTMLElement;
+    private lute: Lute;
+
+    constructor(options: { target: HTMLElement, markdown: string }) {
+        this.element = options.target;
+        this.lute = getLute();
+        this.render(options.markdown);
+    }
+
+    private render(md: string) {
+        // md = window.Lute.EscapeHTMLStr(md);
+        this.element.innerHTML = this.lute.Md2BlockDOM(md);
+
+        let inlineMathElems: HTMLElement[] = Array.from(this.element.querySelectorAll('[data-type="inline-math"]'));
+        let blockMathElems: HTMLElement[] = Array.from(this.element.querySelectorAll('[data-type="NodeMathBlock"]'));
+        let mathElements = [...inlineMathElems, ...blockMathElems];
+
+        if (mathElements.length > 0) {
+            const renderAll = () => {
+                mathElements.forEach((element) => {
+                    MarkdownComponent.renderMathBlock(element);
+                });
+            }
+
+            if (!window.katex) {
+                initKatex().then(renderAll).then(() => {
+                    let editableNodeList = this.element.querySelectorAll('[contenteditable="true"]');
+                    editableNodeList.forEach(node => {
+                        node.setAttribute('contenteditable', 'false');
+                    });
+                })
+            } else {
+                renderAll();
+            }
+        }
+
+        let editableNodeList = this.element.querySelectorAll('[contenteditable="true"]');
+        editableNodeList.forEach(node => {
+            node.setAttribute('contenteditable', 'false');
+        });
+
+        this.element.classList.add(styles['markdown-component']);
+    }
+
+    static renderMathBlock(element: HTMLElement) {
+        try {
+            // protyle dom 里面的是把公式放在 dataset.content 里面
+            let formula = element.dataset.content || '';
+            if (!formula.trim()) {
+                return;
+            }
+            // 反转义 HTML 属性
+            formula = window.Lute.UnEscapeHTMLStr(formula);
+
+            const isBlock = element.tagName.toUpperCase() === 'DIV';
+
+            // 使用 KaTeX 渲染公式
+            const html = window.katex.renderToString(formula, {
+                throwOnError: false, // 发生错误时不抛出异常
+                displayMode: isBlock,   // 使用显示模式（居中显示）
+                strict: (errorCode) => errorCode === "unicodeTextInMathMode" ? "ignore" : "warn",
+                trust: true
+            });
+
+            // 清空原始内容并插入渲染后的内容
+            element.innerHTML = html;
+            // pointer-events
+            element.style.pointerEvents = 'none';
+            element.style.cursor = 'default';
+            element.style.userSelect = 'text';
+            if (isBlock) {
+                element.classList.add(styles['katex-center-display']);
+            }
+
+        } catch (error) {
+            console.error('Error rendering math formula:', error);
+            // 可以在这里添加错误处理逻辑，比如显示错误提示
+            element.innerHTML = `<span style="color: red;">Error rendering formula: ${error.message}</span>`;
+        }
+    }
+}
+
 export {
     BlockList,
-    // Table,
     BlockTable,
+    BlockCards,
     MermaidBase,
     MermaidRelation,
     MermaidKanban,
     EmbedNodes,
-    renderAttr,
     Echarts,
+    MarkdownComponent,
+    renderAttr,
     errorMessage,
-    BlockCards
 }
