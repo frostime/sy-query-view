@@ -60,10 +60,14 @@ interface I18n {
     src_userhelp_indexts: {
         create_notebook: string;
         download: string;
+        edit_custom_view: string;
         help_doc: string;
         help_doc_2: string;
+        open_custom_view_dir: string;
         open_locally: string;
         queryview: string;
+        unable_open_custom_view: string;
+        unable_open_custom_view_dir: string;
         unable_open_d_ts: string;
         useview: string;
         useview2: string;

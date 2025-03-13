@@ -90,10 +90,14 @@ src_userhelp_examplests:
 src_userhelp_indexts:
   create_notebook: Please create at least one notebook to store the help documents
   download: Download
+  edit_custom_view: Edit Code File
   help_doc: Help Document
   help_doc_2: Help Document
+  open_custom_view_dir: Open Directory
   open_locally: Open local
   queryview: Query View Basic Template
+  unable_open_custom_view: Unable to open custom view JS file
+  unable_open_custom_view_dir: Unable to open custom view directory
   unable_open_d_ts: Unable to open d.ts file
   useview: If you want to use DataView, please uncomment the following line
   useview2: If you want to use DataView, please comment out the above return and uncomment

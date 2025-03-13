@@ -58,10 +58,14 @@ src_userhelp_examplests:
 src_userhelp_indexts:
   create_notebook: 请至少先创建一个笔记本用于存放帮助文档
   download: 下载
+  edit_custom_view: 编辑代码
   help_doc: 帮助文档
   help_doc_2: 帮助文档
+  open_custom_view_dir: 打开目录
   open_locally: 在本地打开
   queryview: Query View 基本模板
+  unable_open_custom_view: 无法打开自定义视图 JS 文件
+  unable_open_custom_view_dir: 无法打开自定义视图目录
   unable_open_d_ts: 无法打开 d.ts 文件
   useview: 如果要使用 DataView 请取消下面这行的注释
   useview2: 如果要使用 DataView 请注释上面的 return, 并取消下方两行注释

@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-12-10 18:46:12
  * @FilePath     : /src/user-help/index.ts
- * @LastEditTime : 2024-12-14 18:58:46
+ * @LastEditTime : 2025-03-13 22:01:01
  * @Description  : 
  */
 import { i18n } from "@/index";
@@ -60,8 +60,8 @@ const openLocalDTSFile = () => {
             // console.debug('Command executed successfully:', stdout);
         }
     });
-
 }
+
 
 export const load = async (plugin: QueryViewPlugin) => {
     const pluignUrl = '/plugins/sy-query-view/plugin.json';
@@ -93,6 +93,7 @@ export const load = async (plugin: QueryViewPlugin) => {
     });
 
     if (child_process) {
+
         plugin.registerMenuItem({
             label: i18n.src_userhelp_indexts.open_locally + ' d.ts',
             icon: 'iconEdit',
@@ -104,7 +105,7 @@ export const load = async (plugin: QueryViewPlugin) => {
                     showMessage(i18n.src_userhelp_indexts.unable_open_d_ts, 3000, 'error');
                 }
             }
-        })
+        });
     }
 
     plugin.registerMenuItem({

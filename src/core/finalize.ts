@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-12-01 11:21:44
  * @FilePath     : /src/core/finalize.ts
- * @LastEditTime : 2024-12-08 19:40:16
+ * @LastEditTime : 2025-03-13 21:32:52
  * @Description  : 
  */
 import { DataView } from "./data-view";
@@ -80,8 +80,8 @@ export const registerProtyleGC = (docId: DocumentId, dataView: DataView) => {
     }
 }
 
-const finalizeDataView = async (dataView: DataView) => {
-    console.debug(`[finalize.ts] Finalize dataView@${dataView.embed_id}`);
+const finalizeDataView = async (dataView: DataView, rootID?: string) => {
+    console.debug(`[finalize.ts] Finalize dataView@${dataView.embed_id} under doc@${rootID}`);
     await dataView.flushStateIntoBlockAttr();
     dataView.dispose();
     //保证之后如果有其他设备的数据同步给当前设备，则新打开的时候会从 element 而非 session 中读取
@@ -94,14 +94,14 @@ export const onProtyleDestroyed = ({ detail }) => {
     if (!dataviews.has(rootID)) return;
 
     const views = dataviews.get(rootID);
-    console.debug(`[finalize.ts] onProtyleDestroyed for doc@${rootID}, views count: ${views.length}`);
-
+    console.group(`[finalize.ts] onProtyleDestroyed for doc@${rootID} (${views.length} views)`);
     views.forEach(view => {
         const dataView = view.deref();
         if (dataView) {
-            finalizeDataView(dataView);
+            finalizeDataView(dataView, rootID);
         }
     });
+    console.groupEnd();
     dataviews.delete(rootID);
 }
 
@@ -110,12 +110,14 @@ export const onProtyleSwitch = ({ detail }) => {
 }
 
 export const finalizeAllDataviews = () => {
+    console.group(`[finalize.ts] finalizeAllDataviews`);
     dataviews.forEach((views, docId) => {
         views.forEach(async view => {
             const dataView = view.deref();
             if (dataView) {
-                await finalizeDataView(dataView);
+                await finalizeDataView(dataView, docId);
             }
         });
     });
+    console.groupEnd();
 }
