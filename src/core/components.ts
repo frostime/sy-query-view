@@ -395,6 +395,9 @@ class BlockCards {
         if (!options.cardWidth && options['width']) {
             options.cardWidth = options['width'];
         }
+        if (!options.cardHeight && options['height']) {
+            options.cardHeight = options['height'];
+        }
         this.cardWidth = options.cardWidth ?? '175px';
         this.cardHeight = options.cardHeight ?? this.cardWidth;
         this.fontSize = options.fontSize ?? '14px';
@@ -518,7 +521,7 @@ class BlockCards {
                     fontWeight: '500'
                 });
                 const ico = document.createElement('span');
-                // ico.style.paddingTop = '2px';
+                ico.style.display = 'inline-flex';
                 ico.innerHTML = svgSymbol(icon);
                 div.appendChild(ico);
                 if (typeof body === 'string') {

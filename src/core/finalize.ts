@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-12-01 11:21:44
  * @FilePath     : /src/core/finalize.ts
- * @LastEditTime : 2025-03-13 21:32:52
+ * @LastEditTime : 2025-03-13 22:14:04
  * @Description  : 
  */
 import { DataView } from "./data-view";
@@ -110,7 +110,7 @@ export const onProtyleSwitch = ({ detail }) => {
 }
 
 export const finalizeAllDataviews = () => {
-    console.group(`[finalize.ts] finalizeAllDataviews`);
+    console.group(`[finalize.ts] finalizeAllDataviews (${dataviews.size} views)`);
     dataviews.forEach((views, docId) => {
         views.forEach(async view => {
             const dataView = view.deref();
