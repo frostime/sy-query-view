@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-12-01 16:16:53
  * @FilePath     : /src/utils/lute.ts
- * @LastEditTime : 2024-12-06 15:29:55
+ * @LastEditTime : 2025-03-13 19:04:33
  * @Description  : 
  */
 //from https://github.com/zxhd863943427/siyuan-plugin-data-query/blob/main/src/libs/utils.ts
@@ -43,10 +43,17 @@ export const setLute = (options) => {
     lute.SetKramdownIAL(true);
     lute.SetTag(true);
     lute.SetSuperBlock(true);
-    lute.SetGitConflict(true);
+    // lute.SetGitConflict(true);
     lute.SetMark(true);
-    lute.SetSup(true);
-    lute.SetSub(true);
+    lute.SetInlineAsterisk(window.siyuan.config.editor.markdown.inlineAsterisk);
+    lute.SetInlineUnderscore(window.siyuan.config.editor.markdown.inlineUnderscore);
+    lute.SetSup(window.siyuan.config.editor.markdown.inlineSup);
+    lute.SetSub(window.siyuan.config.editor.markdown.inlineSub);
+    lute.SetTag(window.siyuan.config.editor.markdown.inlineTag);
+    lute.SetInlineMath(window.siyuan.config.editor.markdown.inlineMath);
+    lute.SetGFMStrikethrough1(false);
+    lute.SetGFMStrikethrough(window.siyuan.config.editor.markdown.inlineStrikethrough);
+    lute.SetMark(window.siyuan.config.editor.markdown.inlineMark);
     lute.SetProtyleWYSIWYG(true);
     // if (options.lazyLoadImage) {
     //     lute.SetImageLazyLoading(options.lazyLoadImage);

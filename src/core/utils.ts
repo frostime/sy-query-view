@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-11-28 21:29:40
  * @FilePath     : /src/core/utils.ts
- * @LastEditTime : 2025-03-13 18:24:31
+ * @LastEditTime : 2025-03-13 19:36:01
  * @Description  : 
  */
 
@@ -130,10 +130,12 @@ export const initKatex = async () => {
 
 export const renderMathBlock = (element: HTMLElement) => {
     try {
-        const formula = element.textContent || '';
+        // protyle dom 里面的是把公式放在 dataset.content 里面
+        let formula = element.dataset.content || '';
         if (!formula.trim()) {
             return;
         }
+        formula = window.Lute.UnEscapeHTMLStr(formula);
 
         const isBlock = element.tagName.toUpperCase() === 'DIV';
 
@@ -147,6 +149,10 @@ export const renderMathBlock = (element: HTMLElement) => {
 
         // 清空原始内容并插入渲染后的内容
         element.innerHTML = html;
+        // pointer-events
+        element.style.pointerEvents = 'none';
+        element.style.cursor = 'default';
+        element.style.userSelect = 'text';
         if (isBlock) {
             element.classList.add(styles['katex-center-display']);
         }

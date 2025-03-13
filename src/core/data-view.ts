@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-12-02 10:15:04
  * @FilePath     : /src/core/data-view.ts
- * @LastEditTime : 2025-03-13 18:37:19
+ * @LastEditTime : 2025-03-13 19:30:50
  * @Description  : 
  */
 import {
@@ -496,22 +496,12 @@ export class DataView extends UseStateMixin implements IDataView {
      */
     markdown(md: string) {
         let elem = newViewWrapper();
-        // elem.innerHTML = this.lute.Md2BlockDOM(md);
-        //@ts-ignore
-        elem.innerHTML = this.lute.Md2HTML(md);
-        elem.classList.add('b3-typography');
-        Object.assign(elem.style, {
-            'font-size': 'inherit',
-            'line-height': 'inherit',
-        });
+        // md = window.Lute.EscapeHTMLStr(md);
+        elem.innerHTML = this.lute.Md2BlockDOM(md);
 
-        // elem.querySelectorAll('[contenteditable]').forEach
-        // let editableNodeList = elem.querySelectorAll('[contenteditable="true"]');
-        // editableNodeList.forEach(node => {
-        //     node.setAttribute('contenteditable', 'false');
-        // });
-
-        let mathElements: HTMLElement[] = Array.from(elem.querySelectorAll('.language-math'));
+        let inlineMathElems: HTMLElement[] = Array.from(elem.querySelectorAll('[data-type="inline-math"]'));
+        let blockMathElems: HTMLElement[] = Array.from(elem.querySelectorAll('[data-type="NodeMathBlock"]'));
+        let mathElements = [...inlineMathElems, ...blockMathElems];
 
         if (mathElements.length > 0) {
             const renderAll = () => {
@@ -526,6 +516,11 @@ export class DataView extends UseStateMixin implements IDataView {
                 renderAll();
             }
         }
+
+        let editableNodeList = elem.querySelectorAll('[contenteditable="true"]');
+        editableNodeList.forEach(node => {
+            node.setAttribute('contenteditable', 'false');
+        });
 
         return elem;
     }
