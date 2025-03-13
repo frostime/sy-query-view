@@ -119,6 +119,7 @@ declare interface Window {
     Query: typeof import("@/core/query").default;
     mermaid: any;
     echarts: any;
+    katex: any;
 }
 
 // globalThis

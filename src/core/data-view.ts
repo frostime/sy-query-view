@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-12-02 10:15:04
  * @FilePath     : /src/core/data-view.ts
- * @LastEditTime : 2025-03-09 19:27:05
+ * @LastEditTime : 2025-03-13 18:37:19
  * @Description  : 
  */
 import {
@@ -19,7 +19,7 @@ import { getCustomView } from "./custom-view";
 import UseStateMixin from "./use-state";
 
 import styles from './index.module.scss';
-import { matchIDFormat } from "./utils";
+import { initKatex, matchIDFormat, renderMathBlock } from "./utils";
 import { BlockTypeShort } from "@/utils/const";
 import { deepMerge } from "./utils";
 import { i18n } from "..";
@@ -496,12 +496,37 @@ export class DataView extends UseStateMixin implements IDataView {
      */
     markdown(md: string) {
         let elem = newViewWrapper();
-        elem.innerHTML = this.lute.Md2BlockDOM(md);
-        // elem.querySelectorAll('[contenteditable]').forEach
-        let editableNodeList = elem.querySelectorAll('[contenteditable="true"]');
-        editableNodeList.forEach(node => {
-            node.setAttribute('contenteditable', 'false');
+        // elem.innerHTML = this.lute.Md2BlockDOM(md);
+        //@ts-ignore
+        elem.innerHTML = this.lute.Md2HTML(md);
+        elem.classList.add('b3-typography');
+        Object.assign(elem.style, {
+            'font-size': 'inherit',
+            'line-height': 'inherit',
         });
+
+        // elem.querySelectorAll('[contenteditable]').forEach
+        // let editableNodeList = elem.querySelectorAll('[contenteditable="true"]');
+        // editableNodeList.forEach(node => {
+        //     node.setAttribute('contenteditable', 'false');
+        // });
+
+        let mathElements: HTMLElement[] = Array.from(elem.querySelectorAll('.language-math'));
+
+        if (mathElements.length > 0) {
+            const renderAll = () => {
+                mathElements.forEach((element) => {
+                    renderMathBlock(element);
+                });
+            }
+
+            if (!window.katex) {
+                initKatex().then(renderAll);
+            } else {
+                renderAll();
+            }
+        }
+
         return elem;
     }
 

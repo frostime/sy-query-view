@@ -3,9 +3,13 @@
  * @Author       : frostime
  * @Date         : 2024-11-28 21:29:40
  * @FilePath     : /src/core/utils.ts
- * @LastEditTime : 2024-12-14 16:36:00
+ * @LastEditTime : 2025-03-13 18:24:31
  * @Description  : 
  */
+
+import { Constants } from "siyuan";
+import styles from './index.module.scss';
+
 //https://github.com/siyuan-note/siyuan/blob/master/app/src/protyle/util/addScript.ts
 export const addScript = (path: string, id: string) => {
     return new Promise((resolve) => {
@@ -30,6 +34,24 @@ export const addScript = (path: string, id: string) => {
             resolve(true);
         };
     });
+};
+
+
+// https://github.com/siyuan-note/siyuan/blob/master/app/src/protyle/util/addStyle.ts
+export const addStyle = (url: string, id: string) => {
+    if (!document.getElementById(id)) {
+        const styleElement = document.createElement("link");
+        styleElement.id = id;
+        styleElement.rel = "stylesheet";
+        styleElement.type = "text/css";
+        styleElement.href = url;
+        const pluginsStyle = document.querySelector("#pluginsStyle");
+        if (pluginsStyle) {
+            pluginsStyle.before(styleElement);
+        } else {
+            document.getElementsByTagName("head")[0].appendChild(styleElement);
+        }
+    }
 };
 
 export const matchIDFormat = (id: string) => {
@@ -94,4 +116,44 @@ export function deepMerge<T extends object>(source: T, target: Partial<T> | any)
     });
 
     return result;
+}
+
+
+export const initKatex = async () => {
+    if (window.katex) return;
+    // https://github.com/siyuan-note/siyuan/blob/master/app/src/protyle/render/mathRender.ts
+    const cdn = Constants.PROTYLE_CDN;
+    addStyle(`${cdn}/js/katex/katex.min.css`, "protyleKatexStyle");
+    await addScript(`${cdn}/js/katex/katex.min.js`, "protyleKatexScript");
+    return window.katex !== undefined && window.katex !== null;
+}
+
+export const renderMathBlock = (element: HTMLElement) => {
+    try {
+        const formula = element.textContent || '';
+        if (!formula.trim()) {
+            return;
+        }
+
+        const isBlock = element.tagName.toUpperCase() === 'DIV';
+
+        // 使用 KaTeX 渲染公式
+        const html = window.katex.renderToString(formula, {
+            throwOnError: false, // 发生错误时不抛出异常
+            displayMode: isBlock,   // 使用显示模式（居中显示）
+            strict: (errorCode) => errorCode === "unicodeTextInMathMode" ? "ignore" : "warn",
+            trust: true
+        });
+
+        // 清空原始内容并插入渲染后的内容
+        element.innerHTML = html;
+        if (isBlock) {
+            element.classList.add(styles['katex-center-display']);
+        }
+
+    } catch (error) {
+        console.error('Error rendering math formula:', error);
+        // 可以在这里添加错误处理逻辑，比如显示错误提示
+        element.innerHTML = `<span style="color: red;">Error rendering formula: ${error.message}</span>`;
+    }
 }

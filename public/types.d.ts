@@ -1,8 +1,8 @@
 /**
  * @name sy-query-view
  * @author frostime
- * @version 1.1.0
- * @updated 2025-03-09T14:01:23.824Z
+ * @version 1.1.2
+ * @updated 2025-03-13T10:37:25.661Z
  */
 
 declare module 'siyuan' {
@@ -1158,6 +1158,7 @@ declare interface Window {
     Query: typeof Query
     mermaid: any;
     echarts: any;
+    katex: any;
 }
 
 // globalThis
