@@ -72,6 +72,7 @@ src_userhelp_examplests:
     columns of information within the same list item.
 
     '
+  show_tags_card_view: Query and display all tags in card view
   simple_chatgpt: A very simple ChatGPT dialog box, using the GPT API set internally
     in SiYuan
   sql_exec_result: Enter an SQL statement in the input box, click the execute button,
@@ -104,8 +105,8 @@ src_userhelp_indexts:
     the following two lines
 src_userhelp_sydocts:
   create_user_doc: 'Create user documentation:'
-  plugin_setting_doc: '> 🖊️ Due to your settings in the plugin, this help document only
-    contains the type definitions of the API.'
+  plugin_setting_doc: '> 🖊️ Due to your settings in the plugin, this help document
+    only contains the type definitions of the API.'
   plugin_update_doc: Detected plugin version update, updating documentation, please
     wait...
 user_help:

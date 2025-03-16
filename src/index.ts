@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-12-01 15:57:28
  * @FilePath     : /src/index.ts
- * @LastEditTime : 2024-12-11 01:00:01
+ * @LastEditTime : 2025-03-16 16:38:48
  * @Description  : 
  */
 import {
@@ -40,6 +40,17 @@ export default class QueryViewPlugin extends Plugin {
             let menu = new Menu("query-view");
             this.topBarMenuItems.forEach(item => {
                 menu.addItem(item);
+            });
+
+            menu.addSeparator();
+
+            // setting
+            menu.addItem({
+                icon: 'iconSettings',
+                label: 'Setting',
+                click: () => {
+                    this.openSetting();
+                }
             });
 
             const rect = topbar.getBoundingClientRect();

@@ -51,6 +51,7 @@ interface I18n {
         query_unfinished_tasks: string;
         random_text_translate: string;
         recent_docs: string;
+        show_tags_card_view: string;
         simple_chatgpt: string;
         sql_exec_result: string;
         unfinished_task_monthly: string;

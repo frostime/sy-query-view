@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-12-02 10:15:04
  * @FilePath     : /src/core/data-view.ts
- * @LastEditTime : 2025-03-13 19:30:50
+ * @LastEditTime : 2025-03-16 16:22:58
  * @Description  : 
  */
 import {
@@ -512,10 +512,12 @@ export class DataView extends UseStateMixin implements IDataView {
 
     /**
      * Creates a markdown list view for displaying blocks
-     * @param data - Array of blocks to display in the list, see {@link IBlockWithChilds}
+     * @param data - Array of blocks to display in the list
      *              Can also be scalar values, or block with children property
-     * @param options - Configuration options, see {@link IListOptions}
-     * @param options.renderer - Custom function to render list items, the return will be used as markdown code
+     * @param options - Configuration options
+     * @param {string} options.type - List type, 'u' for unordered, 'o' for ordered
+     * @param {number} options.columns - Number of columns to display
+     * @param {(b: T, defaultRenderer?: (b: T) => string) => string | number | undefined | null} options.renderer - Custom function to render list items, the return will be used as markdown code
      * @returns HTMLElement containing the list
      * @example
      * const children = await Query.childdoc(block);
@@ -569,8 +571,11 @@ export class DataView extends UseStateMixin implements IDataView {
     /**
      * Creates a markdown table view for displaying blocks
      * @param blocks - Array of Block objects to display
-     * @param options - Configuration options, see {@link ITableOptions}
-     * @param options.cols - Array of Block properties to show as columns;
+     * @param options - Configuration options
+     * @param {boolean} options.center - Center align table contents
+     * @param {boolean} options.fullwidth - Make table full width
+     * @param {boolean} options.index - Show row indices
+     * @param {Array} options.cols - Array of Block properties to show as columns;
      *     - if `undefined`, the default columns `['type', 'content', 'hpath', 'box']` will be used;
      *       but if the blocks don't have these properties, all properties of the first block will be used;
      *     - Can also be:
@@ -586,7 +591,13 @@ export class DataView extends UseStateMixin implements IDataView {
      * const children = await Query.childdoc(block);
      * dv.addtable(children, { cols: ['type', 'content'] , fullwidth: true });
      */
-    table(blocks: Block[], options?: ITableOptions) {
+    table(blocks: Block[], options?: {
+        center?: boolean;
+        fullwidth?: boolean;
+        index?: boolean;
+        cols?: (string | Record<string, string>)[] | Record<string, string>;
+        renderer?: (b: Block, attr: keyof Block) => string | undefined | null;
+    }) {
         let tableContainer = newViewWrapper();
         options = options ?? {};
         const table = new BlockTable({
@@ -608,14 +619,19 @@ export class DataView extends UseStateMixin implements IDataView {
      * Creates a card view for displaying blocks
      * @param blocks - Array of Block objects to display
      * @param options - Configuration options
-     * @param options.cardWidth - Width of each card; default is '300px'
+     * @param options.cardWidth - Width of each card; default is '175px'
+     * @param options.cardHeight - Height of each card; default is '175px'
      * @param options.fontSize - Base font size for the cards; default is '14px'
      * @returns HTMLElement containing the card layout
      * @example
      * const children = await Query.childdoc(block);
      * dv.cards(children, { cardWidth: '250px', fontSize: '16px' });
      */
-    cards(blocks: Block[], options?: ICardsOptions) {
+    cards(blocks: Block[], options?: {
+        cardWidth?: string;
+        cardHeight?: string;
+        fontSize?: string;
+    }) {
         const cardsContainer = newViewWrapper();
         const cards = new BlockCards({
             target: cardsContainer,

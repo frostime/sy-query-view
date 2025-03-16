@@ -10,7 +10,7 @@ The embedded block feature of SiYuan supports querying using JavaScript syntax. 
 >
 > You can download it and click the "Help Document" button in the top-left menu. The plugin will automatically create a help document within SiYuan.
 >
-> ​![image](assets/image-20241211194348-sfzl8pc.png)​
+> ![image](assets/image-20241211194348-sfzl8pc.png)
 >
 > The help documentation will include the latest API type definitions for the plugin.  
 > If you are only interested in reviewing the interface content and not the other parts of the help documentation, you can set "User documentation only imports type references" to `true`​ in the plugin settings.
@@ -23,33 +23,33 @@ The embedded block feature of SiYuan supports querying using JavaScript syntax. 
 
 Example: Query sub-documents of a specified document ID and display only the first three documents:
 
-​![image](assets/image-20241025221225-4ml02nc.png "Query sub-documents of a specified document ID")​
+![image](assets/image-20241025221225-4ml02nc.png "Query sub-documents of a specified document ID")
 
 2️⃣ Use the DataView object to customize the rendering of embedded block content.
 
 Example: Query backlinks of the current document and render them as a list of block links in the embedded block.
 
-​![image](assets/image-20241025221628-8bslxks.png "Display backlinks")​
+![image](assets/image-20241025221628-8bslxks.png "Display backlinks")
 
 Example: Create dynamic document content using JavaScript.
 
-​![image](assets/image-20241025222516-lvb94rl.png "Random walk")​
+![image](assets/image-20241025222516-lvb94rl.png "Random walk")
 
 And more rich rendering components.
 
-​![image](assets/image-20241213214945-r6p1je6.png "Kanban")​
+![image](assets/image-20241213214945-r6p1je6.png "Kanban")
 
-​![image](assets/image-20241130151900-0n7ku7o.png)​
+![image](assets/image-20241130151900-0n7ku7o.png)
 
 3️⃣ Simplify the processing and access of query results.
 
 The results obtained using the Query API have some additional convenient properties beyond the basic block attributes. For example, in the following example, we can directly use `aslink`​ to get a block's SiYuan link.
 
-​![image](assets/image-20241025223457-hi94ial.png)​
+![image](assets/image-20241025223457-hi94ial.png)
 
 4️⃣ Edit the code of embedded blocks in an external code editor and automatically update the source code as it is edited externally.
 
-​![image](assets/image-20241130145358-bqvwgmb.png)​
+![image](assets/image-20241130145358-bqvwgmb.png)
 
 > 🖋️ **Start Learning from Examples**
 >
@@ -57,11 +57,11 @@ The results obtained using the Query API have some additional convenient propert
 >
 > You can click on "Examples" in the plugin's menu located at the top-left corner.
 >
-> ​![image](assets/image-20241211194155-oc0yj5l.png)​
+> ![image](assets/image-20241211194155-oc0yj5l.png)
 >
 > In the "Examples" tab, you can<u> copy the sample code from the text box and paste it into an embedded block</u> to instantly see its effect.
 >
-> ​![image](assets/image-20241214152215-p163uhs.png)​
+> ![image](assets/image-20241214152215-p163uhs.png)
 
 ## 1. Basic Concepts: What is a JS Embedded Block?
 
@@ -122,7 +122,7 @@ For the complete interface file, please visit: [https://github.com/frostime/sy-q
 >
 > Using the Query View requires writing JavaScript code within an embedded block. You can quickly insert a skeleton template by typing `/qv`​ in the editor, eliminating the need to start from scratch each time with the usual program structures like `//!js...`​, allowing you to focus on writing the core logic.
 >
-> ​![image](assets/image-20241214183258-vdarhfx.png)​
+> ![image](assets/image-20241214183258-vdarhfx.png)
 >
 > The default basic template function is to randomly query five blocks, which you can modify to suit your desired query logic.
 >
@@ -270,11 +270,11 @@ return query();
 
 With the above code, we can display the blocks obtained from the SQL query as a list in the embedded block, as shown below:
 
-​![image](assets/image-20241204001321-csglpyu.png)​
+![image](assets/image-20241204001321-csglpyu.png)
 
 By default, each list item is a block link, which can be hovered over to view and clicked to jump.
 
-​![image](assets/image-20241204001504-jz4gbh1.png)​
+![image](assets/image-20241204001504-jz4gbh1.png)
 
 In the second parameter of the list function, you can pass some options:
 
@@ -303,7 +303,7 @@ const query = async () => {
 return query();
 ```
 
-​![image](assets/image-20241207210617-i5tmd5l.png)​
+![image](assets/image-20241207210617-i5tmd5l.png)
 
 #### DataView.Table
 
@@ -322,13 +322,13 @@ return query();
 
 The effect is as follows:
 
-​![image](assets/image-20241204002444-9j30l5k.png)​
+![image](assets/image-20241204002444-9j30l5k.png)
 
 The table component automatically renders different columns appropriately: for example, type is rendered as the actual type name, hpath as a document hyperlink, and box as the actual notebook name.
 
 The columns displayed by default can be configured in the settings.
 
-​![image](assets/image-20241204002830-35q4qjh.png)​
+![image](assets/image-20241204002830-35q4qjh.png)
 
 Similarly, the table also has some configurable fields:
 
@@ -344,7 +344,7 @@ Similarly, the table also has some configurable fields:
 
 The first three attributes are straightforward and mainly determine the display style of the table.
 
-​![image](assets/image-20241204003312-d3040o5.png)​
+![image](assets/image-20241204003312-d3040o5.png)
 
 The more important attribute is `cols`​—it allows you to bypass the default configuration and specify the columns to display. Ignoring complex usage, you can remember two simple ways:
 
@@ -363,7 +363,7 @@ const query = async () => {
 return query();
 ```
 
-​![image](assets/image-20241204003849-8l19z7b.png)​
+![image](assets/image-20241204003849-8l19z7b.png)
 
 > In the first table above, since it's too wide, we turn off `fullwidth`​ so that you can scroll horizontally to view.
 
@@ -391,7 +391,7 @@ const query = async () => {
 return query();
 ```
 
-​![image](assets/image-20241208234136-s06cygn.png)​
+![image](assets/image-20241208234136-s06cygn.png)
 
 #### DataView.md
 
@@ -420,7 +420,7 @@ This is the second column
 dv.render();
 ```
 
-​![image](assets/image-20241204004702-va0yg1n.png)​
+![image](assets/image-20241204004702-va0yg1n.png)
 
 > 🙁 Unfortunately, the markdown component does not support content that requires additional rendering, such as mathematical formulas.
 
@@ -443,7 +443,7 @@ fetch('https://api.xygeng.cn/one').then(async ans => {
 dv.render();
 ```
 
-​![image](assets/image-20241204005817-mpdtp85.png)​
+![image](assets/image-20241204005817-mpdtp85.png)
 
 ## 3. Advanced Usage - Query Queries
 
@@ -472,7 +472,7 @@ The results obtained using Query queries are conceptually treated as a table str
 ]
 ```
 
-​![image](assets/image-20230506013450-g2mkp8l.png)​
+![image](assets/image-20230506013450-g2mkp8l.png)
 
 To facilitate operations on this table data:
 
@@ -568,7 +568,7 @@ const query = async () => {
 return query();
 ```
 
-​![image](assets/image-20241213184747-0ma9dj4.png)​
+![image](assets/image-20241213184747-0ma9dj4.png)
 
 > 🔔 The above introduction may not be complete; for the complete API documentation, refer to `repo/public/types.d.ts`​.
 
@@ -758,7 +758,7 @@ select * from blocks where created like '${date.add(-7).toString(false)}%'
 dv.render();
 ```
 
-​![image](assets/image-20241204112906-ih3lqzu.png)​
+![image](assets/image-20241204112906-ih3lqzu.png)
 
 Of course, if you're too lazy to instantiate a Date object every time, there are also some shortcut functions in utils.
 
@@ -865,7 +865,7 @@ The purpose of fb2p (or reference relationship redirection) is to **handle neste
 
 📣 First, let's explain the background of this API. Suppose there is a list block that references another block:
 
-​![image](assets/image-20241208222807-mvc3opc.png)​
+![image](assets/image-20241208222807-mvc3opc.png)
 
 We use the following SQL to query all backlinks of the referenced block:
 
@@ -877,15 +877,15 @@ select * from blocks where id in (
 
 The result is as follows:
 
-​![image](assets/image-20241204123442-lceozz3.png)​
+![image](assets/image-20241204123442-lceozz3.png)
 
 Surprisingly, the result only includes the paragraph where the reference is located, and does not display the entire list item block as the backlink panel does.
 
-​![image](assets/image-20241204123606-44328dv.png "Backlink panel display result")​
+![image](/assets/image-20241204123606-44328dv.png "Backlink panel display result")
 
 The reason for this is that the list item block is a container type (as shown by the yellow range in the figure), and it does not have its own content. So, in the underlying SiYuan, the actual block that references the target is the first paragraph block of the list block (as shown by the red range in the figure)—the reason the backlink panel displays the entire list item is that SiYuan does special processing in the backlink panel.
 
-​![image](assets/image-20241204123811-vla1xke.png)​
+![image](assets/image-20241204123811-vla1xke.png)
 
 This is where `fb2p`​ comes into play: its concept is that **if the first child block of a container block is a paragraph block, then this paragraph block should represent the entire container block**.
 
@@ -906,7 +906,7 @@ return (async () => {
 
 The comparison of the two effects is as follows:
 
-​![image](assets/image-20241204130225-vpgesgp.png)​
+![image](assets/image-20241204130225-vpgesgp.png)
 
 fb2p supports redirection for list items and blockquotes. It also supports redirection to heading and document blocks.
 
@@ -915,7 +915,7 @@ fb2p supports redirection for list items and blockquotes. It also supports redir
 
 Especially the latter can help achieve basic document references. The following is an example:
 
-​![image](assets/image-20241204130826-j6rwpyx.png)​
+![image](assets/image-20241204130826-j6rwpyx.png)
 
 ✨ **Special Usage**: Force redirection to the document. `fb2p`​ has a built-in rule: when the paragraph contains a tag named `#DOCREF#`​ or `#文档引用#`​, the block will be forcibly redirected to the document block.
 
@@ -965,7 +965,7 @@ const query = async () => {
 return query();
 ```
 
-​![image](assets/image-20250308171816-crrru54.png)​
+![image](assets/image-20250308171816-crrru54.png)
 
 Using `pruneBlocks`​ (default leaf strategy):
 
@@ -980,7 +980,7 @@ return query();
 ```
 
 Result: Only leaf paragraph blocks remain.  
-​![image](assets/image-20250308172648-l0q3u5r.png)​
+​![image](assets/image-20250308172648-l0q3u5r.png)
 
 Using root strategy:
 
@@ -989,7 +989,7 @@ pruneBlocks(blocks, 'root')
 ```
 
 Result: Only root list blocks remain.  
-​![image](assets/image-20250308172720-se43ute.png)​
+​![image](assets/image-20250308172720-se43ute.png)
 
 ## 4. Advanced Usage - DataView Various View Components
 
@@ -1025,7 +1025,7 @@ Each `dv.xxx/dv.addxxx`​ function returns the container Element of the corresp
   const mdId = ele.dataset.id;
   ```
 
-​![image](assets/image-20241209210930-k9vnume.png)​
+![image](assets/image-20241209210930-k9vnume.png)
 
 Some components also define aliases, such as the markdown component having an alias `md`​. This means:
 
@@ -1071,7 +1071,40 @@ const query = async () => {
 return query();
 ```
 
-​![image](assets/image-20241206184455-4in6gct.png)​
+![image](assets/image-20241206184455-4in6gct.png)
+
+### Cards
+
+```ts
+cards(blocks: Block[], options?: {
+    cardWidth?: string;
+    cardHeight?: string;
+    fontSize?: string;
+})
+```
+
+The Card component displays the content of blocks in a card format. Parameters are as follows:
+
+* ​`cardWidth`​: Width of each card; default is '175px'
+* ​`cardHeight`​: Height of each card; default is '175px'
+* ​`fontSize`​: Base font size for the cards; default is '14px'
+
+🖋️ The following example shows randomly queried results as cards:
+
+```js
+//!js
+const query = async () => {
+  let dv = Query.Dataview(protyle, item, top);
+  let blocks = await Query.random(8);
+  dv.addCard(blocks);
+  dv.render();
+}
+return query();
+```
+
+![image](http://127.0.0.1:13131/assets/image-20250316162044-1l2i63f.png)
+
+Clicking on the card title will navigate to the corresponding block.
 
 ### Embed
 
@@ -1098,7 +1131,7 @@ const query = async () => {
 return query();
 ```
 
-​![image](assets/image-20241206182941-yzctkxu.png)​
+![image](assets/image-20241206182941-yzctkxu.png)
 
 Each embedded component has a small icon in the top-right corner. Clicking it will jump to the corresponding block. In addition, the embedded component has several additional parameters:
 
@@ -1123,7 +1156,7 @@ const query = async () => {
 return query();
 ```
 
-​![image](assets/image-20241206183442-ra4h7xl.png)​
+![image](assets/image-20241206183442-ra4h7xl.png)
 
 ### Mermaid Series
 
@@ -1145,7 +1178,7 @@ graph LR
 dv.render();
 ```
 
-​![image](assets/image-20241206185311-ajowi8u.png)​
+![image](assets/image-20241206185311-ajowi8u.png)
 
 In addition to the original mermaid, DataView also provides some views built on top of mermaid.
 
@@ -1191,17 +1224,17 @@ const query = async () => {
 return query();
 ```
 
-​![image](assets/image-20241206190453-o0u8eb8.png)​
+![image](assets/image-20241206190453-o0u8eb8.png)
 
 Changing `type: 'flowchart'`​ to `mindmap`​ can also display it in the form of a mind map:
 
-​![image](assets/image-20241206190618-bb58ls6.png)​
+![image](assets/image-20241206190618-bb58ls6.png)
 
 > 😃 If the node in the relation diagram corresponds to a SiYuan content block, it can be **hovered to display content** and **clicked to jump** to the corresponding document.
 
-​![image](assets/image-20241206190600-fu09ywo.png)​
+![image](assets/image-20241206190600-fu09ywo.png)
 
-​![image](assets/image-20241206190646-84tfh64.png)​
+![image](assets/image-20241206190646-84tfh64.png)
 
 ​`MermaidRelation`​ specifies the corresponding view through the `type`​ parameter. For convenience, `dv`​ provides two equivalent components:
 
@@ -1251,7 +1284,7 @@ const query = async () => {
 return query();
 ```
 
-​![image](assets/image-20241213214406-rfj8yqh.png)​
+![image](assets/image-20241213214406-rfj8yqh.png)
 
 > 😃 Each block in the Kanban diagram can also **hover** to display content and **click to jump** to the corresponding document.
 
@@ -1297,7 +1330,7 @@ dv.addecharts(option);
 dv.render();
 ```
 
-​![image](assets/image-20241206191639-v6yiw7f.png)​
+![image](assets/image-20241206191639-v6yiw7f.png)
 
 The `height`​ and `width`​ parameters determine the height and width of the echart container. The default height is 300px, and the width is 100%.
 
@@ -1370,7 +1403,7 @@ const query = async () => {
 return query();
 ```
 
-​![image](assets/image-20241207010811-8lh25x5.png)​
+![image](assets/image-20241207010811-8lh25x5.png)
 
 #### EChartsBar
 
@@ -1405,7 +1438,7 @@ Input data parameters:
 
 🖋️ **Example**: We replace `eline`​ with `ebar`​ in the previous example to draw a bar chart. Most parameters are used similarly.
 
-​![image](assets/image-20241207010958-u6g07gl.png)​
+![image](assets/image-20241207010958-u6g07gl.png)
 
 #### EChartsTree
 
@@ -1491,7 +1524,7 @@ return query();
 * **Ctrl + Click** can **jump** to the corresponding block.
 * **Hovering** will pop up a tooltip, where the first line of the block ID can **hover to view** the full block content or **click to jump**.
 
-  ​![image](assets/image-20241207171409-l4z5ffo.png)​
+  ![image](assets/image-20241207171409-l4z5ffo.png)
 
 #### EChartsGraph
 
@@ -1631,7 +1664,7 @@ return query();
 
 The effect is as follows. Like the tree diagram, each node in the graph can be **Ctrl + Clicked to jump**, and **hovering** will display node details.
 
-​![image](assets/image-20241207193310-9gpfbtk.png)​
+![image](assets/image-20241207193310-9gpfbtk.png)
 
 ### Columns and Rows
 
@@ -1673,7 +1706,7 @@ dv.addcolumns([
 dv.render();
 ```
 
-​![image](assets/image-20241206192654-ycr25wv.png)​
+![image](assets/image-20241206192654-ycr25wv.png)
 
 ### Details
 
@@ -1702,7 +1735,7 @@ const query = async () => {
 return query();
 ```
 
-​![image](assets/image-20241206193640-g5h5jp9.png)​
+![image](assets/image-20241206193640-g5h5jp9.png)
 
 ### AddElement
 
@@ -1753,7 +1786,7 @@ const query = async () => {
 return query();
 ```
 
-​![image](assets/image-20241206194739-md7he6w.png)​
+![image](assets/image-20241206194739-md7he6w.png)
 
 ### RemoveView
 
@@ -1795,7 +1828,7 @@ const query = async () => {
 return query();
 ```
 
-​![image](assets/image-20241209212929-dlfxtip.png)​
+![image](assets/image-20241209212929-dlfxtip.png)
 
 ### ReplaceView
 
@@ -1851,7 +1884,7 @@ const query = async () => {
 return query();
 ```
 
-​![image](assets/image-20241209220101-oypr89p.png)​
+![image](assets/image-20241209220101-oypr89p.png)
 
 ## 5. Advanced Usage - DataView Advanced Features
 
@@ -1931,7 +1964,7 @@ dv.addexample(`ID = ${Query.utils.date()}`);
 dv.render();
 ```
 
-​![image](assets/image-20241206200537-udf4v6b.png)​
+![image](assets/image-20241206200537-udf4v6b.png)
 
 > 🔔 **Note**: `DataView`​ automatically adds **the lowercase version of the component name as an alias**, so two components named `Add`​ and `add`​ may overwrite each other!
 
@@ -1978,7 +2011,7 @@ dv.render();
 
 Now: <u>Close the current document and reopen it</u>, and you will find that the content of the embedded block is still this number. Open the block's attribute panel, and you will find that the state named `counter`​ has been saved to the custom attributes.
 
-​![image](assets/image-20241206201729-1bfn3md.png)​
+![image](assets/image-20241206201729-1bfn3md.png)
 
 The following gives a "Daily Quote" example:
 
@@ -2013,7 +2046,7 @@ dv.render();
 
 Since we used the timestamp as the state key, if you run it for several days and then open the attribute panel, you will find that the quotes for each day are saved here.
 
-​![image](assets/image-20241206202124-3pu0qdw.png)​
+![image](assets/image-20241206202124-3pu0qdw.png)
 
 #### State Update Write Mechanism (Technical Details, Skippable)
 
@@ -2097,9 +2130,9 @@ It can be seen that the most direct problem causing the conflict is: SiYuan will
       ];
       ```
     * If you encounter abnormal situations related to user input during the process of writing custom dv, you should stop and not continue to try, to avoid adverse effects on important data.
-2. <u>In multi-device synchronization</u>, use `useState`​ with caution. It is highly recommended to enable "**Settings-Cloud-Generate Conflict Documents**" ![image](assets/image-20241210133627-mnp2zup.png)​
+2. <u>In multi-device synchronization</u>, use `useState`​ with caution. It is highly recommended to enable "**Settings-Cloud-Generate Conflict Documents**" ![image](assets/image-20241210133627-mnp2zup.png)
 
-    ​![image](assets/image-20241211194757-74vrp7m.png)​
+    ![image](assets/image-20241211194757-74vrp7m.png)
 
     Although the state function avoids the "loop conflict" problem, **data conflicts may still occur** in some special multi-device synchronization situations.
 
@@ -2113,17 +2146,17 @@ SiYuan's built-in embedded block' editing dialog is not user-friendly. Therefore
 
 Users need to configure the command for opening the external editor in the plugin settings:
 
-​![image](assets/image-20241202164246-vla7mo8.png)​
+![image](assets/image-20241202164246-vla7mo8.png)
 
 The default is `code -w {{filepath}}`​, which means using VsCode (please add `code`​ to the environment variables) to open. The `{{filepath}}`​ will be replaced with the actual temporary code file path at runtime.
 
 When using it, you need to click the "Edit Code" button in the block's plugin menu.
 
-​![image](assets/image-20241202164442-588f7d7.png)​
+![image](assets/image-20241202164442-588f7d7.png)
 
 The plugin will automatically create a temporary code file locally and then open the code file using the above command. The plugin will **track the editing updates** of the code file and update the latest content in the file to the embedded block, refreshing the rendered content of the embedded block.
 
-​![image](assets/image-20241206211503-q3b2uk5.png)​
+![image](assets/image-20241206211503-q3b2uk5.png)
 
 Common code editor command-line references:
 
@@ -2150,13 +2183,13 @@ If possible, it is more recommended to edit your code in an external editor, whe
 
 You can add `debugger`​ in the code and open the developer mode. When it runs to this line, it will automatically enter breakpoint here, and then you can debug the program.
 
-​![image](assets/image-20241207204410-a231unc.png)​
+![image](assets/image-20241207204410-a231unc.png)
 
 ### Using SiYuan Templates
 
 You can put the debugged embedded block code into the `template/`​ template file, so that for commonly used query templates, you can quickly call them:
 
-​![image](assets/image-20241209002057-jarcxsu.png)​
+![image](assets/image-20241209002057-jarcxsu.png)
 
 Using templates also has the advantage that you can use some variables provided by the template. For example, in the following template, the `$datestr_sy`​ variable is used to query documents created today.
 
@@ -2173,9 +2206,9 @@ However, the embedded block code in the template markdown file must be written i
 
 The plugin provides a button in the block menu to directly perform the above conversion. You can directly copy the code in the pop-up window and paste it into the template file for use.
 
-​![image](assets/image-20241209001549-kcurxon.png)​
+![image](assets/image-20241209001549-kcurxon.png)
 
-​![image](assets/image-20241209001506-1j38x18.png)​
+![image](assets/image-20241209001506-1j38x18.png)
 
 ## Reference
 
@@ -2189,7 +2222,7 @@ The plugin provides a button in the block menu to directly perform the above con
 >
 > You can also download the plugin and click the "Download d.ts" button in the top-left menu to get the current version's types file.
 >
-> ​![image](assets/image-20241211194447-8sa9hcx.png)​
+> ![image](assets/image-20241211194447-8sa9hcx.png)
 
 ### Query
 
@@ -2219,7 +2252,7 @@ The following example codes will be downloaded locally with the plugin. You can:
 
 > 💡 **The full example code**: Click "Examples" in the top-left plugin menu to view the sample code in a new tab.
 
-​![image](assets/image-20241211194155-oc0yj5l.png)​
+![image](assets/image-20241211194155-oc0yj5l.png)
 
 Here shows part of the examples:
 
@@ -2227,19 +2260,19 @@ Here shows part of the examples:
 
 Source code reference: [https://github.com/frostime/sy-query-view/blob/main/public/example/exp-doc-backlinks-table.js](https://github.com/frostime/sy-query-view/blob/main/public/example/exp-doc-backlinks-table.js)
 
-​![image](assets/image-20241210183914-5nm5w4r.png)​
+![image](assets/image-20241210183914-5nm5w4r.png)
 
 ### Display the Backlink Table of the Current Document, Grouped by Block Type
 
 Source code reference: [https://github.com/frostime/sy-query-view/blob/main/public/example/exp-doc-backlinks-grouped.js](https://github.com/frostime/sy-query-view/blob/main/public/example/exp-doc-backlinks-grouped.js)
 
-​![image](assets/image-20241213161247-f6qm95q.png)​
+![image](assets/image-20241213161247-f6qm95q.png)
 
 ### Display the Outline of the Current Document
 
 Source code reference: [https://github.com/frostime/sy-query-view/blob/main/public/example/exp-outline.js](https://github.com/frostime/sy-query-view/blob/main/public/example/exp-outline.js)
 
-​![image](assets/image-20241210172133-ivjwzpc.png)​
+![image](assets/image-20241210172133-ivjwzpc.png)
 
 ### Display the Latest Updated Documents
 
@@ -2247,7 +2280,7 @@ Source code reference: [https://github.com/frostime/sy-query-view/blob/main/publ
 
 💡 In this code, the special `{{{col }}}`​ syntax is used. This syntax is the unique super-block Markdown markup syntax of SiYuan, which is used to create block structures with multiple rows or columns.
 
-​![image](assets/image-20241213160419-62pwf7s.png)​
+![image](assets/image-20241213160419-62pwf7s.png)
 
 ### Count the Documents Updated Today
 
@@ -2255,7 +2288,7 @@ Source code reference: [https://github.com/frostime/sy-query-view/blob/main/publ
 
 In this example, `state`​ is used to store the date information. After today, the content of the table will remain unchanged rather than fetching documents updated on a future day.
 
-​![image](assets/image-20241210172746-kbxtfhr.png)​
+![image](assets/image-20241210172746-kbxtfhr.png)
 
 ‍
 
@@ -2263,13 +2296,13 @@ In this example, `state`​ is used to store the date information. After today, 
 
 Source code reference: [https://github.com/frostime/sy-query-view/blob/main/public/example/exp-created-docs.js](https://github.com/frostime/sy-query-view/blob/main/public/example/exp-created-docs.js)
 
-​![image](assets/image-20241207010811-8lh25x5.png)​
+![image](assets/image-20241207010811-8lh25x5.png)
 
 ### SQL Query Executor
 
 Source code reference: [https://github.com/frostime/sy-query-view/blob/main/public/example/exp-sql-executor.js](https://github.com/frostime/sy-query-view/blob/main/public/example/exp-sql-executor.js)
 
-​![image](assets/image-20241209005221-qtytbib.png)​
+![image](assets/image-20241209005221-qtytbib.png)
 
 ### Chat with GPT
 
@@ -2277,16 +2310,16 @@ Source code reference: [https://github.com/frostime/sy-query-view/blob/main/publ
 
 > This code uses an API `Query.gpt`​ that was not mentioned above. For specific usage, please refer to
 
-​![image](assets/image-20241210171119-o72dyyd.png)​
+![image](assets/image-20241210171119-o72dyyd.png)
 
 ### See backlinks in graph
 
 Source code reference：[https://github.com/frostime/sy-query-view/blob/main/public/example/exp-doc-backlinks-graph.js](https://github.com/frostime/sy-query-view/blob/main/public/example/exp-doc-backlinks-graph.js)
 
-​![image](assets/image-20241211213426-38ws4kk.png)​
+![image](assets/image-20241211213426-38ws4kk.png)
 
 ### Show images under assets/
 
 Source code reference：[https://github.com/frostime/sy-query-view/blob/main/public/example/exp-show-asset-images.js](https://github.com/frostime/sy-query-view/blob/main/public/example/exp-show-asset-images.js)
 
-​![image](assets/image-20241211225413-fc962d4.png)​
+![image](assets/image-20241211225413-fc962d4.png)

@@ -11,33 +11,6 @@ interface IListOptions<T> {
     renderer?: (b: T, defaultRenderer?: (b: T) => string) => string | number | undefined | null;
 }
 
-/**
- * Table Options
- * @interface ITableOptions
- * @property {boolean} center - Center align table contents
- * @property {boolean} fullwidth - Make table full width
- * @property {boolean} index - Show row indices
- * @property {(b: Block, attr: keyof Block) => string | number | undefined | null} renderer - Custom function to render each table cell; it is only effective when the table is a BlockTable; if not provided or return null, the default renderer will be used
- */
-interface ITableOptions {
-    center?: boolean;
-    fullwidth?: boolean;
-    index?: boolean;
-    cols?: (string | Record<string, string>)[] | Record<string, string>;
-    renderer?: (b: Block, attr: keyof Block) => string | undefined | null;
-}
-
-/**
- * Cards Options
- * @interface ICardsOptions
- * @property {string} cardWidth - Width of each card; default is '300px'
- * @property {string} fontSize - Base font size for cards; default is '14px'
- */
-interface ICardsOptions {
-    cardWidth?: string;
-    fontSize?: string;
-}
-
 interface IHasChildren<T> {
     children?: IHasChildren<T>[];
 }

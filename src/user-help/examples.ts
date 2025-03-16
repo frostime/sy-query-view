@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-12-11 18:24:00
  * @FilePath     : /src/user-help/examples.ts
- * @LastEditTime : 2024-12-20 22:21:09
+ * @LastEditTime : 2025-03-16 16:35:18
  * @Description  : 
  */
 import { getFileBlob, readDir } from "@/api";
@@ -29,6 +29,7 @@ const Description = {
     "exp-doc-backlinks-table.js": () => i18n.src_userhelp_examplests.backlinks_table,
     "exp-doc-backlinks-grouped.js": () => i18n.src_userhelp_examplests.doc_backlinks_grouping,
     "exp-outline.js": () => i18n.src_userhelp_examplests.doc_outline_tree,
+    "exp-list-tags.js": () => i18n.src_userhelp_examplests.show_tags_card_view,
     "exp-latest-update-doc.js": () => i18n.src_userhelp_examplests.recent_docs,
     "exp-today-updated.js": () => i18n.src_userhelp_examplests.updated_docs_today,
     "exp-created-docs.js": () => i18n.src_userhelp_examplests.docs_per_month,

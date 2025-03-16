@@ -47,6 +47,7 @@ src_userhelp_examplests:
   query_unfinished_tasks: 查询所有未完成的任务块，以月份时间线分组横向排列
   random_text_translate: 随机从思源中选取一段文字，然后使用 GPT 翻译成英文，使用思源内部设置的 GPT API
   recent_docs: 展示最近更新的 32 篇文档，这个案例中使用了思源的超级块的 markdown 方言语法，用于在同一个列表项中横向展示多列的信息
+  show_tags_card_view: 查询并以卡片视图的形式展示所有的标签 (tags)
   simple_chatgpt: 一个非常简单的 ChatGPT 对话框，使用思源内部设置的 GPT API
   sql_exec_result: 在输入框中输入 SQL 语句，点击执行按钮，将执行结果以表格的形式展示
   unfinished_task_monthly: 查询每个月尚未完成的 Task，汇总显示在看板上

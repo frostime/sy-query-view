@@ -2,7 +2,7 @@
  * @name sy-query-view
  * @author frostime
  * @version 1.1.2
- * @updated 2025-03-13T13:49:20.581Z
+ * @updated 2025-03-16T08:35:32.651Z
  */
 
 declare module 'siyuan' {
@@ -396,33 +396,6 @@ interface IListOptions<T> {
     renderer?: (b: T, defaultRenderer?: (b: T) => string) => string | number | undefined | null;
 }
 
-/**
- * Table Options
- * @interface ITableOptions
- * @property {boolean} center - Center align table contents
- * @property {boolean} fullwidth - Make table full width
- * @property {boolean} index - Show row indices
- * @property {(b: Block, attr: keyof Block) => string | number | undefined | null} renderer - Custom function to render each table cell; it is only effective when the table is a BlockTable; if not provided or return null, the default renderer will be used
- */
-interface ITableOptions {
-    center?: boolean;
-    fullwidth?: boolean;
-    index?: boolean;
-    cols?: (string | Record<string, string>)[] | Record<string, string>;
-    renderer?: (b: Block, attr: keyof Block) => string | undefined | null;
-}
-
-/**
- * Cards Options
- * @interface ICardsOptions
- * @property {string} cardWidth - Width of each card; default is '300px'
- * @property {string} fontSize - Base font size for cards; default is '14px'
- */
-interface ICardsOptions {
-    cardWidth?: string;
-    fontSize?: string;
-}
-
 interface IHasChildren<T> {
     children?: IHasChildren<T>[];
 }
@@ -618,10 +591,12 @@ export declare class DataView implements IDataView {
     details(summary: string, content: string | HTMLElement): HTMLDetailsElement;
     /**
      * Creates a markdown list view for displaying blocks
-     * @param data - Array of blocks to display in the list, see {@link IBlockWithChilds}
+     * @param data - Array of blocks to display in the list
      *              Can also be scalar values, or block with children property
-     * @param options - Configuration options, see {@link IListOptions}
-     * @param options.renderer - Custom function to render list items, the return will be used as markdown code
+     * @param options - Configuration options
+     * @param {string} options.type - List type, 'u' for unordered, 'o' for ordered
+     * @param {number} options.columns - Number of columns to display
+     * @param {(b: T, defaultRenderer?: (b: T) => string) => string | number | undefined | null} options.renderer - Custom function to render list items, the return will be used as markdown code
      * @returns HTMLElement containing the list
      * @example
      * const children = await Query.childdoc(block);
@@ -631,8 +606,11 @@ export declare class DataView implements IDataView {
     /**
      * Creates a markdown table view for displaying blocks
      * @param blocks - Array of Block objects to display
-     * @param options - Configuration options, see {@link ITableOptions}
-     * @param options.cols - Array of Block properties to show as columns;
+     * @param options - Configuration options
+     * @param {boolean} options.center - Center align table contents
+     * @param {boolean} options.fullwidth - Make table full width
+     * @param {boolean} options.index - Show row indices
+     * @param {Array} options.cols - Array of Block properties to show as columns;
      *     - if `undefined`, the default columns `['type', 'content', 'hpath', 'box']` will be used;
      *       but if the blocks don't have these properties, all properties of the first block will be used;
      *     - Can also be:
@@ -648,19 +626,30 @@ export declare class DataView implements IDataView {
      * const children = await Query.childdoc(block);
      * dv.addtable(children, { cols: ['type', 'content'] , fullwidth: true });
      */
-    table(blocks: Block[], options?: ITableOptions): HTMLElement;
+    table(blocks: Block[], options?: {
+        center?: boolean;
+        fullwidth?: boolean;
+        index?: boolean;
+        cols?: (string | Record<string, string>)[] | Record<string, string>;
+        renderer?: (b: Block, attr: keyof Block) => string | undefined | null;
+    }): HTMLElement;
     /**
      * Creates a card view for displaying blocks
      * @param blocks - Array of Block objects to display
      * @param options - Configuration options
-     * @param options.cardWidth - Width of each card; default is '300px'
+     * @param options.cardWidth - Width of each card; default is '175px'
+     * @param options.cardHeight - Height of each card; default is '175px'
      * @param options.fontSize - Base font size for the cards; default is '14px'
      * @returns HTMLElement containing the card layout
      * @example
      * const children = await Query.childdoc(block);
      * dv.cards(children, { cardWidth: '250px', fontSize: '16px' });
      */
-    cards(blocks: Block[], options?: ICardsOptions): HTMLElement;
+    cards(blocks: Block[], options?: {
+        cardWidth?: string;
+        cardHeight?: string;
+        fontSize?: string;
+    }): HTMLElement;
     /**
      * Arranges elements in columns
      * @param elements - Array of HTMLElements to arrange
