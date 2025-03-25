@@ -2,7 +2,7 @@
  * @name sy-query-view
  * @author frostime
  * @version 1.2.0
- * @updated 2025-03-25T09:02:04.672Z
+ * @updated 2025-03-25T10:08:04.359Z
  */
 
 declare module 'siyuan' {
@@ -191,11 +191,20 @@ declare const Query: {
     request: typeof request;
     /**
      * Gets blocks by their IDs
+     * @note This API recieve sequence of block IDs, and always return an array of Block.
      * @param ids - Block IDs to retrieve
      * @returns Array of wrapped blocks
-     * @alias `id2block`
+     * @alias `getBlockById`
      */
     getBlocksByIds: (...ids: (BlockId | BlockId[])[]) => Promise<IWrappedList<IWrappedBlock>>;
+    /**
+     * Similar to `getBlocksByIds`, but :
+     *  - The input can be a single ID or an array of IDs
+     *  - The output is a single block or an array of blocks
+     * @param id Block ID or array of block IDs
+     * @returns Single block or array of blocks
+     */
+    id2block: (id: BlockId | BlockId[]) => Promise<IWrappedBlock | IWrappedList<IWrappedBlock>>;
     /**
      * Gets the current document's ID
      * @param protyle - Protyle instance
@@ -348,6 +357,7 @@ declare const Query: {
      *    - `'root'`: Merges results to the highest (root) block. (e.g., the parent list block).
      * @param {boolean} [advanced=false] - Enables advanced filtering using block breadcrumbs for more accurate results (can be resource-intensive).
      * @returns {Block[]} - A new array containing only the unique (pruned) blocks.
+     * @alias `prune`
      */
     pruneBlocks: (blocks: Block[], keep?: "leaf" | "root", advanced?: boolean) => Promise<Block[]>;
     /**
