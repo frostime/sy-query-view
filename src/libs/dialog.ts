@@ -123,7 +123,7 @@ export const confirmDialogSync = async (args: IConfirmDialogArgs) => {
 
 
 export const simpleDialog = (args: {
-    title: string, ele: HTMLElement | DocumentFragment,
+    title: string, ele: HTMLElement | DocumentFragment | string,
     width?: string, height?: string,
     callback?: () => void;
 }) => {
@@ -134,7 +134,12 @@ export const simpleDialog = (args: {
         height: args.height,
         destroyCallback: args.callback
     });
-    dialog.element.querySelector(".dialog-content").appendChild(args.ele);
+    // dialog.element.querySelector(".dialog-content").appendChild(args.ele);
+    if (typeof args.ele === "string") {
+        dialog.element.querySelector(".dialog-content").innerHTML = args.ele;
+    } else {
+        dialog.element.querySelector(".dialog-content").appendChild(args.ele);
+    }
     return {
         dialog,
         close: dialog.destroy.bind(dialog)

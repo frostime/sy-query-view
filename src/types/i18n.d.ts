@@ -20,6 +20,10 @@ interface I18n {
     src_dataquery_editorts: {
         onlydesktop: string;
     };
+    src_indexts: {
+        incompatible_version: string;
+        plugin_not_working: string;
+    };
     src_setting_indexts: {
         api_interface: string;
         apitypedefinition: string;

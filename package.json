@@ -12,6 +12,7 @@
     "build": "npm run export-types && npm run vite:build",
     "vite:dev": "cross-env NODE_ENV=development VITE_SOURCEMAP=inline vite build --watch",
     "vite:build": "cross-env NODE_ENV=production vite build",
+    "vite:build-srcmap": "cross-env NODE_ENV=production VITE_SOURCEMAP=inline vite build",
     "vite:build-no-minify": "cross-env NODE_ENV=production NO_MINIFY=true vite build",
     "make-link": "npx make-link-win",
     "update-version": "npx update-version",
@@ -40,5 +41,8 @@
     "vite": "^5.2.9",
     "vite-plugin-static-copy": "^1.0.2",
     "vite-plugin-zip-pack": "^1.0.5"
+  },
+  "dependencies": {
+    "@frostime/siyuan-plugin-kits": "^1.5.9"
   }
 }

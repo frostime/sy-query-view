@@ -3,10 +3,11 @@
  * @Author       : frostime
  * @Date         : 2024-12-01 15:57:28
  * @FilePath     : /src/index.ts
- * @LastEditTime : 2025-03-16 16:38:48
+ * @LastEditTime : 2025-03-25 16:43:15
  * @Description  : 
  */
 import {
+    confirm,
     IMenu,
     Menu,
     Plugin,
@@ -16,6 +17,8 @@ import "@/index.scss";
 import * as DataQuery from "./core";
 import * as Setting from "./setting";
 import * as UserHelp from "./user-help";
+import { siyuanVersion } from "@frostime/siyuan-plugin-kits";
+import { simpleDialog } from "./libs/dialog";
 
 let i18n: I18n;
 let app: App;
@@ -74,8 +77,17 @@ export default class QueryViewPlugin extends Plugin {
     }
 
     async onload() {
+        i18n = this.i18n as unknown as I18n;
         //@ts-ignore
-        i18n = this.i18n as I18n;
+        const version = siyuanVersion();
+        if (version.compare('3.1.25') === 0) {
+            const text = '⚠️' + i18n.src_indexts.incompatible_version;
+            simpleDialog({
+                title: i18n.src_indexts.plugin_not_working,
+                ele: `<div class="b3-label">${text}</div>`
+            });
+            return;
+        }
         app = this.app;
         this.init();
 

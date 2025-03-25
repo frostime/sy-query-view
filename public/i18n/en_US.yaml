@@ -19,6 +19,11 @@ src_dataquery_componentsts:
   mermaid_render_failed: Mermaid rendering failed, please check the code
 src_dataquery_editorts:
   onlydesktop: Only supported to open in the code editor in the desktop environment
+src_indexts:
+  incompatible_version: The current SiYuan version v3.1.25 is incompatible with the
+    QueryView plugin. It is recommended to downgrade or upgrade SiYuan to another
+    version
+  plugin_not_working: QueryView cannot function properly
 src_setting_indexts:
   api_interface: 📃 API interface
   apitypedefinition: 'The type definition of the API interface, please refer to:'
