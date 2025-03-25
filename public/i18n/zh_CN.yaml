@@ -16,6 +16,8 @@ src_dataquery_editorts:
   onlydesktop: 仅在桌面环境下支持在代码编辑器中打开
 src_indexts:
   incompatible_version: 当前思源版本 v3.1.25 和 QueryView 插件不兼容，建议降级或升级思源到另一个版本
+  manual_release: 手动释放
+  manual_release_desc: '手动释放 (dv.dispose) 所有 DataView<br/>注意: 除非特殊情况, 一般来说你不需要这么做'
   plugin_not_working: QueryView 插件无法正常运行
 src_setting_indexts:
   api_interface: 📃 API 接口

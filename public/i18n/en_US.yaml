@@ -23,6 +23,9 @@ src_indexts:
   incompatible_version: The current SiYuan version v3.1.25 is incompatible with the
     QueryView plugin. It is recommended to downgrade or upgrade SiYuan to another
     version
+  manual_release: Manual Release
+  manual_release_desc: 'Manually release (dv.dispose) all DataView<br/>Note: Unless
+    under special circumstances, generally you don''t need to do this'
   plugin_not_working: QueryView cannot function properly
 src_setting_indexts:
   api_interface: 📃 API interface

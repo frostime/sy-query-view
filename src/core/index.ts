@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-05-08 15:00:37
  * @FilePath     : /src/core/index.ts
- * @LastEditTime : 2025-03-16 16:39:38
+ * @LastEditTime : 2025-03-25 16:57:20
  * @Description  :
  *      - Fork from project https://github.com/zxhd863943427/siyuan-plugin-data-query
  *      - 基于该项目的 v0.0.7 版本进行修改
@@ -122,16 +122,6 @@ const load = (plugin: QueryViewPlugin) => {
         label: 'CustomView',
         icon: 'iconCode',
         submenu: submenus
-    });
-
-    // Register the dispose all views menu item
-    plugin.registerMenuItem({
-        label: 'Manual Dispose',
-        icon: 'iconTrashcan',
-        click: () => {
-            finalizeAllDataviews();
-            showMessage('All views have been disposed', 3000, 'info');
-        }
     });
 }
 

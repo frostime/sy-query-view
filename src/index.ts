@@ -11,13 +11,14 @@ import {
     IMenu,
     Menu,
     Plugin,
+    showMessage,
     type App,
 } from "siyuan";
 import "@/index.scss";
 import * as DataQuery from "./core";
 import * as Setting from "./setting";
 import * as UserHelp from "./user-help";
-import { siyuanVersion } from "@frostime/siyuan-plugin-kits";
+import { confirmDialog, siyuanVersion } from "@frostime/siyuan-plugin-kits";
 import { simpleDialog } from "./libs/dialog";
 
 let i18n: I18n;
@@ -46,6 +47,22 @@ export default class QueryViewPlugin extends Plugin {
             });
 
             menu.addSeparator();
+
+            // Register the dispose all views menu item
+            menu.addItem({
+                label: 'Manual Dispose',
+                icon: 'iconTrashcan',
+                click: () => {
+                    confirmDialog({
+                        title: i18n.src_indexts.manual_release,
+                        content: i18n.src_indexts.manual_release_desc,
+                        confirm: () => {
+                            DataQuery.finalizeAllDataviews();
+                            showMessage('All views have been disposed', 3000, 'info');
+                        }
+                    })
+                }
+            })
 
             // setting
             menu.addItem({

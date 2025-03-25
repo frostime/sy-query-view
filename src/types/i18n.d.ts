@@ -22,6 +22,8 @@ interface I18n {
     };
     src_indexts: {
         incompatible_version: string;
+        manual_release: string;
+        manual_release_desc: string;
         plugin_not_working: string;
     };
     src_setting_indexts: {
