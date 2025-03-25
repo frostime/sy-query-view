@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-12-01 22:34:55
  * @FilePath     : /src/core/query.ts
- * @LastEditTime : 2025-03-08 18:29:03
+ * @LastEditTime : 2025-03-25 17:57:25
  * @Description  : 
  */
 import { IProtyle } from "siyuan";
@@ -429,14 +429,30 @@ const Query = {
 
     /**
      * Gets blocks by their IDs
+     * @note This API recieve sequence of block IDs, and always return an array of Block.
      * @param ids - Block IDs to retrieve
      * @returns Array of wrapped blocks
-     * @alias `id2block`
+     * @alias `getBlockById`
      */
     getBlocksByIds: async (...ids: (BlockId | BlockId[])[]): Promise<IWrappedList<IWrappedBlock>> => {
         let flattenedIds: BlockId[] = ids.flat() as BlockId[];
         let blocks = await getBlocksByIds(...flattenedIds);
         return Query.wrapBlocks(blocks) as IWrappedList<IWrappedBlock>;
+    },
+
+    /**
+     * Similar to `getBlocksByIds`, but :
+     *  - The input can be a single ID or an array of IDs
+     *  - The output is a single block or an array of blocks
+     * @param id Block ID or array of block IDs
+     * @returns Single block or array of blocks
+     */
+    id2block: async (id: BlockId | BlockId[]) => {
+        let blocks = await getBlocksByIds(...(Array.isArray(id) ? id : [id]));
+        if (Array.isArray(id)) {
+            return Query.wrapBlocks(blocks) as IWrappedList<IWrappedBlock>;
+        }
+        return wrapBlock(blocks[0]);
     },
 
     /**
@@ -854,6 +870,7 @@ const Query = {
      *    - `'root'`: Merges results to the highest (root) block. (e.g., the parent list block).
      * @param {boolean} [advanced=false] - Enables advanced filtering using block breadcrumbs for more accurate results (can be resource-intensive).
      * @returns {Block[]} - A new array containing only the unique (pruned) blocks.
+     * @alias `prune`
      */
     pruneBlocks: async (blocks: Block[], keep: 'leaf' | 'root' = 'leaf', advanced: boolean = false) => {
         let results = await pruneBlocks(blocks, keep, advanced);
@@ -1002,7 +1019,7 @@ const addAlias = (obj: any, attr: string, alias?: string[]) => {
 
 addAlias(Query, 'DataView', ['Dataview']);
 addAlias(Query, 'Utils', ['utils']);
-addAlias(Query, 'getBlocksByIds', ['getBlocksByIDs', 'id2block']);
+addAlias(Query, 'getBlocksByIds', ['getBlocksByIDs', 'getBlockById']);
 addAlias(Query, 'root_id', ['docId']);
 addAlias(Query, 'backlink', ['backlinks']);
 addAlias(Query, 'wrapBlocks', ['wrapit']);

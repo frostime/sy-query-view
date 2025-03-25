@@ -1,15 +1,3 @@
-> [!WARNING]
->
-> Update on 2025-03-19
-> 
-> Recent update to SiYuan 3.1.25, which modified the refresh mechanism for embedded blocks, has introduced compatibility issues with QueryView.
->
-> At present, I am engaged with personal commitments and unable to allocate time to resolve this compatibility concern. Consequently, I have temporarily withdrawn the plugin from the marketplace. I will consider re-listing it if circumstances allow in the future.
->
-> SiYuan 3.1.25 的最新更新修改了嵌入块的刷新机制，导致 QueryView 插件出现兼容性问题。
->
-> 本人因个人事务繁忙，暂时没空解决这些兼容性问题。所以已将插件暂时从市场中下架。如果未来情况允许，会考虑重新上架。
-
 > 🥺 This README document was originally written in Chinese (see README_zh_CN.md). Due to its length, I used a language model (LLM) to translate it into English. If you find any issues or areas that need improvement, please let me know, and I will be happy to fix them.
 >
 > Additionally, this document contains a large number of images, and I unfortunately do not have the time or energy to migrate them to English version. I appreciate your understanding in this matter.
