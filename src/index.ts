@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-12-01 15:57:28
  * @FilePath     : /src/index.ts
- * @LastEditTime : 2025-03-25 16:43:15
+ * @LastEditTime : 2025-03-28 18:55:22
  * @Description  : 
  */
 import {
@@ -97,7 +97,7 @@ export default class QueryViewPlugin extends Plugin {
         i18n = this.i18n as unknown as I18n;
         //@ts-ignore
         const version = siyuanVersion();
-        if (version.compare('3.1.25') === 0) {
+        if (version.version === '3.1.25' || version.version === '3.1.26') {
             const text = '⚠️' + i18n.src_indexts.incompatible_version;
             simpleDialog({
                 title: i18n.src_indexts.plugin_not_working,

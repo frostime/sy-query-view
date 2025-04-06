@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-12-01 22:34:55
  * @FilePath     : /src/core/query.ts
- * @LastEditTime : 2025-03-25 17:57:25
+ * @LastEditTime : 2025-03-29 16:35:34
  * @Description  : 
  */
 import { IProtyle } from "siyuan";
@@ -432,7 +432,7 @@ const Query = {
      * @note This API recieve sequence of block IDs, and always return an array of Block.
      * @param ids - Block IDs to retrieve
      * @returns Array of wrapped blocks
-     * @alias `getBlockById`
+     * @alias `getBlocksById`
      */
     getBlocksByIds: async (...ids: (BlockId | BlockId[])[]): Promise<IWrappedList<IWrappedBlock>> => {
         let flattenedIds: BlockId[] = ids.flat() as BlockId[];
@@ -1019,7 +1019,7 @@ const addAlias = (obj: any, attr: string, alias?: string[]) => {
 
 addAlias(Query, 'DataView', ['Dataview']);
 addAlias(Query, 'Utils', ['utils']);
-addAlias(Query, 'getBlocksByIds', ['getBlocksByIDs', 'getBlockById']);
+addAlias(Query, 'getBlocksByIds', ['getBlockById', 'getBlocksById']);
 addAlias(Query, 'root_id', ['docId']);
 addAlias(Query, 'backlink', ['backlinks']);
 addAlias(Query, 'wrapBlocks', ['wrapit']);
