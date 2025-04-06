@@ -2,7 +2,7 @@
  * @name sy-query-view
  * @author frostime
  * @version 1.2.0
- * @updated 2025-03-25T10:08:04.359Z
+ * @updated 2025-04-06T11:17:03.028Z
  */
 
 declare module 'siyuan' {
@@ -194,7 +194,7 @@ declare const Query: {
      * @note This API recieve sequence of block IDs, and always return an array of Block.
      * @param ids - Block IDs to retrieve
      * @returns Array of wrapped blocks
-     * @alias `getBlockById`
+     * @alias `getBlocksById`
      */
     getBlocksByIds: (...ids: (BlockId | BlockId[])[]) => Promise<IWrappedList<IWrappedBlock>>;
     /**

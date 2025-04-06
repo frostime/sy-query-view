@@ -1060,20 +1060,51 @@ class EmbedNodes {
             tempDiv.innerHTML = embed.block.content;
 
             // Apply limit if needed
-            if (this.limit && tempDiv.childNodes.length > this.limit) {
-                Array.from(tempDiv.children).forEach(child => {
-                    //@ts-ignore
-                    const nodeIndex = parseInt(child.dataset.nodeIndex);
-                    if (nodeIndex > this.limit) {
-                        child.remove();
+            if (this.limit) {
+                if (tempDiv.childNodes.length === 1) {
+                    // Special case: when there's only one child node, check for direct div elements with data-node-id
+                    const firstChild = tempDiv.childNodes[0];
+                    if (firstChild.nodeType === Node.ELEMENT_NODE) {
+                        // Only select direct children with data-node-id attribute
+                        const childDivs = Array.from((firstChild as Element).children)
+                            .filter(el => el.tagName.toLowerCase() === 'div' && el.hasAttribute('data-node-id'));
+
+                        if (childDivs.length > this.limit) {
+                            // Hide divs beyond the limit instead of removing them
+                            childDivs.forEach((div, index) => {
+                                if (index >= this.limit) {
+                                    (div as HTMLElement).style.display = 'none';
+                                    div.classList.add('embed-hidden-item');
+                                }
+                            });
+                            // Add 'more' indicator
+                            const moreSvgSymbol = 'iconMore';
+                            const svg = `<svg class="popover__block" data-id="${embed.block.id}"><use xlink:href="#${moreSvgSymbol}"></use></svg>`;
+                            const more = document.createElement('div');
+                            more.innerHTML = svg;
+                            more.className = styles['embed-more-svg'] + ' embed-more-icon';
+                            more.dataset.state = 'collapsed';
+                            firstChild.appendChild(more);
+                        }
                     }
-                });
-                const moreSvgSymbol = 'iconMore';
-                const svg = `<svg class="popover__block" data-id="${embed.block.id}"><use xlink:href="#${moreSvgSymbol}"></use></svg>`;
-                const more = document.createElement('div');
-                more.innerHTML = svg;
-                more.className = styles['embed-more-svg'];
-                tempDiv.appendChild(more);
+                } else if (tempDiv.childNodes.length > this.limit) {
+                    // Original case: multiple child nodes
+                    Array.from(tempDiv.children).forEach(child => {
+                        //@ts-ignore
+                        const nodeIndex = parseInt(child.dataset.nodeIndex);
+                        if (nodeIndex > this.limit) {
+                            (child as HTMLElement).style.display = 'none';
+                            child.classList.add('embed-hidden-item');
+                        }
+                    });
+                    const moreSvgSymbol = 'iconMore';
+                    const svg = `<svg class="popover__block" data-id="${embed.block.id}"><use xlink:href="#${moreSvgSymbol}"></use></svg>`;
+                    const more = document.createElement('div');
+                    more.innerHTML = svg;
+                    more.className = styles['embed-more-svg'] + ' embed-more-icon';
+                    more.dataset.state = 'collapsed';
+                    tempDiv.appendChild(more);
+                }
             }
 
             // Create final container and append processed content
@@ -1081,6 +1112,10 @@ class EmbedNodes {
             container.className = styles['embed-container'];
             container.dataset.nodeId = embed.block.id;
             container.append(...tempDiv.childNodes);
+
+            if (this.limit) {
+                container.dataset.limit = this.limit.toString();
+            }
 
             // Add jump icon
             const jumpSvgSymbol = 'iconFocus';
@@ -1102,6 +1137,28 @@ class EmbedNodes {
         });
 
         this.element.appendChild(frag);
+
+        // Add click event listener for 'more' icons
+        this.element.onclick = (e) => {
+            e.stopPropagation();
+            const target = e.target as HTMLElement;
+
+            const moreIcon = target.closest('.embed-more-icon') as HTMLElement;
+            if (!moreIcon) return;
+
+            const isHidden = moreIcon.dataset.state === 'collapsed';
+            const container = moreIcon.closest('.' + styles['embed-container']) ||
+                moreIcon.parentElement.closest('div');
+            if (container) {
+                container.querySelectorAll('.embed-hidden-item').forEach(item => {
+                    (item as HTMLElement).style.display = isHidden ? '' : 'none';
+                });
+            }
+            // iconUp
+            moreIcon.querySelector('svg').innerHTML = `<use xlink:href="#icon${isHidden ? 'Left' : 'More'}"></use>`;
+            moreIcon.dataset.state = isHidden ? 'expanded' : 'collapsed';
+        }
+
         if (this.columns > 1) {
             //grid 布局, 双列
             // this.element.style.display = 'grid';

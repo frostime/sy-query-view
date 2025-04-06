@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-12-01 15:57:28
  * @FilePath     : /src/index.ts
- * @LastEditTime : 2025-03-28 18:55:22
+ * @LastEditTime : 2025-04-06 19:54:28
  * @Description  : 
  */
 import {
@@ -97,13 +97,16 @@ export default class QueryViewPlugin extends Plugin {
         i18n = this.i18n as unknown as I18n;
         //@ts-ignore
         const version = siyuanVersion();
+        // if (version.version === '3.1.25' || version.version === '3.1.26') {
         if (version.version === '3.1.25' || version.version === '3.1.26') {
-            const text = '⚠️' + i18n.src_indexts.incompatible_version;
+            const text = '⚠️' + i18n.src_indexts.incompatible_version.replace('{0}', version.version);
             simpleDialog({
                 title: i18n.src_indexts.plugin_not_working,
                 ele: `<div class="b3-label">${text}</div>`
             });
-            return;
+            if (version.version === '3.1.25') {
+                return;
+            }
         }
         app = this.app;
         this.init();

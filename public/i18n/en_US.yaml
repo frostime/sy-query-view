@@ -20,9 +20,9 @@ src_dataquery_componentsts:
 src_dataquery_editorts:
   onlydesktop: Only supported to open in the code editor in the desktop environment
 src_indexts:
-  incompatible_version: The current SiYuan version v3.1.25 is incompatible with the
+  incompatible_version: The current SiYuan version {0} is incompatible well with the
     QueryView plugin. It is recommended to downgrade or upgrade SiYuan to another
-    version
+    version (other than v3.1.25 or v3.1.26).
   manual_release: Manual Release
   manual_release_desc: 'Manually release (dv.dispose) all DataView<br/>Note: Unless
     under special circumstances, generally you don''t need to do this'
