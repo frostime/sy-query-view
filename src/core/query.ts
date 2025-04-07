@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-12-01 22:34:55
  * @FilePath     : /src/core/query.ts
- * @LastEditTime : 2025-03-29 16:35:34
+ * @LastEditTime : 2025-04-07 13:34:07
  * @Description  : 
  */
 import { IProtyle } from "siyuan";
@@ -545,6 +545,7 @@ const Query = {
         }
         tags = Array.isArray(tags) ? tags : [tags];
         return Query.sql(`select * from blocks where
+            (type='d' or type='p' or type='h') and
             ${tags.map(ensureTag).map(tag => `tag like '%${tag}%'`).join(` ${join} `)}
             ${limit ? `limit ${limit}` : ''}
         `);
