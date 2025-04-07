@@ -14,6 +14,9 @@ interface I18n {
         custom_queryview_error: string;
         reload_custom_comp: string;
     };
+    src_core_queryts: {
+        query_obsolete_params: string;
+    };
     src_dataquery_componentsts: {
         mermaid_render_failed: string;
     };

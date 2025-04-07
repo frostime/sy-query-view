@@ -3,10 +3,10 @@
  * @Author       : frostime
  * @Date         : 2024-12-01 22:34:55
  * @FilePath     : /src/core/query.ts
- * @LastEditTime : 2025-04-07 19:36:36
+ * @LastEditTime : 2025-04-07 20:47:21
  * @Description  : 
  */
-import { IProtyle } from "siyuan";
+import { IProtyle, showMessage } from "siyuan";
 
 import { request, sql, listDocsByPath } from "@/api";
 import { getLute, initLute } from "./lute";
@@ -18,8 +18,9 @@ import { getNotebook, openBlock } from "@/utils";
 import { renderAttr } from "./components";
 import { BlockTypeShort } from "@/utils/const";
 import PromiseLimitPool from "@/libs/promise-pool";
-// import { getSessionStorageSize } from "./gc";
+import { i18n } from "..";
 
+// import { getSessionStorageSize } from "./gc";
 
 type DeprecatedParam<T> = T;
 
@@ -28,11 +29,15 @@ type DeprecatedParam<T> = T;
  * @returns Merged options
  */
 function handleOptions<T extends Record<string, any>, K extends keyof T>(
+    apiName: string,
     defaultParamVals: T,
     optionParam: Partial<T> | DeprecatedParam<T[K]> | undefined,
     deprecatedParam: Partial<T> = {},
     optionAsDeprecatedKey?: K
 ): T {
+
+    let isDepecatedUsage = false;
+
     for (const key in deprecatedParam) {
         if (deprecatedParam[key] === undefined) {
             delete deprecatedParam[key];
@@ -43,8 +48,20 @@ function handleOptions<T extends Record<string, any>, K extends keyof T>(
         opts = { ...opts, ...optionParam };
     } else if (optionParam !== undefined && optionAsDeprecatedKey) {
         opts[optionAsDeprecatedKey] = optionParam as T[K];
+        isDepecatedUsage = true;
     }
-    opts = { ...opts, ...deprecatedParam };
+
+    if (deprecatedParam && Object.keys(deprecatedParam).length > 0) {
+        opts = { ...opts, ...deprecatedParam };
+        isDepecatedUsage = true;
+    }
+
+    if (isDepecatedUsage) {
+        const msg = i18n.src_core_queryts.query_obsolete_params;
+        console.warn(msg.replace('{0}', apiName));
+        showMessage(msg.replace('{0}', apiName), 5000, 'error');
+    }
+
     return opts;
 }
 
@@ -548,6 +565,7 @@ const Query = {
         limit?: DeprecatedParam<number>
     ) => {
         const options = handleOptions(
+            'attr',
             { valMatch: '=' as '=' | 'like', limit: undefined as number | undefined },
             optionDeprecatedAsValMatch,
             { limit },
@@ -586,6 +604,7 @@ const Query = {
         limit?: DeprecatedParam<number>
     ) => {
         const opts = handleOptions(
+            'tag',
             { join: 'or' as 'or' | 'and', limit: undefined as number | undefined },
             optionDeprecatedAsJoin,
             { limit },
@@ -606,7 +625,7 @@ const Query = {
         tags = Array.isArray(tags) ? tags : [tags];
         return Query.sql(`select * from blocks where
             (type='d' or type='p' or type='h') and
-            ${tags.map(ensureTag).map(tag => `tag like '%${tag}%'`).join(` ${join} `)}
+            (${tags.map(ensureTag).map(tag => `tag like '%${tag}%'`).join(` ${join} `)})
             ${lim ? `limit ${lim}` : ''}
         `);
     },
@@ -628,6 +647,7 @@ const Query = {
         limit?: DeprecatedParam<number>
     ) => {
         const options = handleOptions(
+            'task',
             { limit: undefined as number | undefined, after: undefined as string | undefined },
             optionDeprecatedAsAfter,
             { limit },
@@ -699,6 +719,7 @@ const Query = {
      */
     keyword: async (keywords: string | string[], options?: { join?: 'or' | 'and', limit?: number } | DeprecatedParam<'or' | 'and'>, limit?: DeprecatedParam<number>) => {
         const opts = handleOptions(
+            'keyword',
             { join: 'or' as 'or' | 'and', limit: 999 as number },
             options,
             { limit },
@@ -725,6 +746,7 @@ const Query = {
      */
     keywordDoc: async (keywords: string | string[], options?: { join?: 'or' | 'and', limit?: number } | DeprecatedParam<'or' | 'and'>, limit?: DeprecatedParam<number>) => {
         const opts = handleOptions(
+            'keywordDoc',
             { join: 'or' as 'or' | 'and', limit: 999 as number },
             options,
             { limit },
