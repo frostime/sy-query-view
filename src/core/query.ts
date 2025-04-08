@@ -24,10 +24,6 @@ import { i18n } from "..";
 
 type DeprecatedParam<T> = T;
 
-/**
- * Handle deprecated parameter patterns and options objects
- * @returns Merged options
- */
 function handleOptions<T extends Record<string, any>, K extends keyof T>(
     apiName: string,
     defaultParamVals: T,
