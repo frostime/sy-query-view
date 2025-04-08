@@ -3,10 +3,10 @@
  * @Author       : frostime
  * @Date         : 2024-12-01 22:34:55
  * @FilePath     : /src/core/query.ts
- * @LastEditTime : 2025-04-07 13:34:07
+ * @LastEditTime : 2025-04-07 20:47:21
  * @Description  : 
  */
-import { IProtyle } from "siyuan";
+import { IProtyle, showMessage } from "siyuan";
 
 import { request, sql, listDocsByPath } from "@/api";
 import { getLute, initLute } from "./lute";
@@ -18,8 +18,52 @@ import { getNotebook, openBlock } from "@/utils";
 import { renderAttr } from "./components";
 import { BlockTypeShort } from "@/utils/const";
 import PromiseLimitPool from "@/libs/promise-pool";
+import { i18n } from "..";
+
 // import { getSessionStorageSize } from "./gc";
 
+type DeprecatedParam<T> = T;
+
+/**
+ * Handle deprecated parameter patterns and options objects
+ * @returns Merged options
+ */
+function handleOptions<T extends Record<string, any>, K extends keyof T>(
+    apiName: string,
+    defaultParamVals: T,
+    optionParam: Partial<T> | DeprecatedParam<T[K]> | undefined,
+    deprecatedParam: Partial<T> = {},
+    optionAsDeprecatedKey?: K
+): T {
+
+    let isDepecatedUsage = false;
+
+    for (const key in deprecatedParam) {
+        if (deprecatedParam[key] === undefined) {
+            delete deprecatedParam[key];
+        }
+    }
+    let opts = { ...defaultParamVals };
+    if (typeof optionParam === 'object' && !Array.isArray(optionParam)) {
+        opts = { ...opts, ...optionParam };
+    } else if (optionParam !== undefined && optionAsDeprecatedKey) {
+        opts[optionAsDeprecatedKey] = optionParam as T[K];
+        isDepecatedUsage = true;
+    }
+
+    if (deprecatedParam && Object.keys(deprecatedParam).length > 0) {
+        opts = { ...opts, ...deprecatedParam };
+        isDepecatedUsage = true;
+    }
+
+    if (isDepecatedUsage) {
+        const msg = i18n.src_core_queryts.query_obsolete_params;
+        console.warn(msg.replace('{0}', apiName));
+        showMessage(msg.replace('{0}', apiName), 5000, 'error');
+    }
+
+    return opts;
+}
 
 /**
  * 在 SQL 搜索场景中过滤块，以消除重复的块。
@@ -506,11 +550,28 @@ const Query = {
      * Finds blocks with specific attributes
      * @param name - Attribute name
      * @param val - Attribute value
-     * @param valMatch - Match type ('=' or 'like')
-     * @param limit - Maximum number of results
+     * @param options - Options
+     * @param options.valMatch - Match type ('=' or 'like')
+     * @param options.limit - Maximum number of results
+     * @param limit - (Deprecated) Maximum number of results
      * @returns Array of matching blocks
      */
-    attr: async (name: string, val?: string, valMatch: '=' | 'like' = '=', limit?: number) => {
+    attr: async (
+        name: string,
+        val?: string,
+        optionDeprecatedAsValMatch?: {
+            valMatch?: '=' | 'like', limit?: number
+        } | DeprecatedParam<"=" | 'like'>,
+        limit?: DeprecatedParam<number>
+    ) => {
+        const options = handleOptions(
+            'attr',
+            { valMatch: '=' as '=' | 'like', limit: undefined as number | undefined },
+            optionDeprecatedAsValMatch,
+            { limit },
+            'valMatch'
+        );
+        const { valMatch: match, limit: lim } = options;
         return Query.sql(`
         SELECT B.*
         FROM blocks AS B
@@ -518,8 +579,8 @@ const Query = {
             SELECT A.block_id
             FROM attributes AS A
             WHERE A.name like '${name}'
-            ${val ? `AND A.value ${valMatch} '${val}'` : ''}
-            ${limit ? `limit ${limit}` : ''}
+            ${val ? `AND A.value ${match} '${val}'` : ''}
+            ${lim ? `limit ${lim}` : ''}
         );
         `);
     },
@@ -527,13 +588,30 @@ const Query = {
     /**
      * Search blocks by tags
      * @param tags - Tags to search for; can provide multiple tags
+     * @param options - Additional options
+     * @param options.join - Join type ('or' or 'and')
+     * @param options.limit - Maximum number of results
+     * @param limit - (Deprecated) Maximum number of results
      * @returns Array of blocks matching the tags
      * @example
      * Query.tag('tag1') // Search for blocks with 'tag1'
-     * Query.tag(['tag1', 'tag2'], 'or') // Search for blocks with 'tag1' or 'tag2'
-     * Query.tag(['tag1', 'tag2'], 'and') // Search for blocks with 'tag1' and 'tag2'
+     * Query.tag(['tag1', 'tag2'], { join: 'or' }) // Search for blocks with 'tag1' or 'tag2'
+     * Query.tag(['tag1', 'tag2'], { join: 'and' }) // Search for blocks with 'tag1' and 'tag2'
      */
-    tag: async (tags: string | string[], join: 'or' | 'and' = 'or', limit?: number) => {
+    tag: async (
+        tags: string | string[],
+        optionDeprecatedAsJoin?: { join?: 'or' | 'and', limit?: number } | DeprecatedParam<'or' | 'and'>,
+        limit?: DeprecatedParam<number>
+    ) => {
+        const opts = handleOptions(
+            'tag',
+            { join: 'or' as 'or' | 'and', limit: undefined as number | undefined },
+            optionDeprecatedAsJoin,
+            { limit },
+            'join'
+        );
+        const { join, limit: lim } = opts;
+
         const ensureTag = (tag: string) => {
             if (!tag.startsWith('#')) {
                 tag = `#${tag}`;
@@ -542,47 +620,49 @@ const Query = {
                 tag = `${tag}#`;
             }
             return tag;
-        }
+        };
+
         tags = Array.isArray(tags) ? tags : [tags];
         return Query.sql(`select * from blocks where
             (type='d' or type='p' or type='h') and
-            ${tags.map(ensureTag).map(tag => `tag like '%${tag}%'`).join(` ${join} `)}
-            ${limit ? `limit ${limit}` : ''}
+            (${tags.map(ensureTag).map(tag => `tag like '%${tag}%'`).join(` ${join} `)})
+            ${lim ? `limit ${lim}` : ''}
         `);
     },
 
     /**
      * Find unsolved task blocks
-     * @param after - After which the blocks were udpated
-     * @param limit - Maximum number of results
+     * @param options - Options
+     * @param options.after - After which the blocks were updated
+     * @param options.limit - Maximum number of results
+     * @param limit - (Deprecated) Maximum number of results
      * @returns Array of unsolved task blocks
      * @example
      * Query.task()
-     * Query.task('2024101000')
-     * Query.task(Query.utils.thisMonth(), 32)
+     * Query.task({ after: '2024101000' })
+     * Query.task({ limit: 32 })
      */
-    task: async (after?: string, limit?: number) => {
-        const sql = `select * from blocks
-        where type = 'i' and subtype = 't'
-        and markdown like '* [ ] %'
-        ${after ? ` and updated >= ${after}` : ''}
-        order by updated desc
-        ${limit ? `limit ${limit}` : ''};`
-        return Query.sql(sql);
-    },
+    task: async (
+        optionDeprecatedAsAfter?: { limit?: number; after?: string } | DeprecatedParam<string>,
+        limit?: DeprecatedParam<number>
+    ) => {
+        const options = handleOptions(
+            'task',
+            { limit: undefined as number | undefined, after: undefined as string | undefined },
+            optionDeprecatedAsAfter,
+            { limit },
+            'after'
+        );
+        const { limit: lim, after: afterDate } = options;
 
-    /**
-     * Randomly roam blocks
-     * @param limit - Maximum number of results
-     * @param type - Block type
-     * @returns Array of randomly roamed blocks
-     */
-    random: async (limit: number = 64, type?: BlockType) => {
-        const sql = `select * from blocks
-        ${type ? `where type = '${type}'` : ''}
-        order by random()
-        limit ${limit};`
-        return Query.sql(sql);
+        return Query.sql(`
+            select * from blocks
+            where type = 'i' and subtype = 't'
+            and markdown like '* [ ] %'
+            ${afterDate ? ` and updated >= ${afterDate}` : ''}
+            order by updated desc
+            ${lim ? `limit ${lim}` : ''};
+        `);
     },
 
     /**
@@ -628,27 +708,53 @@ const Query = {
         return wrapList(docs);
     },
 
-    keyword: async (keywords: string | string[], join: 'or' | 'and' = 'or', limit: number = 999) => {
+    /**
+     * Search blocks that contain the given keywords
+     * @param keywords {string | string[]} - Keywords to search for; can provide multiple keywords
+     * @param options - Options
+     * @param options.join - Join type ('or' or 'and')
+     * @param options.limit - Maximum number of results to return, default is 999
+     * @param limit - (Deprecated) Maximum number of results to return, default is 999
+     * @returns Array of blocks that contain the given keywords
+     */
+    keyword: async (keywords: string | string[], options?: { join?: 'or' | 'and', limit?: number } | DeprecatedParam<'or' | 'and'>, limit?: DeprecatedParam<number>) => {
+        const opts = handleOptions(
+            'keyword',
+            { join: 'or' as 'or' | 'and', limit: 999 as number },
+            options,
+            { limit },
+            'join'
+        );
+        const { join, limit: lim } = opts;
         keywords = Array.isArray(keywords) ? keywords : [keywords];
-        const sql = `select * from blocks where ${keywords.map(keyword => `content like '%${keyword}%'`).join(` ${join} `)} limit ${limit}`;
+        const sql = `select * from blocks where ${keywords.map(keyword => `content like '%${keyword}%'`).join(` ${join} `)} limit ${lim}`;
         let results = await Query.sql(sql);
         return results;
     },
 
     /**
      * Search the document that contains all the keywords.
-     * @param keywords 
-     * @param join The join operator between keywords, default is 'or'
-     * @param limit Maximum number of results to return, default is 999
+     * @param keywords {string | string[]} keywords to search for; can provide multiple keywords
+     * @param options - Options
+     * @param options.join - Join type ('or' or 'and')
+     * @param options.limit - Maximum number of results to return, default is 999
      * @returns The document blocks that contains all the given keywords; the blocks will attached a 'keywords' property, which is the matched keyword blocks
      * @example
      * let docs = await Query.keywordDoc(['Keywords A', 'Keywords B']);
      * //each block in docs is a document block that contains all the keywords
      * docs[0].keywords['Keywords A'] // get the matched keyword block by using `keywords` property
      */
-    keywordDoc: async (keywords: string | string[], join: 'or' | 'and' = 'or', limit: number = 999) => {
+    keywordDoc: async (keywords: string | string[], options?: { join?: 'or' | 'and', limit?: number } | DeprecatedParam<'or' | 'and'>, limit?: DeprecatedParam<number>) => {
+        const opts = handleOptions(
+            'keywordDoc',
+            { join: 'or' as 'or' | 'and', limit: 999 as number },
+            options,
+            { limit },
+            'join'
+        );
+        const { join, limit: lim } = opts;
         keywords = Array.isArray(keywords) ? keywords : [keywords];
-        const sql = `select * from blocks where ${keywords.map(keyword => `content like '%${keyword}%'`).join(` ${join} `)} limit ${limit}`;
+        const sql = `select * from blocks where ${keywords.map(keyword => `content like '%${keyword}%'`).join(` ${join} `)} limit ${lim}`;
         let results = await Query.sql(sql);
 
         let matchedDocs = {};
@@ -685,13 +791,19 @@ const Query = {
     },
 
     /**
-     * Return the markdown content of the given block
-     * * For normal block, return the markdown attribute of the block
-     * * For document block, return the markdown content of the document
-     * * For heading block, return the children blocks' markdown content
-     * @param block - Block
-     * @returns Markdown content of the document
+     * Randomly roam blocks
+     * @param limit - Maximum number of results
+     * @param type - Block type
+     * @returns Array of randomly roamed blocks
      */
+    random: async (limit: number = 64, type?: BlockType) => {
+        const sql = `select * from blocks
+        ${type ? `where type = '${type}'` : ''}
+        order by random()
+        limit ${limit};`
+        return Query.sql(sql);
+    },
+
     markdown: async (input: BlockId | Block) => {
         let block: Block = null;
         if (typeof input === 'string') {

@@ -10,6 +10,8 @@ src_core_editorts:
 src_core_indexts:
   custom_queryview_error: '注意: 自定义的 QueryView 脚本格式存在问题，无法正常导入!'
   reload_custom_comp: 重载自定义组件
+src_core_queryts:
+  query_obsolete_params: Query.{0} 的调用参数已经过时, 请变更为新的使用方案; 具体请参考 QueryView v1.2.0 之后的文档
 src_dataquery_componentsts:
   mermaid_render_failed: Mermaid 渲染失败, 请检查代码
 src_dataquery_editorts:

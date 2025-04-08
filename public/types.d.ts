@@ -2,7 +2,7 @@
  * @name sy-query-view
  * @author frostime
  * @version 1.2.0
- * @updated 2025-04-06T11:17:03.028Z
+ * @updated 2025-04-07T12:20:26.169Z
  */
 
 declare module 'siyuan' {
@@ -21,6 +21,7 @@ declare function request(url: string, data: any): Promise<any | null>;
 import { IProtyle } from "siyuan";
 
 
+type DeprecatedParam<T> = T;
 /**
  * Data class for SiYuan timestamp
  * In SiYuan, the timestamp is in the format of yyyyMMddHHmmss
@@ -235,39 +236,49 @@ declare const Query: {
      * Finds blocks with specific attributes
      * @param name - Attribute name
      * @param val - Attribute value
-     * @param valMatch - Match type ('=' or 'like')
-     * @param limit - Maximum number of results
+     * @param options - Options
+     * @param options.valMatch - Match type ('=' or 'like')
+     * @param options.limit - Maximum number of results
+     * @param limit - (Deprecated) Maximum number of results
      * @returns Array of matching blocks
      */
-    attr: (name: string, val?: string, valMatch?: "=" | "like", limit?: number) => Promise<IWrappedList<IWrappedBlock>>;
+    attr: (name: string, val?: string, optionDeprecatedAsValMatch?: {
+        valMatch?: "=" | "like";
+        limit?: number;
+    } | DeprecatedParam<"=" | "like">, limit?: DeprecatedParam<number>) => Promise<IWrappedList<IWrappedBlock>>;
     /**
      * Search blocks by tags
      * @param tags - Tags to search for; can provide multiple tags
+     * @param options - Additional options
+     * @param options.join - Join type ('or' or 'and')
+     * @param options.limit - Maximum number of results
+     * @param limit - (Deprecated) Maximum number of results
      * @returns Array of blocks matching the tags
      * @example
      * Query.tag('tag1') // Search for blocks with 'tag1'
-     * Query.tag(['tag1', 'tag2'], 'or') // Search for blocks with 'tag1' or 'tag2'
-     * Query.tag(['tag1', 'tag2'], 'and') // Search for blocks with 'tag1' and 'tag2'
+     * Query.tag(['tag1', 'tag2'], { join: 'or' }) // Search for blocks with 'tag1' or 'tag2'
+     * Query.tag(['tag1', 'tag2'], { join: 'and' }) // Search for blocks with 'tag1' and 'tag2'
      */
-    tag: (tags: string | string[], join?: "or" | "and", limit?: number) => Promise<IWrappedList<IWrappedBlock>>;
+    tag: (tags: string | string[], optionDeprecatedAsJoin?: {
+        join?: "or" | "and";
+        limit?: number;
+    } | DeprecatedParam<"or" | "and">, limit?: DeprecatedParam<number>) => Promise<IWrappedList<IWrappedBlock>>;
     /**
      * Find unsolved task blocks
-     * @param after - After which the blocks were udpated
-     * @param limit - Maximum number of results
+     * @param options - Options
+     * @param options.after - After which the blocks were updated
+     * @param options.limit - Maximum number of results
+     * @param limit - (Deprecated) Maximum number of results
      * @returns Array of unsolved task blocks
      * @example
      * Query.task()
-     * Query.task('2024101000')
-     * Query.task(Query.utils.thisMonth(), 32)
+     * Query.task({ after: '2024101000' })
+     * Query.task({ limit: 32 })
      */
-    task: (after?: string, limit?: number) => Promise<IWrappedList<IWrappedBlock>>;
-    /**
-     * Randomly roam blocks
-     * @param limit - Maximum number of results
-     * @param type - Block type
-     * @returns Array of randomly roamed blocks
-     */
-    random: (limit?: number, type?: BlockType) => Promise<IWrappedList<IWrappedBlock>>;
+    task: (optionDeprecatedAsAfter?: {
+        limit?: number;
+        after?: string;
+    } | DeprecatedParam<string>, limit?: DeprecatedParam<number>) => Promise<IWrappedList<IWrappedBlock>>;
     /**
      * Gets the daily notes document
      * @param notebook - Notebook ID, if not specified, all daily notes documents will be returned
@@ -281,27 +292,42 @@ declare const Query: {
      * @returns Array of child document blocks
      */
     childDoc: (b: BlockId | Block) => Promise<Block[]>;
-    keyword: (keywords: string | string[], join?: "or" | "and", limit?: number) => Promise<IWrappedList<IWrappedBlock>>;
+    /**
+     * Search blocks that contain the given keywords
+     * @param keywords {string | string[]} - Keywords to search for; can provide multiple keywords
+     * @param options - Options
+     * @param options.join - Join type ('or' or 'and')
+     * @param options.limit - Maximum number of results to return, default is 999
+     * @param limit - (Deprecated) Maximum number of results to return, default is 999
+     * @returns Array of blocks that contain the given keywords
+     */
+    keyword: (keywords: string | string[], options?: {
+        join?: "or" | "and";
+        limit?: number;
+    } | DeprecatedParam<"or" | "and">, limit?: DeprecatedParam<number>) => Promise<IWrappedList<IWrappedBlock>>;
     /**
      * Search the document that contains all the keywords.
-     * @param keywords
-     * @param join The join operator between keywords, default is 'or'
-     * @param limit Maximum number of results to return, default is 999
+     * @param keywords {string | string[]} keywords to search for; can provide multiple keywords
+     * @param options - Options
+     * @param options.join - Join type ('or' or 'and')
+     * @param options.limit - Maximum number of results to return, default is 999
      * @returns The document blocks that contains all the given keywords; the blocks will attached a 'keywords' property, which is the matched keyword blocks
      * @example
      * let docs = await Query.keywordDoc(['Keywords A', 'Keywords B']);
      * //each block in docs is a document block that contains all the keywords
      * docs[0].keywords['Keywords A'] // get the matched keyword block by using `keywords` property
      */
-    keywordDoc: (keywords: string | string[], join?: "or" | "and", limit?: number) => Promise<Block[]>;
+    keywordDoc: (keywords: string | string[], options?: {
+        join?: "or" | "and";
+        limit?: number;
+    } | DeprecatedParam<"or" | "and">, limit?: DeprecatedParam<number>) => Promise<Block[]>;
     /**
-     * Return the markdown content of the given block
-     * * For normal block, return the markdown attribute of the block
-     * * For document block, return the markdown content of the document
-     * * For heading block, return the children blocks' markdown content
-     * @param block - Block
-     * @returns Markdown content of the document
+     * Randomly roam blocks
+     * @param limit - Maximum number of results
+     * @param type - Block type
+     * @returns Array of randomly roamed blocks
      */
+    random: (limit?: number, type?: BlockType) => Promise<IWrappedList<IWrappedBlock>>;
     markdown: (input: BlockId | Block) => Promise<any>;
     /**
      * Return the statistics of the document with given document ID

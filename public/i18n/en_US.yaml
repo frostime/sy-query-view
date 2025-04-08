@@ -15,6 +15,10 @@ src_core_indexts:
   custom_queryview_error: 'Note: There is a problem with the format of the custom
     QueryView script, and it cannot be imported normally!'
   reload_custom_comp: Reload Custom
+src_core_queryts:
+  query_obsolete_params: The calling parameters of Query.{0} are deprecated, please
+    change to the new usage scheme; for details, refer to the documentation after
+    QueryView v1.2.0
 src_dataquery_componentsts:
   mermaid_render_failed: Mermaid rendering failed, please check the code
 src_dataquery_editorts:
