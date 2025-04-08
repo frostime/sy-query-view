@@ -6,6 +6,49 @@ The embedded block feature of SiYuan supports querying using JavaScript syntax. 
 
 ⚠️ **Note**: This help document assumes that users have a basic understanding of JavaScript syntax concepts (at least basic variables, control flow, function calls, async/await).
 
+> 📝 **CHANGELOG from v1.1.0 to v1.2.0**
+>
+> In v1.1.0, the plugin was temporarily removed due to compatibility issues with SiYuan.
+>
+> After v1.2.0, the plugin will no longer be compatible with SiYuan versions 3.1.24 and 3.1.25. Please use other SiYuan versions for the Query View plugin.
+>
+> ✨ **New Features**
+>
+> 1. Added `Card`​ component in DataView
+> 2. DataView's `Markdown`​ component now supports rendering mathematical formulas
+> 3. Optimized the `Embed`​ component in DataView
+> 4. Added `Query.pruneBlocks`​ function to merge blocks with parent-child relationships during queries, enabling result deduplication
+> 5. Added `list-tag`​ example case
+>
+> ⚠️ **API Changes**
+>
+> Some API parameter usages in Query have been modified. Old usages remain compatible but will trigger warnings—migration to new usages is recommended. Refer to documentation for details.
+>
+> 1. ​`Query.attr`​
+>
+>     ```javascript
+>     Query.attr("name", "value", "=", 10); // Deprecated  
+>     Query.attr("name", "value", { valMatch: "=", limit: 10 }); // Recommended  
+>     ```
+> 2. ​`Query.tag`​
+>
+>     ```javascript
+>     Query.tag("tag1", "or", 10); // Deprecated  
+>     Query.tag("tag1", { join: "or", limit: 10 }); // Recommended  
+>     ```
+> 3. ​`Query.task`​
+>
+>     ```javascript
+>     Query.task("2024101000", 32); // Deprecated  
+>     Query.task({ after: "2024101000", limit: 32 }); // Recommended  
+>     ```
+> 4. ​`Query.keyword`​/`Query.keywordDoc`​
+>
+>     ```javascript
+>     Query.keyword("keyword", "or", 10); // Deprecated  
+>     Query.keyword("keyword", { join: "or", limit: 10 }); // Recommended  
+>     ```
+
 > 🔔 This help document is quite long, and viewing it on the installation page may be inconvenient.
 >
 > You can download it and click the "Help Document" button in the top-left menu. The plugin will automatically create a help document within SiYuan.
