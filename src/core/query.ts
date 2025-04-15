@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-12-01 22:34:55
  * @FilePath     : /src/core/query.ts
- * @LastEditTime : 2025-04-07 20:47:21
+ * @LastEditTime : 2025-04-15 22:32:01
  * @Description  : 
  */
 import { IProtyle, showMessage } from "siyuan";
@@ -23,6 +23,8 @@ import { i18n } from "..";
 // import { getSessionStorageSize } from "./gc";
 
 type DeprecatedParam<T> = T;
+
+const hasWarnMsgAPI = new Set();
 
 function handleOptions<T extends Record<string, any>, K extends keyof T>(
     apiName: string,
@@ -55,7 +57,10 @@ function handleOptions<T extends Record<string, any>, K extends keyof T>(
     if (isDepecatedUsage) {
         const msg = i18n.src_core_queryts.query_obsolete_params;
         console.warn(msg.replace('{0}', apiName));
-        showMessage(msg.replace('{0}', apiName), 5000, 'error');
+        if (!hasWarnMsgAPI.has(apiName)) {
+            showMessage(msg.replace('{0}', apiName), 7000, 'error');
+            hasWarnMsgAPI.add(apiName);
+        }
     }
 
     return opts;
@@ -663,11 +668,33 @@ const Query = {
 
     /**
      * Gets the daily notes document
-     * @param notebook - Notebook ID, if not specified, all daily notes documents will be returned
-     * @param limit - Maximum number of results
+     * @param options - Options
+     * @param options.notebook - Notebook ID, if not specified, all daily notes documents will be returned
+     * @param options.limit - Maximum number of results
      * @returns Array of daily notes document blocks
+     * @example
+     * Query.dailynote()
+     * Query.dailynote({ notebook: '20231224140619-bpyuay4' })
+     * Query.dailynote({ limit: 32 })
      */
-    dailynote: async (notebook?: NotebookId, limit: number = 64) => {
+    dailynote: async (
+        optionsDeprecatedAsNotebook?: { notebook?: NotebookId, limit?: number } | DeprecatedParam<NotebookId>,
+        limitDeprecated?: DeprecatedParam<number>
+    ) => {
+        const opts = handleOptions(
+            'dailynote',
+            { notebook: undefined as NotebookId | undefined, limit: 64 as number },
+            optionsDeprecatedAsNotebook,
+            { limit: limitDeprecated },
+            'notebook'
+        );
+        let { notebook, limit } = opts;
+        //@ts-ignore
+        if (optionsDeprecatedAsNotebook.box && !notebook) {
+            //@ts-ignore
+            notebook = optionsDeprecatedAsNotebook.box;
+        }
+
         const sql = `
         SELECT B.*
         FROM blocks AS B

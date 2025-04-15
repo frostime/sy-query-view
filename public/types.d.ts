@@ -2,7 +2,7 @@
  * @name sy-query-view
  * @author frostime
  * @version 1.2.0
- * @updated 2025-04-08T06:13:00.044Z
+ * @updated 2025-04-15T14:38:08.680Z
  */
 
 declare module 'siyuan' {
@@ -281,11 +281,19 @@ declare const Query: {
     } | DeprecatedParam<string>, limit?: DeprecatedParam<number>) => Promise<IWrappedList<IWrappedBlock>>;
     /**
      * Gets the daily notes document
-     * @param notebook - Notebook ID, if not specified, all daily notes documents will be returned
-     * @param limit - Maximum number of results
+     * @param options - Options
+     * @param options.notebook - Notebook ID, if not specified, all daily notes documents will be returned
+     * @param options.limit - Maximum number of results
      * @returns Array of daily notes document blocks
+     * @example
+     * Query.dailynote()
+     * Query.dailynote({ notebook: '20231224140619-bpyuay4' })
+     * Query.dailynote({ limit: 32 })
      */
-    dailynote: (notebook?: NotebookId, limit?: number) => Promise<IWrappedList<IWrappedBlock>>;
+    dailynote: (optionsDeprecatedAsNotebook?: {
+        notebook?: NotebookId;
+        limit?: number;
+    } | DeprecatedParam<NotebookId>, limitDeprecated?: DeprecatedParam<number>) => Promise<IWrappedList<IWrappedBlock>>;
     /**
      * Gets child documents of a block
      * @param b - Parent block or block ID

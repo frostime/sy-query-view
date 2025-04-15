@@ -48,6 +48,12 @@ The embedded block feature of SiYuan supports querying using JavaScript syntax. 
 >     Query.keyword("keyword", "or", 10); // Deprecated  
 >     Query.keyword("keyword", { join: "or", limit: 10 }); // Recommended  
 >     ```
+> 5. ​`Query.dailynote`​
+>
+>     ```javascript
+>     Query.dailynote("20231224140619-bpyuay4", 32); // 弃用
+>     Query.dailynote({ notebook: "20231224140619-bpyuay4", limit: 32 }); // 推荐
+>     ```
 
 > 🔔 This help document is quite long, and viewing it on the installation page may be inconvenient.
 >
@@ -224,24 +230,28 @@ It's easy to see that since the code can automatically obtain the ID of the docu
 /**
  * Search blocks by tags
  * @param tags - Tags to search for; can provide multiple tags
+ * @param options - Options
+ * @param options.join - Join type ('or' or 'and')
+ * @param options.limit - Maximum number of results
  * @returns Array of blocks matching the tags
  * @example
  * Query.tag('tag1') // Search for blocks with 'tag1'
- * Query.tag(['tag1', 'tag2'], 'or') // Search for blocks with 'tag1' or 'tag2'
- * Query.tag(['tag1', 'tag2'], 'and') // Search for blocks with 'tag1' and 'tag2'
+ * Query.tag(['tag1', 'tag2'], { join: 'or' }) // Search for blocks with 'tag1' or 'tag2'
+ * Query.tag(['tag1', 'tag2'], { join: 'and' }) // Search for blocks with 'tag1' and 'tag2'
  */
-tag: (tags: string | string[], join?: "or" | "and", limit?: number) => Promise<IWrappedList<IWrappedBlock>>;
+tag: (tags: string | string[], options?: { join?: "or" | "and", limit?: number }) => Promise<IWrappedList<IWrappedBlock>>;
 /**
  * Find unsolved task blocks
- * @param after - After which the blocks were udpated
- * @param limit - Maximum number of results
+ * @param options - Options
+ * @param options.after - After which the blocks were updated
+ * @param options.limit - Maximum number of results
  * @returns Array of unsolved task blocks
  * @example
  * Query.task()
- * Query.task('2024101000')
- * Query.task(Query.utils.thisMonth(), 32)
+ * Query.task({ after: '2024101000' })
+ * Query.task({ after: Query.utils.thisMonth(), limit: 32 })
  */
-task: (after?: string, limit?: number) => Promise<IWrappedList<IWrappedBlock>>;
+task: (options?: { after?: string, limit?: number }) => Promise<IWrappedList<IWrappedBlock>>;
 /**
  * Randomly roam blocks
  * @param limit - Maximum number of results
@@ -251,30 +261,50 @@ task: (after?: string, limit?: number) => Promise<IWrappedList<IWrappedBlock>>;
 random: (limit?: number, type?: BlockType) => Promise<IWrappedList<IWrappedBlock>>;
 /**
  * Gets the daily notes document
- * @param notebook - Notebook ID, if not specified, all daily notes documents will be returned
- * @param limit - Maximum number of results
+ * @param options - Options
+ * @param options.notebook - Notebook ID, if not specified, all daily notes documents will be returned
+ * @param options.limit - Maximum number of results
  * @returns Array of daily notes document blocks
+ * @example
+ * Query.dailynote()
+ * Query.dailynote({ notebook: '20231224140619-bpyuay4' })
+ * Query.dailynote({ limit: 32 })
  */
-dailynote: (notebook?: NotebookId, limit?: number) => Promise<IWrappedList<IWrappedBlock>>;
+dailynote: (options?: { notebook?: NotebookId, limit?: number }) => Promise<IWrappedList<IWrappedBlock>>;
 /**
  * Gets child documents of a block
  * @param b - Parent block or block ID
  * @returns Array of child document blocks
  */
 childDoc: (b: BlockId | Block) => Promise<Block[]>;
-keyword: (keywords: string | string[], join?: "or" | "and") => Promise<IWrappedList<IWrappedBlock>>;
+/**
+ * Search blocks that contain the given keywords
+ * @param keywords - Keywords to search for; can provide multiple keywords
+ * @param options - Options
+ * @param options.join - Join type ('or' or 'and')
+ * @param options.limit - Maximum number of results to return, default is 999
+ * @returns Array of blocks that contain the given keywords
+ */
+keyword: (keywords: string | string[], options?: { join?: 'or' | 'and', limit?: number }) => Promise<IWrappedList<IWrappedBlock>>;
 /**
  * Search the document that contains all the keywords
- * @param keywords
- * @returns The document blocks that contains all the given keywords
+ * @param keywords - Keywords to search for; can provide multiple keywords
+ * @param options - Options
+ * @param options.join - Join type ('or' or 'and')
+ * @param options.limit - Maximum number of results to return, default is 999
+ * @returns The document blocks that contains all the given keywords; the blocks will attached a 'keywords' property, which is the matched keyword blocks
+ * @example
+ * let docs = await Query.keywordDoc(['Keywords A', 'Keywords B']);
+ * //each block in docs is a document block that contains all the keywords
+ * docs[0].keywords['Keywords A'] // get the matched keyword block by using `keywords` property
  */
-keywordDoc: (keywords: string | string[], join?: "or" | "and") => Promise<any[]>;
+keywordDoc: (keywords: string | string[], options?: { join?: 'or' | 'and', limit?: number }) => Promise<any[]>;
 /**
  * Return the markdown content of the given block
  * * For normal block, return the markdown attribute of the block
  * * For document block, return the markdown content of the document
  * * For heading block, return the children blocks' markdown content
- * @param block - Block
+ * @param input - Block or Block ID
  * @returns Markdown content of the document
  */
 markdown: async (input: BlockId | Block)  => Promise<string>
