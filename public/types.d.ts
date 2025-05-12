@@ -1,8 +1,8 @@
 /**
  * @name sy-query-view
  * @author frostime
- * @version 1.2.0
- * @updated 2025-04-15T14:38:08.680Z
+ * @version 1.2.1
+ * @updated 2025-05-12T11:23:48.693Z
  */
 
 declare module 'siyuan' {
@@ -252,6 +252,7 @@ declare const Query: {
      * @param options - Additional options
      * @param options.join - Join type ('or' or 'and')
      * @param options.limit - Maximum number of results
+     * @param options.match - Match type ('=' or 'like'), if `like` the tags will be automatically add % as prefix and suffix
      * @param limit - (Deprecated) Maximum number of results
      * @returns Array of blocks matching the tags
      * @example
@@ -262,6 +263,7 @@ declare const Query: {
     tag: (tags: string | string[], optionDeprecatedAsJoin?: {
         join?: "or" | "and";
         limit?: number;
+        match?: "=" | "like";
     } | DeprecatedParam<"or" | "and">, limit?: DeprecatedParam<number>) => Promise<IWrappedList<IWrappedBlock>>;
     /**
      * Find unsolved task blocks

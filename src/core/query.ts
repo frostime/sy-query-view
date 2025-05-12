@@ -3,8 +3,8 @@
  * @Author       : frostime
  * @Date         : 2024-12-01 22:34:55
  * @FilePath     : /src/core/query.ts
- * @LastEditTime : 2025-04-15 22:32:01
- * @Description  : 
+ * @LastEditTime : 2025-05-12 19:12:56
+ * @Description  :
  */
 import { IProtyle, showMessage } from "siyuan";
 
@@ -19,6 +19,7 @@ import { renderAttr } from "./components";
 import { BlockTypeShort } from "@/utils/const";
 import PromiseLimitPool from "@/libs/promise-pool";
 import { i18n } from "..";
+import { siyuanVersion } from "@frostime/siyuan-plugin-kits";
 
 // import { getSessionStorageSize } from "./gc";
 
@@ -233,7 +234,7 @@ class SiYuanDate extends Date {
     /**
      * Format date
      * @param fmt default as 'yyyy-MM-dd HH:mm:ss'
-     * @returns 
+     * @returns
      */
     format(fmt: string = 'yyyy-MM-dd HH:mm:ss') {
         return formatDateTime(fmt, this);
@@ -423,7 +424,7 @@ const Query = {
 
         /**
          * Given a document block (type='d'), return its emoji icon
-         * @param document 
+         * @param document
          * @returns emoji icon; if block is not with type='d', return null
          */
         docIcon: (document: Block) => {
@@ -434,8 +435,8 @@ const Query = {
 
         /**
          * Given emoji code, returl emoji icon
-         * @param code 
-         * @returns 
+         * @param code
+         * @returns
          */
         emoji: (code: string) => {
             let codePoint = parseInt(code, 16);
@@ -592,6 +593,7 @@ const Query = {
      * @param options - Additional options
      * @param options.join - Join type ('or' or 'and')
      * @param options.limit - Maximum number of results
+     * @param options.match - Match type ('=' or 'like'), if `like` the tags will be automatically add % as prefix and suffix
      * @param limit - (Deprecated) Maximum number of results
      * @returns Array of blocks matching the tags
      * @example
@@ -601,32 +603,43 @@ const Query = {
      */
     tag: async (
         tags: string | string[],
-        optionDeprecatedAsJoin?: { join?: 'or' | 'and', limit?: number } | DeprecatedParam<'or' | 'and'>,
+        optionDeprecatedAsJoin?: {
+            join?: 'or' | 'and',
+            limit?: number,
+            match?: '=' | 'like'
+        } | DeprecatedParam<'or' | 'and'>,
         limit?: DeprecatedParam<number>
     ) => {
         const opts = handleOptions(
             'tag',
-            { join: 'or' as 'or' | 'and', limit: undefined as number | undefined },
+            { join: 'or' as 'or' | 'and', limit: undefined as number | undefined, match: '=' as '=' | 'like' },
             optionDeprecatedAsJoin,
             { limit },
             'join'
         );
-        const { join, limit: lim } = opts;
+        const { join, limit: lim, match } = opts;
 
-        const ensureTag = (tag: string) => {
-            if (!tag.startsWith('#')) {
-                tag = `#${tag}`;
-            }
-            if (!tag.endsWith('#')) {
-                tag = `${tag}#`;
-            }
-            return tag;
+        // 格式化标签函数
+        const formatTag = (tag: string, isLike: boolean) => {
+
+            tag = tag.replace(/^[#%]/, '').replace(/[#%]$/, '');
+
+            return isLike ? `#%${tag}%#` : `#${tag}#`;
         };
 
+        // 将单个标签转换为数组
         tags = Array.isArray(tags) ? tags : [tags];
+
+        // 构建标签条件
+        const tagConditions = tags.map(tag => {
+            const formattedTag = formatTag(tag, match === 'like');
+            const operator = match === 'like' ? 'LIKE' : '=';
+            return `tag ${operator} '${formattedTag}'`;
+        }).join(` ${join} `);
+
         return Query.sql(`select * from blocks where
             (type='d' or type='p' or type='h') and
-            (${tags.map(ensureTag).map(tag => `tag like '%${tag}%'`).join(` ${join} `)})
+            (${tagConditions})
             ${lim ? `limit ${lim}` : ''}
         `);
     },
@@ -655,11 +668,12 @@ const Query = {
             'after'
         );
         const { limit: lim, after: afterDate } = options;
+        const LIST_MARK = siyuanVersion().compare('3.1.29') >= 0 ? '-' : '*';
 
         return Query.sql(`
             select * from blocks
             where type = 'i' and subtype = 't'
-            and markdown like '* [ ] %'
+            and markdown like '${LIST_MARK} [ ] %'
             ${afterDate ? ` and updated >= ${afterDate}` : ''}
             order by updated desc
             ${lim ? `limit ${lim}` : ''};
@@ -836,18 +850,11 @@ const Query = {
             block = input;
         }
         const id = block.id;
-        if (block.type === 'd') {
-            const { content } = await request('/api/export/exportMdContent', {
-                id: id,
-                yfm: false
-            });
-            return content;
-        } else if (block.type === 'h') {
-            let dom = await request('/api/block/getHeadingChildrenDOM', {
-                id
-            });
-            const lute = getLute();
-            return lute.BlockDOM2StdMd(dom);
+        if (block.type === 'd' || block.type === 'h') {
+            const childBlocks = await request('/api/block/getChildBlocks', { id });
+            const bodyContent = childBlocks.map(b => b.markdown).join('\n\n');
+            const markdown = block.type === 'd' ? bodyContent : `${block.markdown}\n\n${bodyContent}`;
+            return markdown;
         } else {
             return block.markdown;
         }
