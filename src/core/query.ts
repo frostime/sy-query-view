@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-12-01 22:34:55
  * @FilePath     : /src/core/query.ts
- * @LastEditTime : 2025-05-12 19:12:56
+ * @LastEditTime : 2025-05-14 14:09:00
  * @Description  :
  */
 import { IProtyle, showMessage } from "siyuan";
@@ -622,9 +622,9 @@ const Query = {
         // 格式化标签函数
         const formatTag = (tag: string, isLike: boolean) => {
 
-            tag = tag.replace(/^[#%]/, '').replace(/[#%]$/, '');
+            tag = tag.replace(/^[#%]+/, '').replace(/[#%]+$/, '');
 
-            return isLike ? `#%${tag}%#` : `#${tag}#`;
+            return isLike ? `%#%${tag}%#%` : `%#${tag}#%`;
         };
 
         // 将单个标签转换为数组
@@ -633,8 +633,7 @@ const Query = {
         // 构建标签条件
         const tagConditions = tags.map(tag => {
             const formattedTag = formatTag(tag, match === 'like');
-            const operator = match === 'like' ? 'LIKE' : '=';
-            return `tag ${operator} '${formattedTag}'`;
+            return `tag like '${formattedTag}'`;
         }).join(` ${join} `);
 
         return Query.sql(`select * from blocks where
