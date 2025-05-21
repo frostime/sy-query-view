@@ -1,5 +1,10 @@
 # Changelog
 
+### v1.2.3
+
+- ✨ feat: 新增 `Query.nearby` API，用于查询指定块的同级别的相邻块; 支持 `previous | next | both` 三种方向
+- 📝 doc: 修改 README 文档中的错别字
+
 ### v1.2.2
 
 - 🐛 fix: tag 匹配代码存在逻辑错误

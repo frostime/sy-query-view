@@ -1,8 +1,8 @@
 /**
  * @name sy-query-view
  * @author frostime
- * @version 1.2.2
- * @updated 2025-05-14T06:11:11.169Z
+ * @version 1.2.3
+ * @updated 2025-05-21T01:53:38.404Z
  */
 
 declare module 'siyuan' {
@@ -302,6 +302,50 @@ declare const Query: {
      * @returns Array of child document blocks
      */
     childDoc: (b: BlockId | Block) => Promise<Block[]>;
+    /**
+     * Get nearby blocks relative to the specified block within the same container.
+     *
+     * The search is limited to blocks within the same hierarchy level() container or heading section ).
+     * Example: For the following structure, para 2's nearby blocks would be:
+     * previous: [para 1], next: [para 3, para 4]; because `### Title` is outof the same hierarchy level.
+     *
+     * ```
+     * ### Title
+     *
+     * para 1
+     *
+     * para 2
+     *
+     * para 3
+     *
+     * para 4
+     * ```
+     *
+     * @param id - Target block ID to find neighbors for
+     * @param options - Search options
+     * @param options.direction - Which direction to search ('previous', 'next' or 'both'), defaults to 'both'
+     * @param options.number - Maximum number of blocks to return in each direction, defaults to 3
+     * @returns Object containing arrays of neighboring blocks
+     * @example
+     * // Get both previous and next blocks
+     * await query.nearby('block123');
+     *
+     * // Get 3 previous blocks only
+     * await query.nearby('block123', { direction: 'previous', number: 3 });
+     */
+    nearby: (id: BlockId, options?: {
+        direction?: "previous" | "next" | "both";
+        number?: number;
+    }) => Promise<{
+        previous?: {
+            id: Block;
+            markdown: string;
+        }[];
+        next?: {
+            id: Block;
+            markdown: string;
+        }[];
+    }>;
     /**
      * Search blocks that contain the given keywords
      * @param keywords {string | string[]} - Keywords to search for; can provide multiple keywords

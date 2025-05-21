@@ -1,6 +1,6 @@
 {
   "name": "sy-query-view",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "type": "module",
   "description": "This is a sample plugin based on vite and svelte for Siyuan (https://b3log.org/siyuan). Created with siyuan-plugin-cli v2.4.5.",
   "repository": "https://github.com/frostime/sy-query-view",

@@ -168,7 +168,7 @@ So this code's function is: <u>Query all backlinks of the current document.</u>
 //!js
 const query = async () => {
   let blocks = await Query.backlink(protyle.block.rootID);
-  return block.pick('id'); // Special utility function, will be introduced later; equivalent to blocks.map(b => b.id);
+  return blocks.pick('id'); // Special utility function, will be introduced later; equivalent to blocks.map(b => b.id);
 }
 return query();
 ```

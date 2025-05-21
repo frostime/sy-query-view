@@ -164,7 +164,7 @@ flowchart TD
 //!js
 const query = async () => {
   let blocks = await Query.backlink(protyle.block.rootID);
-  return block.pick('id'); //特殊工具函数，后面会介绍; 等价于blocks.map(b => b.id);
+  return blocks.pick('id'); //特殊工具函数，后面会介绍; 等价于blocks.map(b => b.id);
 }
 return query();
 ```
