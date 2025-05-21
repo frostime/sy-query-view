@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-12-01 22:34:55
  * @FilePath     : /src/core/query.ts
- * @LastEditTime : 2025-05-14 14:09:00
+ * @LastEditTime : 2025-05-16 22:37:26
  * @Description  :
  */
 import { IProtyle, showMessage } from "siyuan";
@@ -19,7 +19,7 @@ import { renderAttr } from "./components";
 import { BlockTypeShort } from "@/utils/const";
 import PromiseLimitPool from "@/libs/promise-pool";
 import { i18n } from "..";
-import { siyuanVersion } from "@frostime/siyuan-plugin-kits";
+import { getBlockByID, id2block, siyuanVersion } from "@frostime/siyuan-plugin-kits";
 
 // import { getSessionStorageSize } from "./gc";
 
@@ -742,6 +742,66 @@ const Query = {
         docs = ids.map(id => docsMap[id]);
         // return docs.map(wrapBlock);
         return wrapList(docs);
+    },
+
+    /**
+     * Get nearby blocks relative to the specified block within the same container.
+     * 
+     * The search is limited to blocks within the same hierarchy level() container or heading section ).
+     * Example: For the following structure, para 2's nearby blocks would be:
+     * previous: [para 1], next: [para 3, para 4]; because `### Title` is outof the same hierarchy level.
+     * 
+     * ```
+     * ### Title
+     * 
+     * para 1
+     * 
+     * para 2
+     * 
+     * para 3
+     * 
+     * para 4
+     * ```
+     * 
+     * @param id - Target block ID to find neighbors for
+     * @param options - Search options
+     * @param options.direction - Which direction to search ('previous', 'next' or 'both'), defaults to 'both'
+     * @param options.number - Maximum number of blocks to return in each direction, defaults to 3
+     * @returns Object containing arrays of neighboring blocks
+     * @example
+     * // Get both previous and next blocks
+     * await query.nearby('block123');
+     * 
+     * // Get 3 previous blocks only
+     * await query.nearby('block123', { direction: 'previous', number: 3 });
+     */
+    nearby: async (id: BlockId, options?: {
+        direction?: 'previous' | 'next' | 'both',
+        number?: number
+    }): Promise<{ 
+        previous?: { id: Block, markdown: string }[],
+        next?: { id: Block, markdown: string }[]
+    }> => {
+        options = options ?? {};
+        const { direction = 'both', number = 3 } = options;
+        const blocks = await getBlockByID(id);
+        const container = blocks.parent_id || blocks.root_id;
+
+        const neighbors = await request('/api/block/getChildBlocks', { id: container }) as {id: BlockId, markdown: string}[];
+        if (!neighbors) return {};
+
+        // 找到当前块的位置
+        const currentIndex = neighbors.findIndex(block => block.id === id);
+        if (currentIndex === -1) return {};
+
+        const results = {};
+        if (direction === 'previous' || direction === 'both') {
+            results['previous'] = neighbors.slice(Math.max(0, currentIndex - number), currentIndex);
+        }
+        if (direction === 'next' || direction === 'both') {
+            results['next'] = neighbors.slice(currentIndex + 1, currentIndex + 1 + number);
+        }
+        return results;
     },
 
     /**
