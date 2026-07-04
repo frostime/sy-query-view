@@ -269,6 +269,18 @@ export class DataView extends UseStateMixin implements IDataView {
     }
 
     /** @internal */
+    private disableEditableContent() {
+        if (!this._element) return;
+
+        if (this._element.getAttribute("contenteditable") !== "false") {
+            this._element.setAttribute("contenteditable", "false");
+        }
+        this._element.querySelectorAll('[contenteditable="true"]').forEach(node => {
+            node.setAttribute('contenteditable', 'false');
+        });
+    }
+
+    /** @internal */
     dispose() {
         if (this.disposed) return;
         this.disposed = true;
@@ -1398,19 +1410,13 @@ export class DataView extends UseStateMixin implements IDataView {
             rotateElement.classList.remove("fn__rotate");
         }
 
-        this._element.setAttribute("contenteditable", "false");
+        this.disableEditableContent();
 
         if (this.top) {
             // 前进后退定位 https://ld246.com/article/1667652729995
             // https://github.com/siyuan-note/siyuan/commit/5d736483ec80e1071b2f3eab4fcd64aac5856271
             this.protyle.contentElement.scrollTop = this.top;
         }
-
-        // 确保内部节点不可编辑
-        let editableNodeList = this._element.querySelectorAll('[contenteditable="true"]');
-        editableNodeList.forEach(node => {
-            node.setAttribute('contenteditable', 'false');
-        });
 
         this.thisEmbedNode.style.height = "";
 
@@ -1483,7 +1489,6 @@ export class DataView extends UseStateMixin implements IDataView {
             this.thisEmbedNode = null;
             this._element = null;
             this.protyle = null;
-            this.observer = null;
         });
 
         // Garbage Collection on Document Closed
@@ -1522,6 +1527,9 @@ export class DataView extends UseStateMixin implements IDataView {
                             this.dispose();
                         }
                     });
+                    this.disableEditableContent();
+                } else if (mutation.type === 'attributes' && mutation.attributeName === 'contenteditable') {
+                    this.disableEditableContent();
                 } else if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
                     // Handle style changes here
                     // 😠 不知道怎么回事，思源老是乱改嵌入块的 height 属性, 导致嵌入块经常内容溢出到容器外
@@ -1534,9 +1542,9 @@ export class DataView extends UseStateMixin implements IDataView {
 
         this.observer.observe(this.thisEmbedNode, {
             childList: true,
-            subtree: false,
+            subtree: true,
             attributes: true,
-            attributeFilter: ['style']  // 只监听 style 属性的变化
+            attributeFilter: ['style', 'contenteditable']
         });
     }
 }
