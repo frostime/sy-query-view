@@ -25,7 +25,8 @@ jobs:
         uses: pnpm/action-setup@v4
         id: pnpm-install
         with:
-          version: 8
+          # 必须 >= 10: 仓库使用 pnpm-workspace.yaml(allowBuilds), 且本地工具链为 pnpm 11
+          version: 11
           run_install: false
 
       # Get pnpm store directory
