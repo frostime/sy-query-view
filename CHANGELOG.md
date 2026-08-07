@@ -1,65 +1,71 @@
 # Changelog
 
-### v1.2.3
+All notable changes to this project will be documented in this file.
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/2.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-- ✨ feat: 新增 `Query.nearby` API，用于查询指定块的同级别的相邻块; 支持 `previous | next | both` 三种方向
-- 📝 doc: 修改 README 文档中的错别字
+## [Unreleased]
 
-### v1.2.2
+## [1.3.0] - 2026-08-07
 
-- 🐛 fix: tag 匹配代码存在逻辑错误
+### Fixed
 
-### v1.2.1 适配 SiYuan 3.1.29 版本
+- 适配 SiYuan 3.7.0 嵌入块原地编辑：DataView 视图内容持续保持只读，避免误编辑进入思源编辑链路导致编辑器异常。
+- 修复集市校验失败问题（`readme.default` 缺失、`icon.png` 超过 20 KB 上限），确保更新包可被 Bazaar 正常索引。
 
-* `Query.task` API 适配 3.1.29 对列表符号的变更，自动按照思源版本适配
-* `Query.tag` API 新增 `match` 选项，支持 `=` 和 `like` 两种匹配模式
-* 改进 `Query.markdown` 函数的实现方案
+## [1.2.3] - 2025-05-21
 
-### v1.1.0 ~ v1.2.0 的变化
+### Added
 
-v1.1.0 版本中，由于存在和思源的不兼容性问题，插件暂时下架。
+- 新增 `Query.nearby` API：查询指定块同级别的相邻块，支持 `previous | next | both` 三种方向。
 
-v1.2.0 版本后，插件将不兼容思源的 3.1.24,25 版本。请选择其他的思源的版本来使用 Query View 插件。
+### Changed
 
-✨ **新增功能**
+- 修正 README 文档中的错别字。
 
-1. DataView 中增加 `Card` 组件
-2. DataView 的 `Markdown` 组件支持渲染数学公式
-3. 优化了 DataView 中的 `Embed` 组件
-4. 增加了 `Query.pruneBlocks` 函数，用于合并查询过程中具有父子关系的块，从而实现查询结果的去重
-5. Example 中增加了 `list-tag` 的案例
+## [1.2.2] - 2025-05-14
 
-⚠️ **API 变动**
+### Fixed
 
-Query 中部分 API 的参数用法发生变动；旧的用法依然兼容，但是会提出警示，建议迁移到新的用法；具体情况请参考相关文档。
+- 修复 `Query.tag` 匹配代码中的逻辑错误。
 
-1. `Query.attr`
+## [1.2.1] - 2025-05-12
 
-    ```javascript
-    Query.attr("name", "value", "=", 10); // 弃用
-    Query.attr("name", "value", { valMatch: "=", limit: 10 }); // 推荐
-    ```
-2. `Query.tag`
+### Added
 
-    ```javascript
-    Query.tag("tag1", "or", 10); // 弃用
-    Query.tag("tag1", { join: "or", limit: 10 }); // 推荐
-    ```
-3. `Query.task`
+- `Query.tag` API 新增 `match` 选项，支持 `=` 和 `like` 两种匹配模式。
 
-    ```javascript
-    Query.task("2024101000", 32); // 弃用
-    Query.task({ after: "2024101000", limit: 32 }); // 推荐
-    ```
-4. `Query.keyword`/ `Query.keywordDoc`
+### Changed
 
-    ```
-    Query.keyword("keyword", "or", 10); // 弃用
-    Query.keyword("keyword", { join: "or", limit: 10 }); // 推荐
-    ```
-5. `Query.dailynote`
+- `Query.task` API 适配 SiYuan 3.1.29 对列表符号的变更，自动按思源版本适配。
+- 改进 `Query.markdown` 函数的实现方案。
 
-    ```javascript
-    Query.dailynote("20231224140619-bpyuay4", 32); // 弃用
-    Query.dailynote({ notebook: "20231224140619-bpyuay4", limit: 32 }); // 推荐
-    ```
+## [1.2.0] - 2025-04-15
+
+v1.1.0 曾因与思源的不兼容问题暂时下架；v1.2.0 重新上架，且自该版本起不再兼容思源 3.1.24、3.1.25。
+
+### Added
+
+- DataView 新增 `Card` 组件。
+- DataView 的 `Markdown` 组件支持渲染数学公式。
+- 新增 `Query.pruneBlocks` 函数：合并查询结果中具有父子关系的块，实现结果去重。
+- Example 中新增 `list-tag` 案例。
+
+### Changed
+
+- 优化 DataView 中的 `Embed` 组件。
+
+### Deprecated
+
+- `Query.attr` 旧参数用法弃用（仍兼容但会提出警示，建议迁移到新用法）：`Query.attr("name", "value", "=", 10)` → `Query.attr("name", "value", { valMatch: "=", limit: 10 })`。
+- `Query.tag` 旧参数用法弃用：`Query.tag("tag1", "or", 10)` → `Query.tag("tag1", { join: "or", limit: 10 })`。
+- `Query.task` 旧参数用法弃用：`Query.task("2024101000", 32)` → `Query.task({ after: "2024101000", limit: 32 })`。
+- `Query.keyword` / `Query.keywordDoc` 旧参数用法弃用：`Query.keyword("keyword", "or", 10)` → `Query.keyword("keyword", { join: "or", limit: 10 })`。
+- `Query.dailynote` 旧参数用法弃用：`Query.dailynote("20231224140619-bpyuay4", 32)` → `Query.dailynote({ notebook: "20231224140619-bpyuay4", limit: 32 })`。
+
+[Unreleased]: https://github.com/frostime/sy-query-view/compare/v1.2.3...HEAD
+[1.3.0]: https://github.com/frostime/sy-query-view/compare/v1.2.3...v1.3.0
+[1.2.3]: https://github.com/frostime/sy-query-view/compare/v1.2.2...v1.2.3
+[1.2.2]: https://github.com/frostime/sy-query-view/compare/v1.2.1...v1.2.2
+[1.2.1]: https://github.com/frostime/sy-query-view/compare/v1.2.0...v1.2.1
+[1.2.0]: https://github.com/frostime/sy-query-view/compare/v1.1.2...v1.2.0
