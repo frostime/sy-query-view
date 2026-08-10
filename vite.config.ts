@@ -32,12 +32,14 @@ export default defineConfig({
         }),
 
         viteStaticCopy({
+            structured: true,
             targets: [
                 { src: "./README*.md", dest: "./" },
                 { src: "./CHANGELOG.md", dest: "./" },
                 { src: "./plugin.json", dest: "./" },
                 { src: "./preview.png", dest: "./" },
-                { src: "./icon.png", dest: "./" }
+                { src: "./icon.png", dest: "./" },
+                { src: "./docs/**", dest: "./" }
             ],
         }),
 
@@ -69,7 +71,8 @@ export default defineConfig({
                             const files = await fg([
                                 'public/i18n/**',
                                 './README*.md',
-                                './plugin.json'
+                                './plugin.json',
+                                './docs/**'
                             ]);
                             for (let file of files) {
                                 this.addWatchFile(file);
@@ -228,7 +231,7 @@ function replaceMDImgUrl(dirname: string) {
                     }
                     function replaceImageUrl(url: string) {
                         // Replace with your desired image hosting URL
-                        if (url.startsWith('assets/')) {
+                        if (url.startsWith('docs/assets/')) {
                             return `${prefix}/${url}`;
                         }
                         return url;

@@ -1,19 +1,20 @@
-思源的嵌入块功能，支持使用 Javascript 语法进行查询。而此前由 Zxhd 开发的[基础数据查询](https://github.com/zxhd863943427/siyuan-plugin-data-query)插件，提升了 JS 查询的能力。本插件在其基础上，调整了 API 结构，增加了若干功能，让在思源中使用 JS 查询变得更加简单方便；并优化了 DataView 接口，支持更加丰富、自定义化更强的数据展示功能。
-
-⚠️ 注意，本帮助文档默认用户了解基础的 Javascript 语法概念。（至少需要理解基础的变量、流程、函数调用、aysnc/await）。
-
 > 🔀 **[更新日志](CHANGELOG.md)**
 
-> 🔔 本帮助文档较长，在安装页面查看可能较为不方便。
->
-> 你可以在下载下来之后，点击左上角菜单按钮中的“帮助文档”按钮，插件会自动在思源内创建一个帮助文档。
->
-> ![image](assets/image-20241211194348-sfzl8pc.png)​
->
-> 帮助文档中会包含插件最新的 API 类型定义接口。  
-> 如果你只想要查阅接口内容而对帮助文档的其他部分不感兴趣，可以在插件中将“用户文档只导入类型参考”设置为 `true`​。
+> 🔔 本文档由仓库 `docs/zh_CN/` 下的页面自动生成（英文版由 `docs/en_US/` 生成）。插件内文档站随插件版本发布：点击顶栏菜单中的「帮助」即可打开，内容与已安装版本一致、可离线浏览，并且不会在知识库中创建或更新任何笔记。
 
-## 0. 功能速览
+
+## Query & View 文档站
+
+思源的嵌入块功能支持使用 JavaScript 语法进行查询。此前由 Zxhd 开发的[基础数据查询](https://github.com/zxhd863943427/siyuan-plugin-data-query)插件提升了 JS 查询的能力；本插件在其基础上调整了 API 结构、增加了若干功能，让在思源中使用 JS 查询更加简单方便，并优化了 DataView 接口，支持更丰富、自定义化更强的数据展示功能。
+
+⚠️ 本帮助文档假设你已经了解基础的 JavaScript 语法概念（至少需要理解基础的变量、流程、函数调用、async/await）。
+
+> 🔔 插件随版本发布一个插件内文档站：点击顶栏菜单中的「帮助」即可打开。文档站内容与当前安装的插件版本一致、可离线浏览，并且**不会在你的知识库中创建或更新任何笔记**；旧版本遗留的帮助笔记会保留原状，不再由插件更新。
+>
+> 本仓库的中英文 README 由同一份文档页面生成并提交，可在 GitHub 或集市中浏览同一份内容。
+
+
+### 功能速览
 
 💡 本插件大致可以提供以下功能（这里提供一个概览印象，详细用法见后面的说明）。
 
@@ -21,47 +22,41 @@
 
 案例：查询指定 ID 的文档的子文档，并只展示前三个文档：
 
-![image](assets/image-20241025221225-4ml02nc.png "查询指定 ID 的文档的子文档")
+![image](docs/assets/image-20241025221225-4ml02nc.png "查询指定 ID 的文档的子文档")
 
 2️⃣ 使用 DataView 对象，自定义地渲染嵌入块内容。
 
 案例：查询当前文档的反向链接，并在嵌入块中渲染为块链接的列表。
 
-![image](assets/image-20241025221628-8bslxks.png "展示反向链接")
+![image](docs/assets/image-20241025221628-8bslxks.png "展示反向链接")
 
 案例：使用 JS 创建的动态文档内容
 
-![image](assets/image-20241025222516-lvb94rl.png "随机漫步")
+![image](docs/assets/image-20241025222516-lvb94rl.png "随机漫步")
 
 以及更多丰富的可渲染组件。
 
-![image](assets/image-20241213214945-r6p1je6.png "Kanban")
+![image](docs/assets/image-20241213214945-r6p1je6.png "Kanban")
 
-![image](assets/image-20241130151900-0n7ku7o.png)
+![image](docs/assets/image-20241130151900-0n7ku7o.png)
 
 3️⃣ 简化对查询结果的处理、访问。
 
-使用 Query API 查询到的结果，在普通的块属性的基础上有一些别的方便的属性。比如在下面这个例子中，我们可以直接使用 `aslink`​ 获取一个块的思源链接等。
+使用 Query API 查询到的结果，在普通的块属性的基础上有一些别的方便的属性。比如在下面这个例子中，我们可以直接使用 `aslink` 获取一个块的思源链接等。
 
-![image](assets/image-20241025223457-hi94ial.png)
+![image](docs/assets/image-20241025223457-hi94ial.png)
 
 4️⃣ 在外部代码编辑器中编辑嵌入块的代码，并随着外部的编辑自动更新源代码。
 
-![image](assets/image-20241130145358-bqvwgmb.png)
+![image](docs/assets/image-20241130145358-bqvwgmb.png)
 
-> 🖋️ **从示例开始学习**
+> 🖋️ **从案例开始学习**
 >
-> 学习本插件的最好的方式是从一些案例出发，快速了解插件的一些基本用法。
+> 学习本插件最好的方式是从一些案例出发，快速了解插件的基本用法。
 >
-> 各位可以点击在左上角插件的菜单中点击「Examples」。
->
-> ![image](assets/image-20241211194155-oc0yj5l.png)
->
-> 在 Examples 标签页中，您可以<u>将文本框内的样例代码复制并粘贴到一个嵌入块</u>中，以便快速查看其效果。
->
-> ![image](assets/image-20241214152215-p163uhs.png)
+> 打开文档站「案例总览」页，将案例代码复制并粘贴到一个嵌入块中，即可快速查看效果。案例代码随插件发布，与当前安装的插件版本一致。
 
-## 1. 基本概念：什么是 JS 嵌入块
+## 基本概念：什么是 JS 嵌入块
 
 思源默认的嵌入块使用 SQL 语法，查询到 block 之后，会自动放入嵌入块渲染成为内容。
 
@@ -94,7 +89,7 @@ flowchart TD
   DataView
   Query --> Query.Utils
   Query --> DataViews
-  
+
   subgraph Queries
     Query --> sql
     Query --> backlink
@@ -102,7 +97,7 @@ flowchart TD
     Query --> random
     Query --> A[...]
   end
-  
+
   subgraph DataViews
     DataView --> List
     DataView --> Table
@@ -120,33 +115,67 @@ flowchart TD
 >
 > 使用 Query View 需要在嵌入块中编写 js 代码，你可以在编辑器中输入 `/qv`​ 快速插入一个骨架模板，无需每次都从头编写 `//!js...`​ 这些常规的程序结构，而专注与编写核心逻辑。
 >
-> ![image](assets/image-20241214183258-vdarhfx.png)
+> ![image](docs/assets/image-20241214183258-vdarhfx.png)
 >
 > 默认的基础模板的功能是随机查询五个块，你可以自行修改成你想要的查询逻辑。
 >
-> ```js
-> //!js
-> const query = async () => {
->     //如果要使用 DataView 请取消下面这行的注释
->     //let dv = Query.DataView(protyle, item, top);
->
->     const SQL = `
->         select * from blocks
->         order by random()
->         limit 5;
->     `;
->     let blocks = await Query.sql(SQL);
->
->     return blocks.pick('id');
->     //如果要使用 DataView 请注释上面的 return, 并取消下方两行注释
->     //dv.addlist(blocks);
->     //dv.render();
-> }
->
-> return query();
-> ```
+> 模板的完整代码与分步操作见「从模板开始」页面。
 
-## 2. 基础用法
+## 从模板开始
+
+本页带你用最小成本跑起第一个 Query View。基础模板的代码权威位于 `public/example/basic-template.js`，文档站与插件的 `/qv` 斜杠菜单共用这一份代码，不会在别处重复维护。
+
+### 复制模板
+
+
+```js
+//!js
+// Query View basic template.
+// Authoritative source of the template code: the docs site and the plugin's
+// /qv slash menu both use this file (public/example/basic-template.js).
+const query = async () => {
+    //To use DataView, uncomment the following line
+    //let dv = Query.DataView(protyle, item, top);
+
+    const SQL = `
+        select * from blocks
+        order by random()
+        limit 5;
+    `;
+    let blocks = await Query.sql(SQL);
+
+    return blocks.pick('id');
+    //To use DataView, comment out the above return and uncomment the following two lines
+    //dv.addlist(blocks);
+    //dv.render();
+}
+
+return query();
+```
+
+模板默认随机查询五个块，并把查询到的块 ID 返回给思源渲染。
+
+### 插入嵌入块
+
+两种方式任选其一：
+
+1. **斜杠菜单**：在文档中键入 `/qv`（或 `/queryview`），选择「Query View 基本模板」，插件会把模板作为嵌入块插入当前文档。
+2. **手动插入**：新建一个嵌入块（嵌入块类型的块），把上面复制的代码完整粘贴进去。嵌入块内容以 `//!js` 开头时，思源会将其作为 JavaScript 执行。
+
+### 运行
+
+嵌入块插入后会自动执行。看到随机展示的五个块即为成功。如果没有反应，先检查代码是否以 `//!js` 开头，再查看控制台报错（排查建议见「外部编辑器与调试」）。
+
+### 改造模板
+
+模板中有两段被注释的代码：`Query.DataView(protyle, item, top)` 与 `dv.addlist(blocks)` / `dv.render()`。
+
+- **使用 DataView 渲染视图**：注释掉 `return blocks.pick('id');`，取消注释 DataView 两行，模板就会把查询结果渲染为一个列表视图。注意 `protyle`、`item`、`top` 三个参数永远固定不动。
+- **查询其他内容**：修改 `Query.sql` 中的 SQL 语句，或改用 `Query.backlink`、`Query.tag` 等封装查询（见「Query 查询」主题）。
+
+想直接看各种效果，可以打开「案例总览」，找到最接近你需求的案例，复制并改造。
+
+## Query 查询
 
 ### 使用 Query 进行 SQL 查询
 
@@ -263,212 +292,6 @@ markdown: async (input: BlockId | Block)  => Promise<string>
 
 > 🔔 **注意**：以上的几个函数不一定包含全部的查询 API，想要查看完整的接口，请访问 [https://github.com/frostime/sy-query-view/blob/main/public/types.d.ts](https://github.com/frostime/sy-query-view/blob/main/public/types.d.ts)。
 
-### DataView 的基础使用
-
-以上的操作虽然使用了 javascript，但是在本质上似乎和原生的嵌入块没什么不同——最后查询到的结果依然是交给思源去渲染。但是如果使用 DataView 功能，则可以将查询到的块渲染为各种不同的视图。
-
-在这一小节中，我们首先介绍三个最基础的视图组件：
-
-1. 列表
-2. 表格
-3. markdown 文本
-
-🔔 这些组件的高级用法，以及更多更复杂的组件，在后面的「进阶用法」中介绍。
-
-#### DataView.list
-
-首先给出一个基本的案例，相较于上面的 JS 查询，这里做了三个变动：1）在开头声明一个 DataView 对象；2）在查询到 `blocks`​ 后，使用 `dv.addlist`​ API；3）在最后去掉 `return`​，改为 `dv.render()`​
-
-```js
-//!js
-const query = async () => {
-  let dv = Query.DataView(protyle, item, top); //1. 在开头加上这么一行，注意 protyle, item, top 三个参数是永远固定不动的
-  let blocks = await Query.random(5);
-  dv.addlist(blocks); //2. 调用 dv.addlist 添加一个列表视图
-  dv.render(); //3. 去掉 return, 以 dv.render() 结尾
-}
-return query();
-```
-
-通过以上的代码，我们就可以将 SQL 语句查询到几个块，以列表的形式在嵌入块中展示，效果如下：
-
-![image](assets/image-20241204001321-csglpyu.png)
-
-默认情况下，每个列表项都是一个块链接，同样可以悬浮查看以及点击跳转。
-
-![image](assets/image-20241204001504-jz4gbh1.png)
-
-在 list 函数的第二个参数中，可以传入一些可选项
-
-```ts
-{
-    type?: 'u' | 'o'; //u 代表无序列表，o 代表有序列表；默认 u
-    columns?: number; //传输一个整数后，会分栏显示
-    renderer?: (b: T) => string | number | undefined | null; //渲染函数, 返回的值会被视为 markdown 文本
-}
-```
-
-比如下面我们把列表以双列、有序列表的形式重新展示一遍；并且我们提供一个 renderer 函数，只展示这个块的 `hpath`​ 属性
-
-```js
-//!js
-const query = async () => {
-  let dv = Query.DataView(protyle, item, top);
-  const blocks = await Query.random(5);
-  dv.addlist(blocks, {
-    type: 'o',
-    columns: 2,
-    renderer: (b) => b.hpath
-  });
-  dv.render();
-}
-return query();
-```
-
-![image](assets/image-20241207210617-i5tmd5l.png)
-
-#### DataView.Table
-
-除了列表之外，另一个最常用的视图应该就是表格了。我们把上面的代码重复一遍，不过这次换成 `addtable`​
-
-```js
-//!js
-const query = async () => {
-  let dv = Query.DataView(protyle, item, top); //永远是这个开头不动
-  const blocks = await Query.random(5);
-  dv.addtable(blocks);
-  dv.render(); //永远是这个结尾不动
-}
-return query();
-```
-
-效果如下：
-
-![image](assets/image-20241204002444-9j30l5k.png)
-
-table 组件会自动以合适的方式渲染不同的列：比如 type 被渲染为实际的类型名称、hpath 被渲染为文档的超链接、box 被渲染为实际的笔记本的名称等。
-
-表格默认显示的列，可以在设置中配置。
-
-![image](assets/image-20241204002830-35q4qjh.png)
-
-同样，表格也有一些可以配置的字段。
-
-```ts
-{
-    center?: boolean; //居中
-    fullwidth?: boolean; //全宽
-    index?: boolean;  //显示行号
-    cols?: (string | Record<string, string>)[] | Record<string, string>;
-    renderer?: (b: Block, attr: keyof Block) => string | undefined | null;
-}
-```
-
-前面三个属性的用法比较直观，主要是制定了表格的显示方式。
-
-![image](assets/image-20241204003312-d3040o5.png)
-
-更重要的是 `cols`​ 这个属性——他可以绕过默认的配置，自行指定需要展示的列，不考虑复杂的用法，可以只用记住两种最简单的用法：
-
-* 为 `null`​，则显示所有的列
-* 为块属性名称的列表，则显示对应的列
-
-```js
-//!js
-const query = async () => {
-  let dv = Query.DataView(protyle, item, top);
-  const blocks = await Query.backlink(dv.root_id);  //dv.root_id 等价于 protyle.block.rootID，算是能少写一点字
-  dv.addtable(blocks, { fullwidth: false, cols: null}); //全部显示
-  dv.addtable(blocks, { fullwidth: true, cols: ['root_id', 'box', 'updated']});
-  dv.render();
-}
-return query();
-```
-
-![image](assets/image-20241204003849-8l19z7b.png)
-
-> 上面第一个表格，由于太宽了，所以把 `fullwidth`​ 关掉，这样就可以横向滚动查看了。
-
-💡 （略高级的用法，如果没有 JS 基础可以跳过）renderer 函数用于指定渲染各个列（key）的方案，如果不指定则使用默认的单元格渲染方案。而如果返回值为 null ，同样会会退到默认方案。
-
-对比以下的案例，很明显就能看出区别，一个全部使用默认方案，另一个自定义了 id 和 box 两列的渲染方案。
-
-```js
-//!js
-const query = async () => {
-  let dv = Query.DataView(protyle, item, top);
-  const blocks = await Query.random(3);
-  dv.addtable(blocks, { 
-    cols: ['id', 'hpath', 'root_id', 'box']
-  });
-  dv.addtable(blocks, { 
-    cols: ['id', 'hpath', 'root_id', 'box'],
-    renderer: (block, key) => {
-        if (key == 'id') return block[key]; // key 列直接显示原始文本
-        if (key == 'box') return 'Hahaha';
-    }
-  });
-  dv.render();
-}
-return query();
-```
-
-![image](assets/image-20241208234136-s06cygn.png)
-
-#### DataView.md
-
-不知道你有没有注意，在上面展示表格的几个参数的时候，在截图中有一些标注文字。这些文字，实际上是 markdown 组件。我们可以通过 `dv.md`​ 的形式，构造一个 markdown 视图。
-
-```js
-//!js
-//这里由于没有 await 的需要，所以可以把外层的 async 函数去掉
-let dv = Query.DataView(protyle, item, top);
-dv.addmd('## 这是一个二级标题')
-dv.addmd(`当前文档的 id 是: ${protyle.block.rootID}`)
-dv.addmd(`
-1. 第一个
-2. 第二个
-
-{{{col
-支持思源自己的多栏布局语法
-
-这是第二列
-}}}
-
-> 截图中双栏的外边框是我思源的代码片段，但是这个块的样式则是思源自带的 ial 语法
-{: style="background-color: var(--b3-theme-primary-light); font-size: 20px;"}
-
-`)
-dv.render();
-```
-
-![image](assets/image-20241204004702-va0yg1n.png)
-
-> 🙁  不过遗憾的是，markdown 组件并不支持数据公式等这些需要额外渲染的内容。
-
-尽管有一些限制，markdown 组件配合 javascript 的[模板字符串](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Template_literals)还是能有相当大的作用的，也能有效地充实 DataView 的内容。下面给一个小例子，通过 `fetch`​ 获取网络上的资源，然后在嵌入块中显示每日一句。
-
-🙄 注意，由于使用了（网上随便找到）网络接口，所以你在本地测试的时候不一定能获取到数据。
-
-```js
-//!js
-let dv = Query.DataView(protyle, item, top);
-fetch('https://api.xygeng.cn/one').then(async ans => {
- console.log(ans)
- if (ans.ok) {
-    let data = await ans.json();
-    console.log(data)
-    dv.addmd('今天的每日一句')
-    dv.addmd(`> ${data.data.content} —— ${data.data.origin}`)
- }
-})
-dv.render();
-```
-
-![image](assets/image-20241204005817-mpdtp85.png)
-
-## 3. 进阶用法 - Query 查询
-
 > 💡 **注意**：不同于主要面向普通的用户的基础用法，后续的进阶用法将默认用户拥有基本的 javascript/typescript 阅读和编码能力
 
 以下介绍一些 Query 查询的高级用法。
@@ -487,14 +310,14 @@ dv.render();
 使用 Query 查询得到的结果在理念上被视为一个表结构，每一个元素代表了个思源的 Block。
 
 ```ts
-[ 
+[
   {'id': 'ID-111', 'type': 'd', created: '20230401001000'},
   {'id': 'ID-hhh', 'type': 'd', created: '...'},
   {'id': 'ID-kkk', 'type': 'b', created: '...'},
 ]
 ```
 
-![image](assets/image-20230506013450-g2mkp8l.png)​
+![image](docs/assets/image-20230506013450-g2mkp8l.png)​
 
 为了方便对这个表数据进行操作：
 
@@ -568,7 +391,7 @@ interface IWrappedBlock extends Block {
 //!js
 const query = async () => {
     let dv = Query.DataView(protyle, item, top);
-  
+
     let blocks = await Query.random(1);
     let b = blocks[0];
 
@@ -590,7 +413,7 @@ const query = async () => {
 return query();
 ```
 
-![image](assets/image-20241213184747-0ma9dj4.png)
+![image](docs/assets/image-20241213184747-0ma9dj4.png)
 
 > 🔔 以上介绍不一定完整，完整 API 文档以 `repo/public/types.d.ts`​ 为准
 
@@ -780,7 +603,7 @@ select * from blocks where created like '${date.add(-7).toString(false)}%'
 dv.render();
 ```
 
-![image](assets/image-20241204112906-ih3lqzu.png)
+![image](docs/assets/image-20241204112906-ih3lqzu.png)
 
 当然如果你懒得每次都要实例化一个 Date 对象，那么 utils 下还有一些快捷函数。
 
@@ -887,7 +710,7 @@ fb2p （或者说引用关系转移）的目的是**处理容器块和段落块�
 
 📣 首先我们解释一下这个 API 的使用背景。现在假定有一个列表块，引用了另外的一个块
 
-![image](assets/image-20241208222807-mvc3opc.png)
+![image](docs/assets/image-20241208222807-mvc3opc.png)
 
 我们使用下面的 SQL 来查询被引用块的所有反链信息
 
@@ -899,15 +722,15 @@ select * from blocks where id in (
 
 效果如下：
 
-![image](assets/image-20241204123442-lceozz3.png)
+![image](docs/assets/image-20241204123442-lceozz3.png)
 
 令人意外的是，查询的结果只包含了引用的所在的段落，而不会像反链面板那样展示整个列表项块。
 
-![image](assets/image-20241204123606-44328dv.png "反链面板展示的结果")
+![image](docs/assets/image-20241204123606-44328dv.png "反链面板展示的结果")
 
 这里的原因在于，列表项块是一个容器类型（如图中标号 2 的黄色范围），他本身是不自带内容的。所以实际在思源底层，真正引用了目标的块是列表块的第一个段落块（如图中标号 1 的红色范围）—— 而之所以在反链面板当中会显示完整的列表项，是因为思源在反链面板里会做特殊的处理。
 
-![image](assets/image-20241204123811-vla1xke.png)
+![image](docs/assets/image-20241204123811-vla1xke.png)
 
 而这也就是 `fb2p`​ 起作用的时候了：它的理念是「**一个容器块的第一个子块如果是段落块，那么这个段落块应该能代表整个容器块**」。
 
@@ -928,14 +751,14 @@ return (async () => {
 
 二者效果对比如下：
 
-![image](assets/image-20241204130225-vpgesgp.png)
+![image](docs/assets/image-20241204130225-vpgesgp.png)
 
 fb2p 支持传递列表项、引述块两种容器。同时也支持传递到标题和文档块中。
 
 * **标题**：如果段落块为某个标题块下方第一个子块，则会传递到上方的标题中
 * **文档**：如果段落块为文档下方第一个子块，则会传递到文档块中
 
-特别是后者，能帮助实现文档基本的引用，下图是一个案例。![image](assets/image-20241204130826-j6rwpyx.png)
+特别是后者，能帮助实现文档基本的引用，下图是一个案例。![image](docs/assets/image-20241204130826-j6rwpyx.png)
 
 ✨ **特殊用法**：强制传递到文档。在 `fb2p`​ 中内置了一个特殊规则：当所在的段落中存在一个名为 `#DOCREF#`​ 或者 `#文档引用#`​ 的 tag 的时候，该块会被强制重定向到文档块。
 
@@ -984,7 +807,7 @@ const query = async () => {
 return query();
 ```
 
-![image](assets/image-20250308171816-crrru54.png)​
+![image](docs/assets/image-20250308171816-crrru54.png)​
 
 使用 pruneBlocks 处理之后:
 
@@ -1001,15 +824,219 @@ return query();
 
 效果如下，由于默认的策略是 leaf，所以仅仅保留了底层的段落块。
 
-![image](assets/image-20250308172648-l0q3u5r.png)
+![image](docs/assets/image-20250308172648-l0q3u5r.png)
 
 而如果把策略改成 root，就只会保留顶部的列表块。
 
-![image](assets/image-20250308172720-se43ute.png)
+![image](docs/assets/image-20250308172720-se43ute.png)
 
 ### 其他各类查询函数
 
-## 4. 进阶用法 - DataView 各种视图组件
+## DataView 视图
+
+### DataView 的基础使用
+
+以上的操作虽然使用了 javascript，但是在本质上似乎和原生的嵌入块没什么不同——最后查询到的结果依然是交给思源去渲染。但是如果使用 DataView 功能，则可以将查询到的块渲染为各种不同的视图。
+
+在这一小节中，我们首先介绍三个最基础的视图组件：
+
+1. 列表
+2. 表格
+3. markdown 文本
+
+🔔 这些组件的高级用法，以及更多更复杂的组件，在后面的「进阶用法」中介绍。
+
+#### DataView.list
+
+首先给出一个基本的案例，相较于上面的 JS 查询，这里做了三个变动：1）在开头声明一个 DataView 对象；2）在查询到 `blocks`​ 后，使用 `dv.addlist`​ API；3）在最后去掉 `return`​，改为 `dv.render()`​
+
+```js
+//!js
+const query = async () => {
+  let dv = Query.DataView(protyle, item, top); //1. 在开头加上这么一行，注意 protyle, item, top 三个参数是永远固定不动的
+  let blocks = await Query.random(5);
+  dv.addlist(blocks); //2. 调用 dv.addlist 添加一个列表视图
+  dv.render(); //3. 去掉 return, 以 dv.render() 结尾
+}
+return query();
+```
+
+通过以上的代码，我们就可以将 SQL 语句查询到几个块，以列表的形式在嵌入块中展示，效果如下：
+
+![image](docs/assets/image-20241204001321-csglpyu.png)
+
+默认情况下，每个列表项都是一个块链接，同样可以悬浮查看以及点击跳转。
+
+![image](docs/assets/image-20241204001504-jz4gbh1.png)
+
+在 list 函数的第二个参数中，可以传入一些可选项
+
+```ts
+{
+    type?: 'u' | 'o'; //u 代表无序列表，o 代表有序列表；默认 u
+    columns?: number; //传输一个整数后，会分栏显示
+    renderer?: (b: T) => string | number | undefined | null; //渲染函数, 返回的值会被视为 markdown 文本
+}
+```
+
+比如下面我们把列表以双列、有序列表的形式重新展示一遍；并且我们提供一个 renderer 函数，只展示这个块的 `hpath`​ 属性
+
+```js
+//!js
+const query = async () => {
+  let dv = Query.DataView(protyle, item, top);
+  const blocks = await Query.random(5);
+  dv.addlist(blocks, {
+    type: 'o',
+    columns: 2,
+    renderer: (b) => b.hpath
+  });
+  dv.render();
+}
+return query();
+```
+
+![image](docs/assets/image-20241207210617-i5tmd5l.png)
+
+#### DataView.Table
+
+除了列表之外，另一个最常用的视图应该就是表格了。我们把上面的代码重复一遍，不过这次换成 `addtable`​
+
+```js
+//!js
+const query = async () => {
+  let dv = Query.DataView(protyle, item, top); //永远是这个开头不动
+  const blocks = await Query.random(5);
+  dv.addtable(blocks);
+  dv.render(); //永远是这个结尾不动
+}
+return query();
+```
+
+效果如下：
+
+![image](docs/assets/image-20241204002444-9j30l5k.png)
+
+table 组件会自动以合适的方式渲染不同的列：比如 type 被渲染为实际的类型名称、hpath 被渲染为文档的超链接、box 被渲染为实际的笔记本的名称等。
+
+表格默认显示的列，可以在设置中配置。
+
+![image](docs/assets/image-20241204002830-35q4qjh.png)
+
+同样，表格也有一些可以配置的字段。
+
+```ts
+{
+    center?: boolean; //居中
+    fullwidth?: boolean; //全宽
+    index?: boolean;  //显示行号
+    cols?: (string | Record<string, string>)[] | Record<string, string>;
+    renderer?: (b: Block, attr: keyof Block) => string | undefined | null;
+}
+```
+
+前面三个属性的用法比较直观，主要是制定了表格的显示方式。
+
+![image](docs/assets/image-20241204003312-d3040o5.png)
+
+更重要的是 `cols`​ 这个属性——他可以绕过默认的配置，自行指定需要展示的列，不考虑复杂的用法，可以只用记住两种最简单的用法：
+
+* 为 `null`​，则显示所有的列
+* 为块属性名称的列表，则显示对应的列
+
+```js
+//!js
+const query = async () => {
+  let dv = Query.DataView(protyle, item, top);
+  const blocks = await Query.backlink(dv.root_id);  //dv.root_id 等价于 protyle.block.rootID，算是能少写一点字
+  dv.addtable(blocks, { fullwidth: false, cols: null}); //全部显示
+  dv.addtable(blocks, { fullwidth: true, cols: ['root_id', 'box', 'updated']});
+  dv.render();
+}
+return query();
+```
+
+![image](docs/assets/image-20241204003849-8l19z7b.png)
+
+> 上面第一个表格，由于太宽了，所以把 `fullwidth`​ 关掉，这样就可以横向滚动查看了。
+
+💡 （略高级的用法，如果没有 JS 基础可以跳过）renderer 函数用于指定渲染各个列（key）的方案，如果不指定则使用默认的单元格渲染方案。而如果返回值为 null ，同样会会退到默认方案。
+
+对比以下的案例，很明显就能看出区别，一个全部使用默认方案，另一个自定义了 id 和 box 两列的渲染方案。
+
+```js
+//!js
+const query = async () => {
+  let dv = Query.DataView(protyle, item, top);
+  const blocks = await Query.random(3);
+  dv.addtable(blocks, {
+    cols: ['id', 'hpath', 'root_id', 'box']
+  });
+  dv.addtable(blocks, {
+    cols: ['id', 'hpath', 'root_id', 'box'],
+    renderer: (block, key) => {
+        if (key == 'id') return block[key]; // key 列直接显示原始文本
+        if (key == 'box') return 'Hahaha';
+    }
+  });
+  dv.render();
+}
+return query();
+```
+
+![image](docs/assets/image-20241208234136-s06cygn.png)
+
+#### DataView.md
+
+不知道你有没有注意，在上面展示表格的几个参数的时候，在截图中有一些标注文字。这些文字，实际上是 markdown 组件。我们可以通过 `dv.md`​ 的形式，构造一个 markdown 视图。
+
+```js
+//!js
+//这里由于没有 await 的需要，所以可以把外层的 async 函数去掉
+let dv = Query.DataView(protyle, item, top);
+dv.addmd('## 这是一个二级标题')
+dv.addmd(`当前文档的 id 是: ${protyle.block.rootID}`)
+dv.addmd(`
+1. 第一个
+2. 第二个
+
+{{{col
+支持思源自己的多栏布局语法
+
+这是第二列
+}}}
+
+> 截图中双栏的外边框是我思源的代码片段，但是这个块的样式则是思源自带的 ial 语法
+{: style="background-color: var(--b3-theme-primary-light); font-size: 20px;"}
+
+`)
+dv.render();
+```
+
+![image](docs/assets/image-20241204004702-va0yg1n.png)
+
+> 🙁  不过遗憾的是，markdown 组件并不支持数据公式等这些需要额外渲染的内容。
+
+尽管有一些限制，markdown 组件配合 javascript 的[模板字符串](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Template_literals)还是能有相当大的作用的，也能有效地充实 DataView 的内容。下面给一个小例子，通过 `fetch`​ 获取网络上的资源，然后在嵌入块中显示每日一句。
+
+🙄 注意，由于使用了（网上随便找到）网络接口，所以你在本地测试的时候不一定能获取到数据。
+
+```js
+//!js
+let dv = Query.DataView(protyle, item, top);
+fetch('https://api.xygeng.cn/one').then(async ans => {
+ console.log(ans)
+ if (ans.ok) {
+    let data = await ans.json();
+    console.log(data)
+    dv.addmd('今天的每日一句')
+    dv.addmd(`> ${data.data.content} —— ${data.data.origin}`)
+ }
+})
+dv.render();
+```
+
+![image](docs/assets/image-20241204005817-mpdtp85.png)
 
 ### 视图组件的用法
 
@@ -1043,7 +1070,7 @@ markdown(md: string): HTMLElement;
   const mdId = ele.dataset.id;
   ```
 
-![image](assets/image-20241209210930-k9vnume.png)
+![image](docs/assets/image-20241209210930-k9vnume.png)
 
 一些组件还会定义一些别名（Alias），例如 markdown 组件有一个 md 的别名。这意味着：
 
@@ -1089,7 +1116,7 @@ const query = async () => {
 return query();
 ```
 
-![image](assets/image-20241206184455-4in6gct.png)
+![image](docs/assets/image-20241206184455-4in6gct.png)
 
 ### cards
 
@@ -1120,7 +1147,7 @@ const query = async () => {
 return query();
 ```
 
-![image](assets/image-20250316162044-1l2i63f.png)
+![image](docs/assets/image-20250316162044-1l2i63f.png)
 
 点击卡片标题可以跳转到对应的块。
 
@@ -1149,7 +1176,7 @@ const query = async () => {
 return query();
 ```
 
-![image](assets/image-20241206182941-yzctkxu.png)
+![image](docs/assets/image-20241206182941-yzctkxu.png)
 
 每个嵌入组件右上角有一个小图标，点击后可以跳转到对应的块中。此外嵌入组件还有几个额外的参数：
 
@@ -1174,7 +1201,7 @@ const query = async () => {
 return query();
 ```
 
-![image](assets/image-20241206183442-ra4h7xl.png)
+![image](docs/assets/image-20241206183442-ra4h7xl.png)
 
 ### mermaid 系列
 
@@ -1196,7 +1223,7 @@ graph LR
 dv.render();
 ```
 
-![image](assets/image-20241206185311-ajowi8u.png)
+![image](docs/assets/image-20241206185311-ajowi8u.png)
 
 除了原始的 mermaid，DataView 还提供一些在 mermad 基础上的构建的视图。
 
@@ -1242,17 +1269,17 @@ const query = async () => {
 return query();
 ```
 
-![image](assets/image-20241206190453-o0u8eb8.png)
+![image](docs/assets/image-20241206190453-o0u8eb8.png)
 
 把 `type: 'flowchart'`​ 换成 `mindmap`​ 也可以用思维导图的形式显示：
 
-![image](assets/image-20241206190618-bb58ls6.png)
+![image](docs/assets/image-20241206190618-bb58ls6.png)
 
 > 😃 Relation 图中的节点，只要对应了一个思源的内容块，就可以**悬浮显示内容**以及**点击跳转**到对应文档。
 
-![image](assets/image-20241206190600-fu09ywo.png)
+![image](docs/assets/image-20241206190600-fu09ywo.png)
 
-![image](assets/image-20241206190646-84tfh64.png)
+![image](docs/assets/image-20241206190646-84tfh64.png)
 
 ​`mermaidRelation`​ 通过 `type`​ 参数指定对应的视图，为了方便使用，`dv`​ 提供了两个等价的组件：
 
@@ -1304,7 +1331,7 @@ return query();
 
 大致效果如下：
 
-![image](assets/image-20241213214406-rfj8yqh.png)
+![image](docs/assets/image-20241213214406-rfj8yqh.png)
 
 > 😃 Kanban 图中每个块同样可以**悬浮显示内容**以及**点击跳转**到对应文档。
 
@@ -1350,7 +1377,7 @@ dv.addecharts(option);
 dv.render();
 ```
 
-![image](assets/image-20241206191639-v6yiw7f.png)
+![image](docs/assets/image-20241206191639-v6yiw7f.png)
 
 height 和 width 两个参数决定了 echart 图容器的高度和宽度，默认高度为 300px，宽度为 100%。
 
@@ -1423,7 +1450,7 @@ const query = async () => {
 return query();
 ```
 
-![image](assets/image-20241207010811-8lh25x5.png)
+![image](docs/assets/image-20241207010811-8lh25x5.png)
 
 #### echatsBar
 
@@ -1458,7 +1485,7 @@ echarts line 主要用于绘制柱状图。他有一个 `eBar`​ 的别名。�
 
 🖋️ **案例**：我们将上一个案例中的 `eline`​ 换成 `ebar`​，就可以绘制出柱状图出来。大部分参数的用法基本一致。
 
-![image](assets/image-20241207010958-u6g07gl.png)
+![image](docs/assets/image-20241207010958-u6g07gl.png)
 
 ‍
 
@@ -1532,7 +1559,7 @@ const query = async () => {
         child.children = subchilds;
     }
     thisdoc.children = childs; //构建 tree 结构的根结点
-    dv.addetree(thisdoc, { 
+    dv.addetree(thisdoc, {
         orient: 'LR', height: '600px',
     });
     dv.render();
@@ -1546,7 +1573,7 @@ return query();
 * **Ctrl + 点击**可以**跳转**到对应的块
 * **悬浮**，会弹出一个提示框，其中第一行的块 ID 可以**悬浮查看**完整的块内容，也可以直接**点击跳转**
 
-  ![image](assets/image-20241207171409-l4z5ffo.png)​
+  ![image](docs/assets/image-20241207171409-l4z5ffo.png)​
 
 #### echartsGraph
 
@@ -1686,7 +1713,7 @@ return query();
 
 效果如下，同 tree 图一样，graph 图中每个节点也可以通过 **Ctrl + 点击**的方式跳转，以及**悬浮**显示节点细节等。
 
-![image](assets/image-20241207193310-9gpfbtk.png)
+![image](docs/assets/image-20241207193310-9gpfbtk.png)
 
 ### columns 和 rows
 
@@ -1728,7 +1755,7 @@ dv.addcolumns([
 dv.render();
 ```
 
-![image](assets/image-20241206192654-ycr25wv.png)
+![image](docs/assets/image-20241206192654-ycr25wv.png)
 
 ### details
 
@@ -1757,7 +1784,7 @@ const query = async () => {
 return query();
 ```
 
-![image](assets/image-20241206193640-g5h5jp9.png)
+![image](docs/assets/image-20241206193640-g5h5jp9.png)
 
 ### addElement
 
@@ -1808,7 +1835,7 @@ const query = async () => {
 return query();
 ```
 
-![image](assets/image-20241206194739-md7he6w.png)
+![image](docs/assets/image-20241206194739-md7he6w.png)
 
 ### removeView
 
@@ -1850,7 +1877,7 @@ const query = async () => {
 return query();
 ```
 
-![image](assets/image-20241209212929-dlfxtip.png)
+![image](docs/assets/image-20241209212929-dlfxtip.png)
 
 ### replaceView
 
@@ -1908,9 +1935,9 @@ const query = async () => {
 return query();
 ```
 
-![image](assets/image-20241209220101-oypr89p.png)
+![image](docs/assets/image-20241209220101-oypr89p.png)
 
-## 5. 进阶用法 - DataView 高级特性
+## DataView 高级特性
 
 ### 自定义视图组件
 
@@ -1988,7 +2015,7 @@ dv.addexample(`ID = ${Query.utils.date()}`);
 dv.render();
 ```
 
-![image](assets/image-20241206200537-udf4v6b.png)
+![image](docs/assets/image-20241206200537-udf4v6b.png)
 
 > 🔔 **注意**：`DataView`​ 会给所有的组件**自动添加他小写版本的别名**，所以两个名为 `Add`​ 和 `add`​ 的组件可能会一方覆盖另一方！
 
@@ -2033,7 +2060,7 @@ dv.render();
 
 现在：<u>关闭当前的文档，然后重新打开</u>，你会发现嵌入块的内容依然是这个数值。再打开嵌入块的属性面板，会发现名为 `counter`​ 的 state 已经保存到自定义属性中。
 
-![image](assets/image-20241206201729-1bfn3md.png)
+![image](docs/assets/image-20241206201729-1bfn3md.png)
 
 以下给出一个「每日一句」的案例：
 
@@ -2068,7 +2095,7 @@ dv.render();
 
 由于我们使用了时间戳作为 state key，所以如果你多运行几天再打开属性面板，会发现每天的一句话都保存在这里。
 
-![image](assets/image-20241206202124-3pu0qdw.png)
+![image](docs/assets/image-20241206202124-3pu0qdw.png)
 
 #### state 的更新写入机制（技术细节，可跳过）
 
@@ -2152,15 +2179,17 @@ dv.render();
       ];
       ```
     * 如果你在编写自定义的 dv 的过程中，发现了和用户输入相关的异常情况，你最好停下来，不要再继续尝试，以免对重要数据造成不良影响
-2. <u>多端设备同步情况下</u>，使用 useState 要小心，建议开启「**设置-云端-生成冲突文件**」![image](assets/image-20241210133627-mnp2zup.png)
+2. <u>多端设备同步情况下</u>，使用 useState 要小心，建议开启「**设置-云端-生成冲突文件**」![image](docs/assets/image-20241210133627-mnp2zup.png)
 
-    ![image](assets/image-20241211194757-74vrp7m.png)
+    ![image](docs/assets/image-20241211194757-74vrp7m.png)
 
     目前 state 功能虽然规避了「循环冲突」的问题，但是在一些特殊的多端同步情况下**仍然可能出现数据冲突的情况**。
 
     为了避免出现数据状态丢失，建议在思源的同步设置中开启「生成冲突文档」的设置，这样则遇到问题的时候还可以手动处理。
 
-## 6. 在外部编辑器中编辑代码
+## 外部编辑器与调试
+
+### 在外部编辑器中编辑代码
 
 思源内置的嵌入块悬浮窗在编辑略微复杂的代码的时候体验非常差劲。因此插件提供了在外部编辑器中打开 js 代码的功能。
 
@@ -2168,17 +2197,17 @@ dv.render();
 
 用户需要在插件设置中配置外部编辑器打开的命令参数：
 
-![image](assets/image-20241202164246-vla7mo8.png)
+![image](docs/assets/image-20241202164246-vla7mo8.png)
 
 默认为 `code -w {{filepath}}`​，代表会使用 VsCode （请将 `code`​ 添加到环境变量中）来打开。其中 `{{filepath}}`​ 会在运行时被替换为实际的临时代码文件的路径。
 
 使用的时候，需要在块的插件菜单中点击“Edit Code”按钮。
 
-![image](assets/image-20241202164442-588f7d7.png)
+![image](docs/assets/image-20241202164442-588f7d7.png)
 
 插件会自动在本地创建一个临时的代码文件，然后在使用上述命令打开代码文件。插件会**跟踪代码文件的编辑更新**并将文件中最新的内容更新到嵌入块中，并刷新渲染嵌入块的内容。
 
-![image](assets/image-20241206211503-q3b2uk5.png)
+![image](docs/assets/image-20241206211503-q3b2uk5.png)
 
 常见代码编辑器的命令行参考：
 
@@ -2188,8 +2217,6 @@ dv.render();
 * sublime
 
   [https://www.sublimetext.com/docs/command_line.html](https://www.sublimetext.com/docs/command_line.html)
-
-## 7. 其他使用建议
 
 ### 我在嵌入块中的代码没有什么反应，我该怎么办？
 
@@ -2205,13 +2232,13 @@ dv.render();
 
 你可以在在代码中添加 `debugger`​，然后打开开发者模式。当运行到这一行的时候，就会自动进入断点模式，然后就可以调试程序了。
 
-![image](assets/image-20241207204410-a231unc.png)
+![image](docs/assets/image-20241207204410-a231unc.png)
 
 ### 配合思源模板使用
 
 你可以将调试好的嵌入块代码放入 `template/`​ 下的模板文件中，这样对于常用的查询模板都可以快速调用：
 
-![image](assets/image-20241209002057-jarcxsu.png)
+![image](docs/assets/image-20241209002057-jarcxsu.png)
 
 使用模板还有一个好处是，可以使用一些模板提供的变量，例如下面这个模板中，使用了 `$datestr_sy`​ 变量，用来查询今天创建的文档。
 
@@ -2228,23 +2255,906 @@ dv.render();
 
 插件在块菜单中提供了一个按钮，可以直接进行上述转换。你可以直接复制弹出窗口中的代码，粘贴到 template 文件中使用。
 
-![image](assets/image-20241209001549-kcurxon.png)
+![image](docs/assets/image-20241209001549-kcurxon.png)
 
-![image](assets/image-20241209001506-1j38x18.png)
+![image](docs/assets/image-20241209001506-1j38x18.png)
 
-## Reference
+## 案例总览
 
-​`<!-- REFERENCE-START -->`​
+本页汇总随插件发布的全部可运行案例。案例代码的唯一来源是仓库 `public/example/`（安装后位于插件目录的 `example/` 下），随插件版本一起发布；本页不复制代码，代码块由文档站和 README 从该目录自动读取/生成。
 
-> 注：由于接口文件会随着开发而变动，所以 README 本体中并不包含 interface 代码，而是放了一些 placeholder 。
->
-> 在编译运行时，会将自动生成的接口代码替换到打包文件的 README 文件里面。
->
-> 最新的完整的接口文件，请访问 [https://github.com/frostime/sy-query-view/blob/main/public/types.d.ts](https://github.com/frostime/sy-query-view/blob/main/public/types.d.ts) 获取。
->
-> 你还可以在下载插件之后，在左上角的菜单按钮中点击“下载 d.ts”获取当前版本的 types 文件。
->
-> ![image](assets/image-20241211194447-8sa9hcx.png)
+使用方式：把案例代码复制到一个嵌入块（内容以 `//!js` 开头）并运行即可看到效果。部分案例在上面的文档中其实已经出现过了。
+
+> 💡 所有案例代码都随插件发布在插件目录 `example/` 中；下方每个案例都提供了完整的代码。
+
+### 案例列表
+
+| 文件 | 标题 | 说明 | 标签 |
+|---|---|---|---|
+| exp-month-todo.js | 本月待办列表 | 查询本月所有未完成的 TODO 列表 | task, todo, list |
+| exp-child-docs.js | 子文档列表 | 列出当前文档的所有子文档，效果类似 Notion 等软件 | doc, list |
+| exp-avs-under-root-doc.js | 属性视图汇总 | 查询所在文档下所有的属性视图（Attribute View），然后汇总显示在嵌入块中 | attribute-view, embed |
+| exp-doc-backlinks-table.js | 当前文档反向链接表格 | 以表格的形式显示当前文档的回链 | backlink, table |
+| exp-doc-backlinks-grouped.js | 反向链接分组展示 | 按照引用块的类型，分组查看当前文档的反向链接，并放入折叠列表中展示 | backlink, list |
+| exp-outline.js | 文档大纲 | 查询当前文档的大纲，并以树状结构展示 | outline, tree |
+| exp-list-tags.js | 标签卡片视图 | 查询并以卡片视图的形式展示所有的标签（tags） | tag, card |
+| exp-latest-update-doc.js | 最近更新的文档 | 展示最近更新的 32 篇文档 | doc, list, superblock |
+| exp-today-updated.js | 今天更新的文档 | 查询今天更新的所有文档，并以列表的形式展示 | doc, date, state |
+| exp-created-docs.js | 每月创建文档数曲线 | 查询每个月创建的文档的数量，并使用 echarts 折线图展示出来 | doc, echarts, chart |
+| exp-sql-executor.js | SQL 查询器 | 在输入框中输入 SQL 语句，点击执行按钮，将执行结果以表格的形式展示 | sql, table |
+| exp-gpt-chat.js | ChatGPT 对话 | 一个非常简单的 ChatGPT 对话框，使用思源内部设置的 GPT API | gpt, chat |
+| exp-doc-backlinks-graph.js | 反链关系图 | 使用 Echarts Graph 展示当前文档的反链引用块 | backlink, echarts, graph |
+| exp-show-asset-images.js | 资源目录图片查看 | 分页查看 assets 目录下所有的图片 | asset, image, paging |
+| exp-daily-sentence.js | 每日一句 | 每日一句，这个案例中用到了 state，所以每天只会显示一条句子 | quote, state |
+| exp-gpt-translate.js | GPT 翻译 | 随机从思源中选取一段文字，然后使用 GPT 翻译成英文，使用思源内部设置的 GPT API | gpt, translate |
+| exp-doc-tree.js | 文档树 | 查询当前文档下属的文档树结构，并使用嵌套列表展示；最大深度由 MAX_DEPTH 变量控制 | doc, tree, list |
+| exp-month-todo-kanban.js | 每月任务看板 | 查询每个月尚未完成的 Task，汇总显示在看板上 | task, kanban |
+| exp-month-todo-timeline.js | 未完成任务时间线 | 查询所有未完成的任务块，以月份时间线分组横向排列 | task, timeline |
+
+### exp-month-todo
+
+查询本月所有未完成的 TODO 列表。
+
+```js
+//!js
+async function getIds() {
+    let blocks = await Query.task(Query.utils.thisMonth(), 32);
+    return blocks.pick('id');
+}
+
+return getIds();
+```
+
+### exp-child-docs
+
+列出当前文档的所有子文档，效果类似 Notion 等软件。
+
+```js
+//!js
+const row = (block) => `
+{{{col
+
+${block.icon} **${block.aslink}**
+
+**${block.createdDate} ~ ${block.updatedDate}**
+{: style="flex: none;" }
+
+}}}
+{: style="border-bottom: 1px dashed var(--b3-theme-on-surface-light); border-radius: 0px;" }
+`.trim();
+
+const query = async () => {
+    let dv = Query.DataView(protyle, item, top);
+
+    let blocks = await Query.childDoc(dv.root_id);
+    let icons = blocks.map(block => Query.Utils.docIcon(block));
+    blocks = blocks.addcols({ 'icon': icons });
+
+    dv.addmd(blocks.map(row).join('\n\n'));
+    dv.render();
+}
+
+return query();
+```
+
+### exp-avs-under-root-doc
+
+查询所在文档下所有的属性视图（Attribute View），然后汇总显示在嵌入块中。
+
+```js
+//!js
+const query = async () => {
+    const root_id = Query.root_id
+    const sql = `select * from blocks where type='av' and path like '%${dv.root_id}%'`;
+    const blocks = await Query.sql(sql);
+    return blocks.pick('id')
+}
+
+return query();
+```
+
+### exp-doc-backlinks-table
+
+以表格的形式显示当前文档的回链。
+
+![image](docs/assets/image-20241210183914-5nm5w4r.png)
+
+```js
+//!js
+const query = async () => {
+    let dv = Query.Dataview(protyle, item, top);
+    let blocks = await Query.backlink(protyle.block.rootID);
+    blocks = await Query.fb2p(blocks);
+    dv.addtable(blocks, {
+        fullwidth: true,
+    });
+    dv.render();
+}
+return query();
+```
+
+### exp-doc-backlinks-grouped
+
+按照引用块的类型，分组查看当前文档的反向链接，并放入折叠列表中展示。
+
+![image](docs/assets/image-20241213161247-f6qm95q.png)
+
+```js
+//!js
+const query = async () => {
+    let dv = Query.Dataview(protyle, item, top);
+    let blocks = await Query.backlink(protyle.block.rootID);
+    blocks = await Query.fb2p(blocks);
+    blocks.groupby('type', (type, groups) => {
+        dv.adddetails(
+            Query.Utils.typename(type),
+            dv.table(groups, {
+                fullwidth: true,
+            })
+        );
+    })
+    dv.render();
+}
+return query();
+```
+
+### exp-outline
+
+查询当前文档的大纲，并以树状结构展示。
+
+![image](docs/assets/image-20241210172133-ivjwzpc.png)
+
+```js
+//!js
+const query = async () => {
+    let dv = Query.DataView(protyle, item, top);
+    let ans = await Query.request('/api/outline/getDocOutline', {
+        id: Query.root_id(protyle)
+    });
+    ans = Query.wrapit(ans);
+    const iterate = (data) => {
+        for (let item of data) {
+            if (item.count > 0) {
+                let subtocs = iterate(item.blocks ?? item.children);
+                item.children = Query.wrapBlocks(subtocs);
+            }
+        }
+        return data;
+    }
+    let tocs = iterate(ans);
+    dv.addlist(tocs, {
+	    renderer: b => `[${b.name || b.content}](${b.asurl})`,
+    });
+    dv.render();
+}
+
+return query();
+```
+
+### exp-list-tags
+
+查询并以卡片视图的形式展示所有的标签（tags）。
+
+```js
+//!js
+
+const useButton = (title, onclick) => {
+    let button = document.createElement('button');
+    button.className = 'b3-button b3-button--text';
+    button.innerText = title;
+    button.onclick = onclick;
+    return button;
+}
+
+const query = async () => {
+    let dv = Query.DataView(protyle, item, top);
+    dv.render();
+    let tags = await Query.request('/api/tag/getTag', {
+        sort: 4
+    });
+
+    tags = tags.sort((a, b) => - a.count + b.count);
+
+    const onclick = (tag) => {
+        Query.tag(tag.label).then(async (blocks) => {
+            if (blocks.length == 0) return;
+            blocks = blocks.sorton('created');
+            blocks = await Query.prune(blocks, 'leaf');
+            blocks = await Query.fb2p(blocks);
+            //const table = dv.table(blocks, {fullwidth: true} );
+            const table = dv.cards(blocks, {
+                width: '275px',
+                height: '150px'
+            });
+            dv.replaceView(main.dataset.id, table);
+        });
+    }
+
+    const createTagButtons = (tags) => {
+        const buttons = [];
+        tags.forEach(tag => {
+            const button = useButton(`#${tag.label} (${tag.count})`, () => {
+                onclick(tag);
+            });
+            button.style.margin = '5px';
+            buttons.push(button);
+
+            // Recursively process children tags
+            if (tag.children && tag.children.length > 0) {
+                const childButtons = createTagButtons(tag.children);
+                buttons.push(...childButtons);
+            }
+        });
+        return buttons;
+    }
+
+    const tagButtons = createTagButtons(tags);
+
+    const allTagsList = document.createElement('div');
+    allTagsList.style.display = 'flex';
+    allTagsList.style.flexWrap = 'wrap';
+    tagButtons.forEach(tagElement => {
+        allTagsList.appendChild(tagElement);
+    });
+    dv.addele(allTagsList);
+    dv.addmd('---');
+
+    let main = dv.addele('')
+}
+
+return query();
+```
+
+### exp-latest-update-doc
+
+展示最近更新的 32 篇文档。
+
+💡 本代码中用到了特殊的 `{{{col }}}` 语法，这种语法为思源特有的超级块 Markdown 标记语法，用于创建多行、多列的块结构。
+
+![image](docs/assets/image-20241213160419-62pwf7s.png)
+
+```js
+//!js
+
+// SiYuan's super block syntax (md syntax extension)
+const columns = (block) => `
+{{{col
+
+${block.attr('hpath')}
+
+${block.attr('box')} - ${block.attr('updated')}
+{: style="text-align: right; flex: none;" }
+
+}}}
+`.trim();
+const query = async () => {
+    let dv = Query.DataView(protyle, item, top);
+
+    let blocks = await Query.sql(`
+      select * from blocks where type='d'
+      order by updated desc limit 32;
+    `)
+    dv.addlist(blocks, {
+        renderer: columns
+    });
+
+    dv.render();
+}
+
+return query();
+```
+
+### exp-today-updated
+
+查询今天更新的所有文档，并以列表的形式展示。
+
+这个案例中，使用 `state` 来存储日期信息，过了今天之后，表格的内容将一直保持不变，而非获取未来某天更新的文档。实际使用过程中，其实更加建议配合模板使用，在创建的时候直接配置 `now` 为当天的日期，而非通过 `state` 来维护日期状态。
+
+![image](docs/assets/image-20241210172746-kbxtfhr.png)
+
+```js
+//!js
+const now = Query.Utils.today(false);
+const query = async () => {
+    let dv = Query.DataView(protyle, item, top);
+    const todayState = dv.useState('today', now); //Only update the state once.
+
+    let updatedState = dv.useState('updated-docs', []);
+    if (now === todayState.value) {
+        dv.addmd('#### Today\'s Updated Documents');
+        let updatedDoc = await Query.sql(`
+            select * from blocks where type='d' and updated like '${todayState.value}%'
+            order by updated desc
+        `);
+        dv.addtable(updatedDoc, {
+            fullwidth: true,
+            cols: ['box', 'hpath', 'updated'],
+        });
+        let state = updatedDoc.omit('ial', 'path', 'hash', 'fcontent');
+        updatedState(state);
+    } else {
+        dv.addmd(`#### Updated Documents on ${todayState.value}`)
+        dv.addtable(updatedState(), {
+            fullwidth: true,
+            cols: ['box', 'hpath', 'updated'],
+        });
+    }
+
+    dv.render();
+}
+
+return query();
+```
+
+### exp-created-docs
+
+查询每个月创建的文档的数量，并使用 echarts 折线图展示出来。
+
+![image](docs/assets/image-20241207010811-8lh25x5.png)
+
+```js
+//!js
+const query = async () => {
+    let dv = Query.DataView(protyle, item, top);
+    const SQL = `
+    SELECT
+        SUBSTR(created, 1, 6) AS month,
+        COUNT(*) AS count
+    FROM
+        blocks
+    WHERE
+        type = 'd'
+    GROUP BY
+        SUBSTR(created, 1, 6)
+    ORDER BY
+        month;
+    `;
+
+    let blocks = await Query.sql(SQL);
+
+    dv.addeline(blocks.pick('month'), blocks.pick('count'), {
+        title: 'Monthly Created Documents',
+        xlabel: 'Month',
+        ylabel: 'Count'
+    });
+
+    dv.render();
+}
+
+return query();
+```
+
+### exp-sql-executor
+
+在输入框中输入 SQL 语句，点击执行按钮，将执行结果以表格的形式展示。
+
+![image](docs/assets/image-20241209005221-qtytbib.png)
+
+```js
+//!js
+const query = async () => {
+    let dv = Query.DataView(protyle, item, top);
+    const sql = dv.useState('sql', '');
+    const searchResult = dv.useState('search-result', []);
+
+    dv.addmd(`#### SQL Executor`);
+    const textarea = document.createElement('textarea');
+    textarea.className = "fn__block b3-text-field";
+    textarea.rows = 5;
+    textarea.style.fontSize = '20px';
+    textarea.value = sql.value;
+    dv.addele(textarea);
+
+    const button = document.createElement('button');
+    button.className = "fn__block b3-button";
+    button.textContent = "Execute";
+    dv.addele(button);
+
+    dv.addtable(searchResult(), {
+        fullwidth: false,
+        cols: null,
+        renderer: (b, a) => b[a]
+    });
+
+    button.onclick = async () => {
+        const ans = await Query.sql(textarea.value);
+        sql.value = textarea.value;
+        searchResult(ans);
+        dv.repaint();
+    }
+
+    dv.render();
+}
+
+return query();
+```
+
+### exp-gpt-chat
+
+一个非常简单的 ChatGPT 对话框，使用思源内部设置的 GPT API。
+
+> 这个代码用到了一个上面没有提到的 `Query.gpt` API，具体用法请参考 d.ts 文件。
+
+![image](docs/assets/image-20241210171119-o72dyyd.png)
+
+```js
+//!js
+
+const ui = () => {
+    const textarea = document.createElement('textarea');
+    textarea.className = "fn__block b3-text-field";
+    textarea.rows = 3;
+    textarea.placeholder = "Input Your Message...";
+
+    // 创建按钮容器，使用 flex 布局
+    const buttonContainer = document.createElement('div');
+    buttonContainer.style.display = 'flex';
+    buttonContainer.style.justifyContent = 'flex-end';
+    buttonContainer.style.gap = '8px';
+    buttonContainer.style.marginTop = '8px';
+
+    const removeLastButton = document.createElement('button');
+    removeLastButton.className = "b3-button";
+    removeLastButton.textContent = "Remove Last";
+    buttonContainer.appendChild(removeLastButton);
+
+    // Send 按钮
+    const sendButton = document.createElement('button');
+    sendButton.className = "b3-button";
+    sendButton.textContent = "Send Input";
+
+    // 将按钮添加到容器
+    buttonContainer.appendChild(removeLastButton);
+    buttonContainer.appendChild(sendButton);
+
+    return { textarea, buttonContainer, sendButton, removeLastButton };
+
+}
+
+
+const chat = async () => {
+    let dv = Query.DataView(protyle, item, top);
+    const messages = dv.useState('messages', []);
+
+    dv.addmd(`#### GPT Chat`);
+    const msgIds = [];
+    messages().forEach(msg => {
+        let el = dv.addmd(`**${msg.role === 'user' ? 'You' : 'GPT'}**: ${msg.content}`);
+        msgIds.push(el.dataset.id);
+    });
+
+    dv.addmd('---');
+
+    const { textarea, buttonContainer, sendButton, removeLastButton } = ui();
+
+    dv.addele(textarea);
+
+    dv.addele(buttonContainer);
+
+    sendButton.onclick = async () => {
+        const prompt = textarea.value.trim();
+        if (!prompt) return;
+
+        messages([...messages(), { role: 'user', content: prompt }]);
+        textarea.value = '';
+        sendButton.disabled = true;
+        removeLastButton.disabled = true;
+        let respond = dv.addmd(`**GPT**: `);
+        let id = respond.dataset.id;
+
+        try {
+            const response = await Query.gpt(prompt, {
+                stream: true,
+                streamInterval: 3,
+                streamMsg: (content) => {
+                    dv.replaceView(id, dv.md(`**GPT**: ${content}`));
+                }
+            });
+            messages([...messages(), { role: 'assistant', content: response }]);
+        } catch (error) {
+            dv.addmd(`Error: ${error.message}`);
+        }
+
+        sendButton.disabled = false;
+        removeLastButton.disabled = false;
+        dv.repaint();
+    };
+
+    removeLastButton.onclick = () => {
+        if (msgIds.length < 2) return;
+
+        // 删除最后两条消息
+        messages(messages().slice(0, -2));
+
+        // 删除最后两个消息的 DOM 元素
+        dv.removeView(msgIds.pop());
+        dv.removeView(msgIds.pop());
+    };
+
+    dv.render();
+}
+
+return chat();
+```
+
+### exp-doc-backlinks-graph
+
+使用 Echarts Graph 展示当前文档的反链引用块。
+
+![image](docs/assets/image-20241211213426-38ws4kk.png)
+
+```js
+//!js
+
+const clipStr = (text, cnt) => {
+    if (text.length > cnt - 3) {
+        return text.slice(0, cnt - 3) + '...';
+    } else {
+        return text;
+    }
+}
+
+const query = async () => {
+    let dv = Query.DataView(protyle, item, top);
+    let thisdoc = await Query.thisdoc(protyle);
+
+    let backlinks = await Query.backlink(dv.root_id);
+    let nodes = [thisdoc, ...backlinks];  //Merge to nodes
+    let links = [
+      { source: thisdoc.id, target: backlinks.pick('id') },  //Create links
+    ];
+
+    dv.addegraph(nodes, links, {
+        height: '500px',
+        roam: true,
+        nodeRenderer: (block) => {
+            //Only return name of the node is ok, other parts will use the default renderer.
+            return {
+                name: clipStr(block.name || block.content, 15),
+            }
+        }
+    });
+
+    dv.render();
+}
+
+return query();
+```
+
+### exp-show-asset-images
+
+分页查看 assets 目录下所有的图片。
+
+![image](docs/assets/image-20241211225413-fc962d4.png)
+
+```js
+//!js
+const assetFile = async () => {
+    let response = await Query.request('/api/file/readDir', {
+        path: '/data/assets'
+    });
+    return response.map(file => file.name);
+}
+
+const ITEMS_PER_PAGE = 10;
+
+const useControl = (files) => {
+    let page = 1;
+    let leftBtn = document.createElement('button');
+    leftBtn.classList.add('b3-button');
+    let span = document.createElement('span');
+    let rightBtn = document.createElement('button');
+    rightBtn.classList.add('b3-button');
+
+    let slice = [];
+    let total = files.length;
+    let pages = Math.ceil(total / ITEMS_PER_PAGE);
+
+    leftBtn.textContent = 'Previous';
+    span.textContent = `Page ${page} of ${pages}`;
+    rightBtn.textContent = 'Next';
+
+    const panel = document.createElement('div');
+    Object.assign(panel.style, {
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        gap: '10px'
+    });
+    panel.appendChild(leftBtn);
+    panel.appendChild(span);
+    panel.appendChild(rightBtn);
+
+    const updateSlice = () => {
+        const start = (page - 1) * ITEMS_PER_PAGE;
+        const end = start + ITEMS_PER_PAGE;
+        slice = files.slice(start, end);
+    };
+
+    const left = () => {
+        if (page > 1) {
+            page--;
+            span.textContent = `Page ${page} of ${pages}`;
+            updateSlice();
+        }
+    };
+
+    const right = () => {
+        if (page < pages) {
+            page++;
+            span.textContent = `Page ${page} of ${pages}`;
+            updateSlice();
+        }
+    };
+
+    updateSlice();
+
+    return {
+        panel,
+        leftBtn,
+        rightBtn,
+        left,
+        right,
+        slice: () => slice
+    };
+}
+
+const query = async () => {
+    let dv = Query.DataView(protyle, item, top);
+    let files = await assetFile();
+    files = files.filter(file => {
+        return file.endsWith('.jpg') || file.endsWith('.png') || file.endsWith('.jpeg');
+    });
+
+    let control = useControl(files);
+
+    dv.addele(control.panel);
+
+    let ele = dv.addele('Placeholder');
+    let id = ele.dataset.id;
+
+    const createView = (slice) => {
+        const data = slice.map(item => {
+            return {
+                name: item,
+                img: `![](/assets/${item})`
+            }
+        });
+        return dv.table(data, {
+            fullwidth: true,
+            cols: null,
+        });
+    }
+
+    control.leftBtn.onclick = () => {
+        control.left();
+        const slice = control.slice();
+        dv.replaceView(id, createView(slice))
+    };
+    control.rightBtn.onclick = () => {
+        control.right();
+        const slice = control.slice();
+        dv.replaceView(id, createView(slice))
+    };
+
+    dv.replaceView(id, createView(control.slice()))
+
+    dv.render();
+};
+
+return query();
+```
+
+### exp-daily-sentence
+
+每日一句，这个案例中用到了 `state`，所以每天只会显示一条句子。
+
+> 注意：这个例子中用到了随便从网上找到的 API，不一定稳定，当个案例看看就行。
+
+```js
+//!js
+let dv = Query.DataView(protyle, item, top);
+const today = Query.Utils.today();
+const state = dv.useState(today);
+if (state()) {
+  dv.addmd('今天的每日一句')
+  dv.addmd(`> ${state()}`)
+} else {
+fetch('https://api.xygeng.cn/one').then(async ans => {
+ console.log(ans)
+ if (ans.ok) {
+    let data = await ans.json();
+    console.log(data)
+    state.value = `${data.data.content} —— ${data.data.origin}`;
+    dv.addmd('今天的每日一句')
+    dv.addmd(`> ${state.value}`)
+ }
+});
+}
+dv.render();
+```
+
+### exp-gpt-translate
+
+随机从思源中选取一段文字，然后使用 GPT 翻译成英文，使用思源内部设置的 GPT API。
+
+```js
+//!js
+const prompt = (text) => `
+Please translate the text after --- to English.
+Then output the translated text, no other text or comments.
+Maintain the markdown format of the original text.
+---
+
+${text}
+`;
+const query = async () => {
+    let dv = Query.DataView(protyle, item, top);
+    dv.render();
+    //任意选择一个不为空的段落
+    let block = (await Query.random(10, 'p')).find(b => b.markdown !== '');
+
+    let md = block.markdown;
+    dv.addmd(`
+## Original Text
+
+${md}
+
+----
+`);
+    const div = document.createElement('div');
+    let tempid = (dv.addele(div)).dataset.id;
+    const translated = await Query.gpt(prompt(md), {
+        stream: true,
+        streamMsg: (content) => {
+            div.innerText = content;
+        }
+    });
+    dv.removeView(tempid);
+
+    dv.addmd(`
+## Translated Text
+
+${translated}
+`.trim());
+}
+
+return query();
+```
+
+### exp-doc-tree
+
+查询当前文档下属的文档树结构，并使用嵌套列表展示；最大深度由 `MAX_DEPTH` 变量控制。
+
+```js
+//!js
+const MAX_DEPTH = 3;  // Control the max depth of the tree, not recommend to set too large
+
+const buildTree = async (docId, depth = 1) => {
+    if (depth > MAX_DEPTH) return [];
+    const children = await Query.childdoc(docId);
+
+    for (const child of children) {
+        let docs = await buildTree(child.id, depth + 1);
+        if (docs.length > 0) {
+            child.children = Query.wrapBlocks(docs);
+        }
+    }
+
+    return children;
+};
+
+const query = async () => {
+    let dv = Query.DataView(protyle, item, top);
+    dv.render();
+    const tree = await buildTree(dv.root_id, 1);
+    dv.addlist(tree, { type: 'o' });
+};
+
+return query();
+```
+
+### exp-month-todo-kanban
+
+查询每个月尚未完成的 Task，汇总显示在看板上。
+
+```js
+//!js
+const query = async () => {
+    let dv = Query.Dataview(protyle, item, top);
+    // null: no `after` filter, query all task block
+    // 128: max number of result
+    let blocks = await Query.task(null, 128);
+    let grouped = blocks.groupby((b) => {
+        return b.createdDate.slice(0, -3)
+    });
+    let N = Object.keys(grouped).length;
+    // each group with a fixed witdh 200px
+    dv.addmkanban(grouped, {
+        width: `${N * 200}px`
+    });
+    dv.render();
+}
+return query();
+```
+
+### exp-month-todo-timeline
+
+查询所有未完成的任务块，以月份时间线分组横向排列。
+
+```js
+//!js
+const query = async () => {
+    let dv = Query.Dataview(protyle, item, top);
+
+    let blocks = await Query.task(null, 128);
+    blocks = blocks.sorton('created', 'desc');
+    const blockKey = (b) => b.createdDate.slice(0, 7);
+
+    let columns = [];
+    blocks.groupby(blockKey, (groupname, group) => {
+        let ele = dv.rows([
+            dv.md(`#### ${groupname}`),
+            dv.list(group)
+        ])
+        columns.push(ele);
+    });
+    let ele = dv.addcols(columns, {
+        minWidth: '400px'
+    });
+    ele.style.border = '2px dashed var(--b3-theme-primary)';
+    ele.style.borderRadius = '10px';
+    ele.style.margin = '10px 20px';
+
+    dv.render();
+}
+return query();
+```
+
+## API 参考
+
+插件对外 API 的精确签名以随插件发布的类型声明 `public/types.d.ts` 为准；本页只提供可读导览，不复制类型声明的内容。
+
+完整类型声明文件也可在 GitHub 查看：[frostime/sy-query-view/public/types.d.ts](https://github.com/frostime/sy-query-view/blob/main/public/types.d.ts)。
+
+
+### Query
+
+`Query` 是插件在嵌入块中透传的 API 对象，主要分为四类能力：
+
+- **SQL 与封装查询**：最通用的是 `Query.sql(sql)`，直接把 SQL 语句传入即可；另有 `Query.backlink`、`Query.tag`、`Query.task`、`Query.random`、`Query.dailynote`、`Query.childDoc`、`Query.keyword`、`Query.keywordDoc`、`Query.markdown` 等封装查询。
+- **结果包装**：查询结果返回 `IWrappedList<IWrappedBlock>`，除了块的基本属性外还带 `pick`、`aslink` 等便捷成员。
+- **工具函数**：`Query.Utils` 提供时间、文本等常用工具。
+- **DataView 构造**：`Query.DataView(protyle, item, top)` 创建 DataView 实例。
+
+详细说明见「Query 查询」主题。
+
+### DataView
+
+`DataView` 把查询结果渲染为自定义视图，使用流程是：创建实例 → 添加视图 → `dv.render()`。
+
+- **基础组件**：`dv.addlist`、`dv.addtable`、`dv.addmd`；
+- **高级组件**：cards、embed、mermaid 系列、echarts 系列、columns/rows、details、addElement、addDisposer、removeView、replaceView 等；
+- **高级特性**：自定义视图组件（`dv.xxx()` / `dv.addxxx()`）、`DataView.useState` 状态持久化、视图生命周期。
+
+详细说明见「DataView 视图」与「DataView 高级特性」主题。
+
+### IWrappedBlock & IWrappedList
+
+查询结果的两个核心包装类型：
+
+- `IWrappedBlock`：在 `Block` 基础上增加便捷属性与转换能力，例如 `aslink`（思源链接）、`asurl` 等；
+- `IWrappedList<T>`：`IWrappedBlock` 的数组类型，带 `pick(...)` 等方法，可从列表中提取指定属性组成新列表。
+
+精确成员与签名以类型声明为准。
+
+### 其他基础类型
+
+`Block`、`BlockType`、`Notebook`、`DocumentId`、`BlockId`、`SiYuanDate` 等基础类型同样定义在类型声明中。
+
+`<!-- REFERENCE-START -->`
+
+> 注：接口文件会随着开发而变动，以下接口代码为构建时自动生成。最新完整的接口文件以随插件发布的 `public/types.d.ts` 为准，也可以在插件内文档站的「API 参考」页打开或下载当前版本的类型声明文件。
 
 ### Query
 
@@ -2264,84 +3174,12 @@ dv.render();
 {{DataView}}
 ```
 
-​`<!-- REFERENCE-END -->`​
+`<!-- REFERENCE-END -->`
 
-## 案例演示
 
-提供了一些 example 代码。部分案例在上面的文档中其实已经出现过了。
+## 智能体技能
 
-以下的案例代码均会随插件下载到本地，你可以：在 `plugins/sy-query-view/example`​ 中查看这些脚本。
+Query&View 将随后续版本提供一个**自包含的核心智能体技能（Agent Skill）**：一份 `SKILL.md`，指导 AI 代理（Agent）如何编写和查证 Query&View 代码，包括工作流程、规则与查证方式。
 
-> 💡 **完整的案例代码**：在左上角插件的菜单中点击「Examples」在新的标签页中查看样例代码。
-
-![image](assets/image-20241211194155-oc0yj5l.png)
-
-以下展示部分案例代码的使用效果。
-
-### 展示当前文档的反向链接表格
-
-源代码参见：[https://github.com/frostime/sy-query-view/blob/main/public/example/exp-doc-backlinks-table.js](https://github.com/frostime/sy-query-view/blob/main/public/example/exp-doc-backlinks-table.js)
-
-![image](assets/image-20241210183914-5nm5w4r.png)
-
-### 按照类型分组显示当前文档的反向链接
-
-源代码参见：[https://github.com/frostime/sy-query-view/blob/main/public/example/exp-doc-backlinks-grouped.js](https://github.com/frostime/sy-query-view/blob/main/public/example/exp-doc-backlinks-grouped.js)
-
-![image](assets/image-20241213161247-f6qm95q.png)
-
-### 展示当前文档的大纲
-
-源代码参见：[https://github.com/frostime/sy-query-view/blob/main/public/example/exp-outline.js](https://github.com/frostime/sy-query-view/blob/main/public/example/exp-outline.js)
-
-![image](assets/image-20241210172133-ivjwzpc.png)
-
-### 展示最近更新的所有文档
-
-源代码参见：[https://github.com/frostime/sy-query-view/blob/main/public/example/exp-latest-update-doc.js](https://github.com/frostime/sy-query-view/blob/main/public/example/exp-latest-update-doc.js)
-
-💡 本代码中用到了特殊的  `{{{col }}}`​ 语法，这种语法为思源特有的超级块 Markdown 标记语法，用于创建多行、多列的块结构。
-
-![image](assets/image-20241213160419-62pwf7s.png)
-
-### 统计当天今天更新的文档
-
-源代码参见：[https://github.com/frostime/sy-query-view/blob/main/public/example/exp-today-updated.js](https://github.com/frostime/sy-query-view/blob/main/public/example/exp-today-updated.js)
-
-这个案例中，使用 `state`​ 来存储日期信息，过了今天之后，表格的内容将一直保持不变而非获取未来某天更新的文档。
-
-![image](assets/image-20241210172746-kbxtfhr.png)
-
-### 创建文档的变化曲线
-
-源代码参见：[https://github.com/frostime/sy-query-view/blob/main/public/example/exp-created-docs.js](https://github.com/frostime/sy-query-view/blob/main/public/example/exp-created-docs.js)
-
-![image](assets/image-20241207010811-8lh25x5.png)
-
-### SQL 查询器
-
-源代码参见：[https://github.com/frostime/sy-query-view/blob/main/public/example/exp-sql-executor.js](https://github.com/frostime/sy-query-view/blob/main/public/example/exp-sql-executor.js)
-
-![image](assets/image-20241209005221-qtytbib.png)
-
-### ChatGPT 对话
-
-源代码参见：[https://github.com/frostime/sy-query-view/blob/main/public/example/exp-gpt-chat.js](https://github.com/frostime/sy-query-view/blob/main/public/example/exp-gpt-chat.js)
-
-> 这个代码用到了一个上面没有提到的 `Query.gpt`​ 的 API，具体用法请参考 d.ts 文件
-
-![image](assets/image-20241210171119-o72dyyd.png)
-
-### 当前文档的反链关系图
-
-源代码参见：[https://github.com/frostime/sy-query-view/blob/main/public/example/exp-doc-backlinks-graph.js](https://github.com/frostime/sy-query-view/blob/main/public/example/exp-doc-backlinks-graph.js)
-
-![image](assets/image-20241211213426-38ws4kk.png)
-
-### 分页查看资源目录下所有的图片
-
-源代码参见：[https://github.com/frostime/sy-query-view/blob/main/public/example/exp-show-asset-images.js](https://github.com/frostime/sy-query-view/blob/main/public/example/exp-show-asset-images.js)
-
-![image](assets/image-20241211225413-fc962d4.png)
-
-‍
+- 本页面在技能编写并验收完成前仅为占位。技能完成后，插件内文档站与仓库中的核心 `SKILL.md` 展示的是同一份内容，不会另行维护一份技能说明。
+- 在文档站中查看技能内容不代表技能已安装、已启用或已接入 SiYuan Agent；实际状态以安装情况为准。

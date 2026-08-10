@@ -8,8 +8,10 @@
   "author": "frostime",
   "license": "MIT",
   "scripts": {
-    "dev": "npm run export-types && npm run vite:dev",
-    "build": "npm run export-types && npm run vite:build",
+    "dev": "npm run export-types && npm run docs:gen && npm run vite:dev",
+    "build": "npm run export-types && npm run docs:check && npm run vite:build",
+    "docs:gen": "node scripts/build-docs.js",
+    "docs:check": "node scripts/check-docs-sync.js",
     "vite:dev": "cross-env NODE_ENV=development VITE_SOURCEMAP=inline vite build --watch",
     "vite:build": "cross-env NODE_ENV=production vite build",
     "vite:build-srcmap": "cross-env NODE_ENV=production VITE_SOURCEMAP=inline vite build",

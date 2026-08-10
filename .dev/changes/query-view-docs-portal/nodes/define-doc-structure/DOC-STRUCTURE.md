@@ -124,12 +124,12 @@ API 参考 (api-reference)
 
 - 生成并提交：仓库根 `README.md`、`README_zh_CN.md`（提交态含未解析的 `{{Query}}` 等占位符、图片相对路径，与现状一致）。
 - 图片路径规范：docs 页面内相对引用（`../assets/…` / `../../assets/…`）在生成时规范化为 `docs/assets/<file>`（提交态，GitHub 可直接渲染）。图片文件由“整理人类文档”任务从根 `assets/` 以 `git mv` 迁入 `docs/assets/`（见 §12-1）。
-- 删除 `<!-- REFERENCE-START -->` / `<!-- REFERENCE-END -->` 标记（README L2241/L2271）：它们唯一消费者是旧帮助笔记功能（`src/user-help/sy-doc.ts` L44-55），该功能随本变更退役。
+- 在生成的 README 中暂时保留 `<!-- REFERENCE-START -->` / `<!-- REFERENCE-END -->` 标记：它们仍被旧帮助笔记功能（`src/user-help/sy-doc.ts` L44-55）和 `onlyImportDtsInUserDoc` 设置使用。标记不是 docs 页面源内容；只有在停用旧帮助笔记机制的任务中与该消费者和设置原子删除。
 - `plugin.json` 的 `readme` 映射（`README.md` / `README_zh_CN.md`）保持不变。
 
 ### 5.3 同步检查行为契约
 
-- 新增脚本 `scripts/check-docs-sync.js`（最小实现建议：重新生成两份 README 到临时目录，与仓库根已提交文件逐字节比对，不一致则打印 diff 摘要并以非零码退出）。
+- 新增脚本 `scripts/check-docs-sync.js`（最小实现建议：重新生成两份 README，与仓库根文件在行尾归一化后比对；除 CRLF/LF 差异外，不一致则打印 diff 摘要并以非零码退出）。
 - 接入点：`package.json` 的 `build` 链改为 `export-types → docs 生成+检查 → vite:build`（顺序依赖：d.ts 附录需要 `types/types.d.ts.json`，必须先跑 `export-types`）。CI 现有 `pnpm run build`（`.github/workflows/release.yml`）自动继承该检查。
 - 契约：**构建时发现 README 未同步即构建失败**（对应 TARGET 验收标准 10）。`dev` 模式（`vite:dev`）不强制检查，只做生成（本地开发提示即可）。
 - `vite.config.ts` 既有 `replaceMDVars` / `replaceMDImgUrl` 对 dist 副本的处理保留，仅把图片前缀从 `assets/` 更新为 `docs/assets/`。
