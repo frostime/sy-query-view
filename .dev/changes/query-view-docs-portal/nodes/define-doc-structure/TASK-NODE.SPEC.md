@@ -1,6 +1,6 @@
 # 定义文档结构与内容来源规则
 
-**状态：** 执行中
+**状态：** 已验收
 **负责人：** worker `docs-site-worker`
 
 ## 任务目的
@@ -58,4 +58,12 @@
 
 ## 结果与影响
 
-等待执行。
+**交付物：** 本目录新增 `DOC-STRUCTURE.md`，包含：`docs/zh_CN/` 与 `docs/en_US/` 的 10 页页面地图（稳定页面 ID、路径、侧边栏顺序）；首页两条任务路径；每页内容来源表（映射到现有 README 章节与仓库文件行号）；`docs/TERM.md` 职责与首批词汇范围；README 拼装顺序、生成文件与构建期同步检查契约；案例元数据与代码职责边界（`{{example:…}}` 占位符 + `<!-- docs-only -->` 标记约定）；单一帮助入口变更表（含旧设置、模板、d.ts 菜单的处置）；离线静态材料规则（含 README 图片 `@main` 改写问题的边界划定）；GUI 最小内容读取契约；YAGNI 范围。
+
+**关键证据（已核实）：** README.md/README_zh_CN.md 章节结构及行号、`assets/` 76 张图片与 `@main` 改写机制（`vite.config.ts` `replaceMDImgUrl`）、`{{Query}}` 占位符与 `REFERENCE-START/END` 标记（`scripts/export-types.js` + `types/types.d.ts.json`）、旧帮助入口链（`src/user-help/index.ts` → `sy-doc.ts`/`examples.ts`）、`src/setting/index.ts` 设置项、`public/i18n/*.yaml` 案例描述键、dist 打包现状（含 `example/`、无 `docs/`）。
+
+**已确认决定（主 Agent 2026-08-11 确认，详见 DOC-STRUCTURE.md §12）：** ① 图片由根 `assets/` 迁至 `docs/assets/`（整理任务用 `git mv` 执行）；② README 保留完整 d.ts 附录（含占位符机制）；③ 案例页单页结构（已按局部决策执行）；④ `docs/siyuan-3.7.0-embed-editing-qv.md` 移入 `.dev/notes/`（作用域内检查未发现入站链接需更新）；⑤ README 图片改写保留 `@main`，tag 固定延期，插件文档站不消费远程 URL。
+
+**残余问题：** 无残余待决问题。本节点交付物待主 Agent 验收；验收后可建立“整理人类文档”与“开发文档站 GUI”执行任务。
+
+**影响：** 后续“整理人类文档”与“开发文档站 GUI”节点可直接使用本文页面 ID、占位符约定与打包边界；本文不修改任何生产代码、README、全局 change 文件。

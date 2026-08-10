@@ -13,7 +13,7 @@ created: 2026-08-11T02:07:23+08:00
 
 ## Current Status
 
-分支为 `docs/query-view-docs-site`。当前已进入方案阶段，没有开始生产代码。执行节点 `nodes/define-doc-structure/` 正在定义页面地图与内容来源规则；其结果验收后，才能建立文档整理和 GUI 开发任务。
+分支为 `feat/query-view-docs-site`。文档结构节点已验收，关键方案见 `nodes/define-doc-structure/DOC-STRUCTURE.md`。`nodes/write-human-docs/` 正在将现有 README 迁移为中英文 docs、README 生成器和同步检查；完成后再建立 GUI 开发任务。
 
 ## Key Information for the Successor
 
