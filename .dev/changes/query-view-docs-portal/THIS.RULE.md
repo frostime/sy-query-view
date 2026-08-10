@@ -12,6 +12,7 @@
 - `graph.md`：以可交付工作为单位的计划任务、依赖和当前前沿。
 - `query-view-docs-portal.MAP.md`：任务相关代码和资料的导航索引，不记录决策或进度。
 - `query-view-docs-portal.HANDOVER.md`：压缩上下文或新会话时的最小继续说明。
+- `DECISIONS.md`：执行过程中不改变原则、范围或用户行为的小型实现决定。
 - `nodes/<task-slug>/TASK-NODE.SPEC.md`：仅为已经进入实施的执行任务创建。
 
 ## 任务图规则
@@ -30,14 +31,17 @@ Skill 的安装、调用、启用状态展示及 SiYuan Agent/MCP 完整集成�
 
 具体执行可委托给长期复用的 worker，优先运行时为 `opencode-go/deepseek-v4-flash:max`。主 Agent 负责与用户确认需求、建立任务规格、限定 worker 写入范围、审查结果及验收；worker 不修改本目录中的全局目标、术语或任务图。
 
+worker 和主 Agent 可自主决定不会改变用户行为、内容来源、任务范围或关键架构的局部细节，并将决定与理由简记到 `DECISIONS.md`。遇到上述原则性变化、安全风险、不可逆操作或多个高成本方向难以取舍时，必须暂停并询问用户。
+
 ## 更新纪律
 
 1. 用户确认、修正或撤回会影响目标的内容时，先更新 `TARGET.SPEC.md`，再更新 `graph.md`。
 2. 每次任务依赖、状态或交付物发生变化时，更新 `graph.md`。
 3. 只把反复使用且会影响判断的中英文术语放入 `TERM.md`。
 4. 只在重要方向变化或阶段收敛时更新 `EVOLVE-STORY.md`。
-5. 执行者只写入自己的任务目录；主 Agent 负责修改全局目标、术语和任务图。
+5. 执行者只写入任务规格允许的生产文件和自己的任务目录；主 Agent 负责修改全局目标、术语和任务图。
+6. 小型实现决定追加到 `DECISIONS.md`；不要把普通编码过程写成流水账。
 
 ## 交接
 
-新会话或执行者按以下顺序恢复状态：`TARGET.SPEC.md` → `THIS.RULE.md` → `graph.md` → `TERM.md` → `query-view-docs-portal.MAP.md` → `query-view-docs-portal.HANDOVER.md` → 对应 `TASK-NODE.SPEC.md`（如存在）。
+新会话或执行者按以下顺序恢复状态：`TARGET.SPEC.md` → `THIS.RULE.md` → `graph.md` → `TERM.md` → `query-view-docs-portal.MAP.md` → `query-view-docs-portal.HANDOVER.md` → `DECISIONS.md` → 对应 `TASK-NODE.SPEC.md`（如存在）。

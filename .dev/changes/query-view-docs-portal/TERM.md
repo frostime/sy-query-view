@@ -6,7 +6,11 @@ Query&View 在 SiYuan 独立 Tab 中打开的多页面文档界面。它只显�
 
 ## 文档内容源 / Documentation Source
 
-某类文档内容唯一需要维护或生成的来源。中英文 README 负责长篇人类说明；案例代码负责可运行案例；类型声明负责精确 API 签名；智能体技能负责 Agent 使用规则。插件内文档站只组织和显示这些材料。
+某类内容唯一需要手工维护或生成的来源。`docs/zh_CN/` 与 `docs/en_US/` 负责人类文档，中英文 README 从中生成；`public/example/` 负责可运行案例代码；类型声明负责精确 API 签名；智能体技能负责 Agent 使用规则。插件内文档站只组织和显示这些材料。
+
+## 产品文档术语表 / Documentation Terminology Glossary
+
+计划放在 `docs/TERM.md` 的中英文词汇对照。它约束产品文档、README 和相关界面中的译名，避免中英文页面各自翻译。它不同于本文件：本文件只解释开发任务使用的术语。
 
 ## 核心智能体技能 / Core Agent Skill
 
