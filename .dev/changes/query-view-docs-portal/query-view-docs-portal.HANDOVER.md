@@ -13,7 +13,7 @@ created: 2026-08-11T02:07:23+08:00
 
 ## Current Status
 
-分支为 `docs/query-view-docs-site`。当前仅创建了变更记录，没有开始任何生产代码任务。等待用户确认进入方案阶段；生产代码仍须等方案结果确认。
+分支为 `docs/query-view-docs-site`。当前已进入方案阶段，没有开始生产代码。执行节点 `nodes/define-doc-structure/` 正在定义页面地图与内容来源规则；其结果验收后，才能建立文档整理和 GUI 开发任务。
 
 ## Key Information for the Successor
 
