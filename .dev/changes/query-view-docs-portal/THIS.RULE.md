@@ -11,7 +11,8 @@
 - `TERM.md`：本变更反复使用的中英文术语。
 - `graph.md`：以可交付工作为单位的计划任务、依赖和当前前沿。
 - `query-view-docs-portal.MAP.md`：任务相关代码和资料的导航索引，不记录决策或进度。
-- `query-view-docs-portal.HANDOVER.md`：压缩上下文或新会话时的最小继续说明。
+- `query-view-docs-portal.HANDOVER-Round2.md`：上下文压缩或新会话时的首选继续入口（比 Round1 更新）。
+- `query-view-docs-portal.HANDOVER.md`：Round 1 交接，保留作历史参考。
 - `DECISIONS.md`：执行过程中不改变原则、范围或用户行为的小型实现决定。
 - `nodes/<task-slug>/TASK-NODE.SPEC.md`：仅为已经进入实施的执行任务创建。
 
@@ -44,4 +45,4 @@ worker 和主 Agent 可自主决定不会改变用户行为、内容来源、任
 
 ## 交接
 
-新会话或执行者按以下顺序恢复状态：`TARGET.SPEC.md` → `THIS.RULE.md` → `graph.md` → `TERM.md` → `query-view-docs-portal.MAP.md` → `query-view-docs-portal.HANDOVER.md` → `DECISIONS.md` → 对应 `TASK-NODE.SPEC.md`（如存在）。
+新会话或执行者按以下顺序恢复状态：`HANDOVER-Round2.md` → `TARGET.SPEC.md` → `THIS.RULE.md` → `graph.md` → `TERM.md` → `query-view-docs-portal.MAP.md` → `DECISIONS.md` → 对应 `TASK-NODE.SPEC.md`（如存在）。
