@@ -211,6 +211,10 @@ export const load = async (plugin: QueryViewPlugin): Promise<DocsSite> => {
                 md = await content.expandExamples(md);
                 if (seq !== requestSeq || gen !== siteGeneration || disposed) return;
 
+                // Skill 占位符展开（{{skill:...}}）：成功内容独立缓存；await 后按既有竞态契约再次检查
+                md = await content.expandSkill(md);
+                if (seq !== requestSeq || gen !== siteGeneration || disposed) return;
+
                 // API 页动作初始化与渲染串行化：动作未就绪时先等待（含请求令牌检查），
                 // 避免 API 作为首屏时工具条永久缺失；初始化失败保持未定义，下次渲染重试
                 if (result.pageId === "api-reference" && !pageActions["api-reference"]) {

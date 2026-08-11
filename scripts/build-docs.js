@@ -115,6 +115,37 @@ const expandExamples = (md, lang) =>
         return "```js\n" + code + "\n```";
     });
 
+/**
+ * Skill 展示转换（与 src/docs-site/content.ts 的 skillToDisplay 逻辑必须逐字节一致）：
+ * YAML frontmatter（开头的 --- 块）作为 yaml fenced code block 显示，frontmatter 后的正文继续按
+ * Markdown 渲染；输入按 LF 归一化；无 frontmatter 时完整正文直接显示。不解析或改写 Skill 规则内容。
+ */
+const skillToDisplay = (raw) => {
+    const text = raw.replace(/\r\n?/g, "\n");
+    const m = /^---\n([\s\S]*?)\n---\n?/.exec(text);
+    if (!m) return text;
+    const yaml = m[1].replace(/\n+$/, "");
+    const body = text.slice(m[0].length).replace(/^\n+/, "");
+    return "```yaml\n" + yaml + "\n```\n\n" + body;
+};
+
+/** {{skill:<name>}} → 从仓库 skills/{name}/SKILL.md 展开（作者侧缺文件必须失败） */
+const expandSkill = (md, lang) =>
+    expandSkillText(md, (name) => {
+        const p = path.join(ROOT, "skills", name, "SKILL.md");
+        if (!fs.existsSync(p)) {
+            throw new Error(`[docs] skill file not found: ${name} (lang: ${lang})`);
+        }
+        return fs.readFileSync(p, "utf8");
+    });
+
+/**
+ * 纯函数：对原始字符串一次性替换（String.replace 回调天然不重扫插入文本）；
+ * resolve(name) 返回 Skill 原文或抛错。与运行时 expandSkill 的切片重建语义一致（one-pass）。
+ */
+const expandSkillText = (md, resolve) =>
+    md.replace(/\{\{skill:([a-zA-Z0-9_-]+)\}\}/g, (match, name) => skillToDisplay(resolve(name)));
+
 const normalizeImagePaths = (md) => md.replace(/(?:\.\.\/)+assets\//g, "docs/assets/");
 
 const shiftHeadings = (md) => {
@@ -146,6 +177,7 @@ const buildLang = (lang) => {
         let md = fs.readFileSync(p, "utf8");
         md = stripDocsOnly(md);
         md = expandExamples(md, lang);
+        md = expandSkill(md, lang);
         md = normalizeImagePaths(md);
         md = shiftHeadings(md);
         parts.push(md.replace(/\s+$/, ""), "");
@@ -181,4 +213,4 @@ if (isMain) {
     }
 }
 
-export { generateAll };
+export { generateAll, skillToDisplay, expandSkill, expandSkillText };

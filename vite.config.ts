@@ -39,7 +39,8 @@ export default defineConfig({
                 { src: "./plugin.json", dest: "./" },
                 { src: "./preview.png", dest: "./" },
                 { src: "./icon.png", dest: "./" },
-                { src: "./docs/**", dest: "./" }
+                { src: "./docs/**", dest: "./" },
+                { src: "./skills/**", dest: "./" }
             ],
         }),
 
@@ -72,7 +73,8 @@ export default defineConfig({
                                 'public/i18n/**',
                                 './README*.md',
                                 './plugin.json',
-                                './docs/**'
+                                './docs/**',
+                                './skills/**'
                             ]);
                             for (let file of files) {
                                 this.addWatchFile(file);

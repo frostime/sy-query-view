@@ -1,7 +1,7 @@
 # Query&View 文档站任务图 / Documentation Site Task Graph
 
-**当前状态：** 文档站阶段反馈与核心 Skill 均已验收；正在把同一份 Skill 接入文档站并执行整体发布验证。
-**当前前沿：** “接入 Skill 并做整体发布验证”正在执行。
+**当前状态：** 文档站、阶段反馈修复、核心 Skill 接入和自动发布验证均已完成。
+**当前前沿：** 无代码执行任务；等待用户在隔离 SiYuan 工作区完成最终运行时复测。
 
 ```mermaid
 flowchart LR
@@ -32,10 +32,10 @@ flowchart LR
 | 修复阶段验收反馈 | 已移除站内语言切换，`zh_CHT` 使用中文文案与中文 docs，代码块/图片原生控件按上下文删除，任务复选框保留，基本概念改用本地 SVG。 | 用户完成第一轮运行时阶段验收。 | 已验收；见 `nodes/fix-runtime-feedback/` |
 | 编写核心智能体技能 | 已交付英文自包含 `SKILL.md`；API 名称按规范名、合法别名和未支持名称分类，并由 receiver-specific 类型/实现验证固定。 | 已验收的阶段反馈修复。 | 已验收；见 `nodes/write-core-skill/` |
 | 验证并补充技能参考材料 | 实测目标 Agent 能否通过文件读取工具访问 Skill 安装目录中的参考文件；可行时再加入 `references/`，不可行时保持核心 Skill 自包含并记录限制。 | 编写核心智能体技能。 | 明确延后；不阻塞本轮发布验证 |
-| 接入 Skill 并做整体发布验证 | 文档站显示同一份核心 Skill 内容；验证插件内文档站、核心 Skill和打包结果符合目标规格。 | 已验收的核心智能体技能。 | 执行中；见 `nodes/integrate-skill-release/` |
+| 接入 Skill 并做整体发布验证 | 双语页面通过占位符从同一 `SKILL.md` 展开；原始 Skill 随包发布；运行时/生成器一次展开与包内字节一致性已验证。 | 已验收的核心智能体技能。 | 已验收（自动与构建验证）；真实 SiYuan 展示待用户复测；见 `nodes/integrate-skill-release/` |
 
 ## 任务推进规则
 
 表中的每一项都是以交付物为单位的计划任务，不是已经批准的编码工作。某项任务只有在依赖满足、仍有必要执行且被主 Agent 转为执行任务后，才会在 `nodes/` 下获得自己的 `TASK-NODE.SPEC.md`。
 
-当前执行任务：`nodes/integrate-skill-release/TASK-NODE.SPEC.md`。
+当前执行任务：无。等待用户按 `nodes/verify-docs-gui/RUNTIME-CHECKLIST.md` 在隔离 SiYuan 工作区完成最终运行时复测。

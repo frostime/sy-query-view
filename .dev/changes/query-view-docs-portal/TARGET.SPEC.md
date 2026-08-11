@@ -1,6 +1,6 @@
 # Query&View 插件内文档站与智能体技能 — Target SPEC
 
-**状态：** 实施阶段
+**状态：** 等待用户最终运行时验收
 **创建：** 2026-08-11
 
 ## Problem Statement

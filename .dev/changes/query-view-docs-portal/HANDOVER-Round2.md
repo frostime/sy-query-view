@@ -5,7 +5,7 @@ created: 2026-08-11T13:10:02+08:00
 
 ## Assume Reader
 
-接收者是上下文已压缩或新开启的 Pi Agent。它可以读取本仓库（分支 `feat/query-view-docs-site`，HEAD `a70ca52`）和 `.dev/changes/query-view-docs-portal/`，但不能依赖此前对话。本文件是压缩后的首要入口。
+接收者是上下文已压缩或新开启的 Pi Agent。它可以读取本仓库当前分支 `feat/query-view-docs-site`（以 `git log --oneline` 获取最新 HEAD）和 `.dev/changes/query-view-docs-portal/`，但不能依赖此前对话。本文件是压缩后的首要入口。
 
 ## Background Context
 
@@ -13,14 +13,11 @@ created: 2026-08-11T13:10:02+08:00
 
 ## Current Status
 
-代码主体已全部完成并提交：
+代码主体与自动发布验证已经完成。主要 checkpoint 可通过 `git log --oneline` 查看，其中包括文档站与旧帮助退役、核心 Skill、阶段运行时反馈修复、Skill API 校正和最终 Skill 接入。
 
-- `677d3d2` — 文档站 GUI + 旧帮助退役
-- `a70ca52` — 核心 Agent Skill
+工作区正常情况下只剩两项**不应提交**的内容：`.gitignore` 的 `.pi-input.md`（用户任务前既有修改）和 `.pi/`（pi 工具自身会话目录）。
 
-工作区仅剩两项**不应提交**的内容：`.gitignore` 的 `.pi-input.md`（用户任务前既有修改）和 `.pi/`（pi 工具自身会话目录）。
-
-**当前执行节点**：`nodes/integrate-skill-release/`，把已验收的核心 `SKILL.md` 作为单一源显示在双语文档站并随插件打包，随后执行整体发布验证。`write-core-skill` 已修正 API 分类和返回类型并通过 72 项验证及独立审查。`references/` 研究由用户明确延后，不阻塞本轮。
+**当前状态**：无代码执行节点。`nodes/integrate-skill-release/` 已通过自动、构建与独立审查；等待用户在隔离 SiYuan 工作区复测阶段反馈修复和 Skill 页面。`references/` 研究由用户明确延后。
 
 ## Trajectory
 
@@ -31,26 +28,23 @@ created: 2026-08-11T13:10:02+08:00
 5. **GUI 实现**（已验收，两轮审查修正）：`src/docs-site/{index,nav,content,render}.ts` + SCSS、`src/user-help/dts-actions.ts` 依赖叶、Help 菜单改开文档站、Lute `Md2BlockDOM` 实际 DOM 适配（`NodeCodeBlock`/`.hljs`/`data-href` 链接）。
 6. **旧帮助退役**（已验收）：删除 `sy-doc.ts`/`examples.ts`/旧样式/独立 Examples 与 d.ts 菜单/`onlyImportDtsInUserDoc` 设置/README `REFERENCE-START/END` 标记；`qv-basic` 改运行时读取 `basic-template.js`；未触碰任何用户笔记数据。
 7. **自动验证**（已验收）：`nodes/verify-docs-gui/AUTOMATED-VALIDATION.md` 全过；`RUNTIME-CHECKLIST.md` 22 项人工清单待用户在隔离工作区执行。
-8. **核心 Skill**（未验收，有已知错误）：`skills/sy-query-view/SKILL.md` 177 行英文自包含，`verify-skill.mjs` 31 项断言通过，但主 Agent 审查发现 API 归类错误。
+8. **阶段运行时反馈修复**（已验收）：移除站内语言切换；`zh_CHT` 使用中文；按上下文删除代码块/图片 Lute 控件并保留任务复选框；基本概念使用本地 SVG。
+9. **核心 Skill**（已验收）：英文、自包含；规范 API、合法别名和未支持名称分开；receiver-specific 验证、精确返回契约和案例源码核对共 72 项通过。
+10. **Skill 接入与发布验证**（已验收自动部分）：双语页面用 `{{skill:sy-query-view}}` 从同一 Skill 展开；运行时与生成器一次替换一致；原始 Skill 随包发布且包内字节一致；52 项接入验证及全部前序验证通过。
 
 ## Key Information for the Successor
 
-### 首要任务：修正 Skill 的 legacy 标注错误
+### 当前结论
 
-`skills/sy-query-view/SKILL.md` 第 5 节 "Legacy spellings to avoid" 与 `verify-skill.mjs` 的 legacy 断言列表**归类错误**：
+代码与自动发布验证已完成；没有待执行的生产代码任务。后续 Agent 不应重新修正已解决的 Skill legacy 分类问题，也不应创建 `references/`。
 
-- `dv.cards`、`dv.replaceView`、`dv.repaint` 是 `public/types.d.ts` 中的**规范 API**（证据：`cards` L738、`replaceView` L671、`repaint` L619），**不应**列为 legacy；
-- `Query.utils` 是 `docs/en_US/topics/query.md` 明确承认的**合法小写别名**（"`Query.Utils` has an lowercase alias `Query.utils`"），不应列入 avoid；
-- 真正需要标注旧拼写的是案例中仍使用的 `Query.Dataview`（规范为 `Query.DataView`）、`Query.prune`（规范为 `Query.pruneBlocks`）等。
+当前唯一验收前沿是用户在隔离 SiYuan 工作区进行运行时复测：语言跟随与 `zh_CHT`、图片/代码块控件、任务复选框、SVG、Skill 页面展开、复制/只读/导航和离线原始 Skill 路径。
 
-修正范围：SKILL.md 的 avoid-note + verify-skill.mjs 的 `legacy` 数组 + 相关断言；修正后重跑验证并验收 `write-core-skill` 节点（更新 `graph.md`/`EVOLVE-STORY.md`）。
+### 剩余任务
 
-### 剩余任务（按序）
-
-1. **已完成：修正并验收 `write-core-skill`**。Skill 将规范 API、合法运行时别名和未支持名称分开；receiver-specific 验证含精确返回类型、错误接收者负向对照和案例源码核对，72/72 通过。
-2. **当前：接入 Skill 并做整体发布验证**。`docs/zh_CN/skill/index.md` 与 `docs/en_US/skill/index.md` 仍为占位页，必须通过占位符/本地展开机制显示同一份 `skills/sy-query-view/SKILL.md`，并验证打包结果。
-3. **明确延后：`references/` 验证**。用户决定本轮不研究；不得作为发布验证依赖。
-4. **真实 SiYuan 运行时人工验收**：继续使用 `nodes/verify-docs-gui/RUNTIME-CHECKLIST.md`，重点复测阶段反馈修复项。
+1. 用户按 `nodes/verify-docs-gui/RUNTIME-CHECKLIST.md` 复测，重点检查 B1/B1a、C1/C3 和 Skill 页面。
+2. 若复测失败，建立针对具体失败项的新节点，禁止在验证节点中直接扩大修复范围。
+3. `references/` 文件读取实测、Skill 安装/启用状态和 SiYuan Agent/MCP 集成均明确延后。
 
 ### 重要约束与工作区事实
 
@@ -58,7 +52,7 @@ created: 2026-08-11T13:10:02+08:00
 - **构建链**：`npm run build` = `export-types → docs:check → vite:build → zipPack`；`docs:gen` 不在 build 链中（作者操作）。README 只能通过改 docs 后 `docs:gen` 生成，`docs:check` 检测未同步即构建失败。
 - **`public/types.d.ts` 副作用**：`export-types` 会改写其头部版本/时间戳；构建后必须 `git checkout -- public/types.d.ts` 还原（本次已多次还原）。当前 `git status` 中它显示 ` M` 仅是 autocrlf 统计伪影，内容与 HEAD 字节一致。
 - **提交纪律**：`.gitignore`（`.pi-input.md`）与 `.pi/` 是任务外内容，永不提交；生产提交遵循 Conventional Commits + emoji（见仓库 `git-commit-msg` SKILL）。
-- **自动化验证脚本**（可复现）：`nodes/build-docs-gui/verify-content.cjs`（14 断言）、`verify-render-selectors.mjs`（33 断言）、`nodes/retire-legacy-help/verify-i18n.mjs`（11 断言）、`nodes/write-core-skill/verify-skill.mjs`（31 断言，需随 Skill 修正同步更新）。
+- **自动化验证脚本**（可复现）：`nodes/build-docs-gui/verify-content.cjs`、`verify-render-selectors.mjs`、`nodes/retire-legacy-help/verify-i18n.mjs`、`nodes/fix-runtime-feedback/verify-runtime-fixes.mjs`、`nodes/write-core-skill/verify-skill.mjs`（72 项）、`nodes/integrate-skill-release/verify-skill-integration.mjs`（52 项）。
 
 ## 主 Agent ↔ worker 协同方式（必须遵守）
 
@@ -84,7 +78,7 @@ piArgs:      禁止使用（用户明确要求，避免触发额外用户审查�
 3. **执行边界**：worker 只写节点目录和任务规格允许的生产文件；不修改全局 change 文件、`.gitignore`、git 历史；不 commit。
 4. **独立审查（必做）**：worker 报告后，主 Agent 派 `code-reviewer` preset（模型 `rrver-codex/gpt-5.6-luna:max`，仅 read/bash 权限）做独立审查，同时主 Agent 亲自抽查关键文件。**绝不只信 worker 报告**。
 5. **打回或验收**：有实质缺陷 → 同一 slug 打回修正（已发生多轮：GUI 两轮、退役两轮）；通过 → 主 Agent 验收：节点状态改“已验收”，更新 `graph.md`/`EVOLVE-STORY.md`/`THIS.RULE.md`/交接文件，必要时记 `DECISIONS.md`。提交由主 Agent 执行。
-6. **worker 生命周期**：每轮报告会带 context 用量（当前约 56% / 1M）；接近上限前先让 worker 产出交接摘要再退休并另开新 slug；耗尽后不可复用。
+6. **worker 生命周期**：每轮报告会带 context 用量（当前约 75% / 1M）；接近上限前先让 worker 产出交接摘要再退休并另开新 slug；耗尽后不可复用。
 
 ### 已踩过的坑（教训，新 session 必须规避）
 
@@ -96,9 +90,9 @@ piArgs:      禁止使用（用户明确要求，避免触发额外用户审查�
 
 ## File Reference Map
 
-- `TARGET.SPEC.md` — 目标、行为契约、验收标准（状态：实施阶段）。
+- `TARGET.SPEC.md` — 目标、行为契约、验收标准（状态：等待用户最终运行时验收）。
 - `THIS.RULE.md` — long-task-orchestration 运行规则（权威文件职责、任务图规则、更新纪律、交接顺序）。
-- `graph.md` — 任务图；当前前沿：`integrate-skill-release`；`references/` 明确延后。
+- `graph.md` — 任务图；当前无代码执行任务，等待用户最终运行时复测；`references/` 明确延后。
 - `EVOLVE-STORY.md` — 面向用户的演进叙事。
 - `TERM.md`、`DECISIONS.md` — 开发术语与已记录的小型决定。
 - `query-view-docs-portal.MAP.md` — 代码导航索引。
