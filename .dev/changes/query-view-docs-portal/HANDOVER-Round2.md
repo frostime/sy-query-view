@@ -20,7 +20,7 @@ created: 2026-08-11T13:10:02+08:00
 
 工作区仅剩两项**不应提交**的内容：`.gitignore` 的 `.pi-input.md`（用户任务前既有修改）和 `.pi/`（pi 工具自身会话目录）。
 
-**当前执行节点**：`nodes/write-core-skill/`（状态：等待验收，但**存在已知内容错误，尚未验收**，见下）。
+**当前执行节点**：`nodes/write-core-skill/`，需修正下述 API legacy 归类错误后验收。`nodes/fix-runtime-feedback/` 已验收：移除站内语言切换，`zh_CHT` 使用中文，清理代码块/图片 Lute 控件并保留任务复选框，基本概念使用本地 SVG；自动验证与独立审查通过，真实 SiYuan 复测仍按清单执行。
 
 ## Trajectory
 
@@ -71,9 +71,10 @@ slug:        docs-site-worker
 presetAgent: worker
 reuse:       true（首次与每次延续都必须；延续只发增量描述，并要求 worker 先重读可能变化的状态）
 cwd:         H:/SrcCode/SiYuanDevelopment/sy-query-view（固定）
-setModel:    opencode-go/deepseek-v4-flash
+setModel:    deepseek/deepseek-v4-flash:max
 setThinking: max
 piArgs:      禁止使用（用户明确要求，避免触发额外用户审查阻塞会话）
+视觉边界:    该模型无视觉能力；截图与 SVG/GUI 最终视觉检查由主 Agent 或视觉模型完成
 ```
 
 ### 每个任务的闭环流程

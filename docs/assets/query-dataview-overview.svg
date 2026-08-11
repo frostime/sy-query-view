@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 540" font-family="sans-serif" role="img" aria-label="Query and DataView relationship overview">
+  <!-- Query&View API 关系白板图（语言中立：仅使用代码标识符；无外链/脚本/滤镜/渐变/动画）。
+       语义边（均有稳定 id）：
+       Query ─Query.DataView()─► DataView；Query ─► Query.Utils；
+       Query ─► sql / backlink / childdoc / random / …；
+       DataView ─► List / Table / Markdown / Mermaid/ECharts / …；
+       CustomView ─(Register)─► DataViews。 -->
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#555555"/>
+    </marker>
+  </defs>
+
+  <!-- Query -->
+  <g id="node-query">
+    <rect x="50" y="40" width="170" height="50" rx="6" fill="#f2f4f8" stroke="#555555" stroke-width="1.5"/>
+    <text x="135" y="72" text-anchor="middle" font-size="18" font-weight="600" fill="#222222">Query</text>
+  </g>
+
+  <!-- DataView -->
+  <g id="node-dataview">
+    <rect x="580" y="40" width="170" height="50" rx="6" fill="#f2f4f8" stroke="#555555" stroke-width="1.5"/>
+    <text x="665" y="72" text-anchor="middle" font-size="18" font-weight="600" fill="#222222">DataView</text>
+  </g>
+  <line id="edge-query-dataview" x1="220" y1="65" x2="580" y2="65" stroke="#555555" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text id="label-edge-query-dataview" x="400" y="56" text-anchor="middle" font-size="12" fill="#555555">Query.DataView()</text>
+
+  <!-- Query.Utils -->
+  <g id="node-query-utils">
+    <rect x="50" y="140" width="170" height="46" rx="6" fill="#fdfdfb" stroke="#555555" stroke-width="1.5"/>
+    <text x="135" y="168" text-anchor="middle" font-size="15" fill="#222222">Query.Utils</text>
+  </g>
+  <line id="edge-query-utils" x1="135" y1="90" x2="135" y2="140" stroke="#555555" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Queries 子图：sql / backlink / childdoc / random / …（每项一条来自 Query 的显式边） -->
+  <g id="box-queries">
+    <rect x="30" y="230" width="250" height="260" rx="8" fill="none" stroke="#777777" stroke-width="1.2" stroke-dasharray="6 4"/>
+    <text x="46" y="256" font-size="13" fill="#666666">Queries</text>
+    <text id="node-sql" x="52" y="292" font-size="14" fill="#222222">sql</text>
+    <text id="node-backlink" x="52" y="326" font-size="14" fill="#222222">backlink</text>
+    <text id="node-childdoc" x="52" y="360" font-size="14" fill="#222222">childdoc</text>
+    <text id="node-random" x="52" y="394" font-size="14" fill="#222222">random</text>
+    <text id="node-more-queries" x="52" y="428" font-size="14" fill="#222222">…</text>
+  </g>
+  <path id="edge-query-sql" d="M 220 90 H 320 V 292 H 280" fill="none" stroke="#555555" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <path id="edge-query-backlink" d="M 220 90 H 320 V 326 H 280" fill="none" stroke="#555555" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <path id="edge-query-childdoc" d="M 220 90 H 320 V 360 H 280" fill="none" stroke="#555555" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <path id="edge-query-random" d="M 220 90 H 320 V 394 H 280" fill="none" stroke="#555555" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <path id="edge-query-more" d="M 220 90 H 320 V 428 H 280" fill="none" stroke="#555555" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- DataViews 子图：List / Table / Markdown / Mermaid/ECharts / …（每项一条来自 DataView 的显式边） -->
+  <g id="box-dataviews">
+    <rect x="490" y="140" width="250" height="250" rx="8" fill="none" stroke="#777777" stroke-width="1.2" stroke-dasharray="6 4"/>
+    <text x="506" y="166" font-size="13" fill="#666666">DataViews</text>
+    <text id="node-list" x="522" y="198" font-size="14" fill="#222222">List</text>
+    <text id="node-table" x="522" y="230" font-size="14" fill="#222222">Table</text>
+    <text id="node-markdown" x="522" y="262" font-size="14" fill="#222222">Markdown</text>
+    <text id="node-mermaid-echarts" x="522" y="294" font-size="14" fill="#222222">Mermaid/ECharts</text>
+    <text id="node-more-views" x="522" y="326" font-size="14" fill="#222222">…</text>
+  </g>
+  <path id="edge-dataview-list" d="M 665 90 H 762 V 198 H 740" fill="none" stroke="#555555" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <path id="edge-dataview-table" d="M 665 90 H 762 V 230 H 740" fill="none" stroke="#555555" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <path id="edge-dataview-markdown" d="M 665 90 H 762 V 262 H 740" fill="none" stroke="#555555" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <path id="edge-dataview-mermaid-echarts" d="M 665 90 H 762 V 294 H 740" fill="none" stroke="#555555" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <path id="edge-dataview-more" d="M 665 90 H 762 V 326 H 740" fill="none" stroke="#555555" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- CustomView →(Register)→ DataViews -->
+  <g id="node-customview">
+    <rect x="490" y="430" width="170" height="46" rx="6" fill="#fdfdfb" stroke="#555555" stroke-width="1.5"/>
+    <text x="575" y="458" text-anchor="middle" font-size="14" fill="#222222">CustomView</text>
+  </g>
+  <line id="edge-customview-dataviews" x1="575" y1="430" x2="575" y2="390" stroke="#555555" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text id="label-edge-register" x="587" y="412" font-size="12" fill="#777777">Register</text>
+</svg>

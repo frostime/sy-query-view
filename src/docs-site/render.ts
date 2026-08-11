@@ -29,8 +29,36 @@ export interface RenderCtx {
 const normalizeNewlines = (s: string): string => s.replace(/\r\n?/g, "\n");
 
 /**
+ * Lute Md2BlockDOM 产物中需要清理的原生编辑控件（证据：88250/lute test/m2p_test.go 用例）：
+ * - 代码块动作条：[data-type="NodeCodeBlock"] 内的 .protyle-action（语言标签 + 原生复制/菜单图标）；
+ * - 图片图标条：[data-type="img"] 内的 .protyle-action，及图片专用控件
+ *   .protyle-action__drag（拖拽柄）、.img__net（网络来源标记）、.protyle-action__title（标题）；
+ * - 块属性占位 .protyle-attr（空内容）。
+ * 注意：并非所有 .protyle-action 都是编辑器控件——任务列表复选框
+ * （.protyle-action--task，用例 32）是内容的一部分，必须保留，因此按代码块/图片上下文收窄清理。
+ */
+const NATIVE_CONTROL_SELECTORS = [
+    '[data-type="NodeCodeBlock"] .protyle-action',
+    '[data-type="img"] .protyle-action',
+    ".protyle-action__drag",
+    ".img__net",
+    ".protyle-action__title",
+    ".protyle-attr",
+];
+
+/**
+ * 删除代码块/图片上下文中的 Lute 原生编辑控件 DOM；
+ * 保留任务列表复选框等有意义内容；不触碰图片、.hljs 代码文本或文档站自建按钮。
+ */
+const removeNativeEditorControls = (container: HTMLElement): void => {
+    container.querySelectorAll<HTMLElement>(NATIVE_CONTROL_SELECTORS.join(",")).forEach((el) => {
+        el.remove();
+    });
+};
+
+/**
  * 渲染 markdown 为只读内容容器。
- * 步骤：getLute().Md2BlockDOM(md) → 只读化 → b3-typography 容器 → enhance。
+ * 步骤：getLute().Md2BlockDOM(md) → 删除原生编辑控件 → 只读化 → b3-typography 容器 → enhance（注入文档站复制按钮）。
  */
 export const renderPage = (md: string, ctx: RenderCtx): HTMLElement => {
     const container = document.createElement("div");
@@ -39,8 +67,10 @@ export const renderPage = (md: string, ctx: RenderCtx): HTMLElement => {
     const html = getLute().Md2BlockDOM(md);
     container.innerHTML = html;
 
-    // 只读化（先例 src/core/components.ts MarkdownComponent）：Md2BlockDOM 产物中的可编辑元素一律禁用；
-    // 原生编辑器控件（.protyle-action / .protyle-attr）由 scss 在 .root 作用域内隐藏，不影响本模块追加的按钮。
+    // 原生编辑控件 DOM 删除（必须先于文档站复制按钮注入）
+    removeNativeEditorControls(container);
+
+    // 只读化（先例 src/core/components.ts MarkdownComponent）：Md2BlockDOM 产物中的可编辑元素一律禁用
     container.querySelectorAll('[contenteditable="true"]').forEach((node) => {
         node.setAttribute("contenteditable", "false");
     });

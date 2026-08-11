@@ -40,12 +40,7 @@
         }
     }
 
-    // 原生编辑器控件隐藏（非交互），不影响本模块追加的复制按钮
-    :global(.protyle-action),
-    :global(.protyle-attr) {
-        display: none;
-    }
-
+    // 原生编辑器控件已由 render.ts 从 DOM 删除（不再依赖 CSS 隐藏）
     // Lute 链接 DOM：仅对可渲染链接（data-href 非空；危险协议被 Lute 清空为 data-href=""）
     // 提供可点击外观，与 render.ts 的点击注入条件一致
     [data-type~="a"][data-href]:not([data-href=""]) {
@@ -94,34 +89,6 @@
 
 .navItemActive {
     background-color: var(--b3-list-hover);
-    color: var(--b3-theme-primary);
-}
-
-.langBar {
-    display: flex;
-    gap: 8px;
-    padding: 8px 16px;
-    border-top: 1px solid var(--b3-border-color);
-}
-
-.langBtn {
-    flex: 1;
-    padding: 4px 0;
-    cursor: pointer;
-    border: 1px solid var(--b3-border-color);
-    border-radius: 4px;
-    background: transparent;
-    color: var(--b3-theme-on-background);
-    font-size: 12px;
-
-    &:hover {
-        background-color: var(--b3-list-hover);
-    }
-}
-
-.langBtnActive {
-    background-color: var(--b3-theme-primary-lighter);
-    border-color: var(--b3-theme-primary);
     color: var(--b3-theme-primary);
 }
 

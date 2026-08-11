@@ -25,31 +25,7 @@ return [protyle.block.rootID]
 
 💡 本插件提供了一系列功能，来增强 JS 嵌入块的功能。插件的核心是在嵌入块当中透传一个 `Query`​ API，大致关系如下。
 
-```mermaid
-flowchart TD
-  Query
-  DataView
-  Query --> Query.Utils
-  Query --> DataViews
-
-  subgraph Queries
-    Query --> sql
-    Query --> backlink
-    Query --> childdoc
-    Query --> random
-    Query --> A[...]
-  end
-
-  subgraph DataViews
-    DataView --> List
-    DataView --> Table
-    DataView --> Markdown
-    DataView --> Mermaid/Echarts
-    DataView --> B[...]
-  end
-
-  CustomView -->|Register| DataViews
-```
+![Query 与 DataView 关系图](../../assets/query-dataview-overview.svg)
 
 完整的接口文件请查看：[https://github.com/frostime/sy-query-view/blob/main/public/types.d.ts](https://github.com/frostime/sy-query-view/blob/main/public/types.d.ts)
 

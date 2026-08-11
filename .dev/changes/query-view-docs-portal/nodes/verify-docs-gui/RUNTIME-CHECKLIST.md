@@ -16,16 +16,16 @@
 
 ## B. 语言与导航
 
-- [ ] **B1 默认语言**：SiYuan 界面为中文时文档站默认显示中文页；切为英文界面（或 `window.siyuan.config.lang` 非 zh）时默认英文页。
-- [ ] **B2 手动切换**：侧边栏底部 中文/English 切换 → 当前页面以另一语言重载，页面 ID 不变；切换按钮 active 态正确。
+- [ ] **B1 语言跟随 SiYuan（无站内切换）**：文档站不再提供站内语言切换按钮；文档语言只由初始化时的 SiYuan 界面语言决定——`zh_CN`/`zh_CHT` 界面显示 `docs/zh_CN/` 中文内容，其他界面语言显示 `docs/en_US/` 英文内容；重新打开 Tab 才重新解析语言。
+- [ ] **B1a zh_CHT 不回退英文**：SiYuan 界面为繁体中文（`zh_CHT`）时，插件顶栏菜单与文档站侧边栏显示中文文案（`i18n/zh_CHT.json` 生效），文档内容为简体中文（复用中文文档，属本轮已确认行为）；不回退英文。
 - [ ] **B3 翻页**：点击各侧边栏条目 → 内容区替换、active 态更新、滚动回顶；快速连续点击不同页面 → 仅最后一次请求的内容生效（无旧页闪回/覆盖）。
 - [ ] **B4 404 回退**：临时删掉某语言页面文件（如 `docs/zh_CN/topics/query.md`）→ 显示英文同页 + 提示条「该页面暂无中文版本…」；两语言都删 → 错误视图 + 重试按钮（恢复文件后点重试可加载）。
 
 ## C. 渲染与只读
 
-- [ ] **C1 Markdown 渲染保真**：`基本概念` 页的 mermaid 图显示为代码块（已知 v1 限制，非缺陷）；表格、列表、代码块、引用、图片正常；`../../assets/…` 图片以 `http://127.0.0.1:6806/plugins/…/docs/assets/…` 加载（DevTools Network 无任何远程域名请求）。
+- [ ] **C1 Markdown 渲染保真**：`基本概念` 页的 Query/DataView 关系图以本地 SVG（`docs/assets/query-dataview-overview.svg`）显示，中文/英文页共用同一文件；主 Agent 目视确认布局清楚、无文字重叠；表格、列表、代码块、引用、图片正常；`../../assets/…` 图片以 `http://127.0.0.1:6806/plugins/…/docs/assets/…` 加载（DevTools Network 无任何远程域名请求）。
 - [ ] **C2 只读化**：页面内容不可编辑——点击/选中内容不出现编辑光标；`[contenteditable="true"]` 元素（DevTools 检查）全部为 false。
-- [ ] **C3 原生编辑器控件隐藏**：代码块中不显示编辑器自带的复制/菜单图标（`.protyle-action` 隐藏），也无 `.protyle-attr` 残留布局。
+- [ ] **C3 原生编辑器控件已删除（DOM 级，按上下文收窄）**：代码块内只显示文档站自己的「复制」按钮（代码块内无 Lute 原生动作条/复制/菜单图标）；图片旁无 Lute 更多/拖拽/网络来源/标题图标——DevTools 中 `[data-type="NodeCodeBlock"] .protyle-action`、`[data-type="img"] .protyle-action`、`.protyle-action__drag`、`.img__net`、`.protyle-action__title`、`.protyle-attr` 计数为 0（不是 CSS 隐藏，而是 DOM 已移除）；**任务列表复选框（`.protyle-action--task`）必须保留可见**，勾选/未勾选状态与内容不受影响（`.protyle-action` 全局计数不作要求）。
 - [ ] **C4 链接**：文档中的 GitHub 等外链可点击并在新窗口打开；`data-href` 为空（危险协议）的链接无指针样式、不可点击。
 
 ## D. 复制语义

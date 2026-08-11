@@ -83,31 +83,7 @@ return [protyle.block.rootID]
 
 💡 This plugin provides a series of features to enhance the functionality of JS embedded blocks. The core of the plugin is to pass a `Query`​ API within the embedded block, with the following relationship:
 
-```mermaid
-flowchart TD
-  Query
-  DataView
-  Query --> Query.Utils
-  Query --> DataViews
-
-  subgraph Queries
-    Query --> sql
-    Query --> backlink
-    Query --> childdoc
-    Query --> random
-    Query --> A[...]
-  end
-
-  subgraph DataViews
-    DataView --> List
-    DataView --> Table
-    DataView --> Markdown
-    DataView --> Mermaid/Echarts
-    DataView --> B[...]
-  end
-
-  CustomView -->|Register| DataViews
-```
+![Query & DataView relationship](docs/assets/query-dataview-overview.svg)
 
 For the complete interface file, please visit: [https://github.com/frostime/sy-query-view/blob/main/public/types.d.ts](https://github.com/frostime/sy-query-view/blob/main/public/types.d.ts)
 

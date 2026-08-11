@@ -84,7 +84,7 @@ export const load = async (plugin: QueryViewPlugin): Promise<DocsSite> => {
             const contentHost = document.createElement("div");
             main.appendChild(contentHost);
 
-            // ---- 侧边栏：静态导航 + 语言切换 ----
+            // ---- 侧边栏：静态导航 ----
             const sidebar = document.createElement("aside");
             sidebar.className = styles["sidebar"];
             root.insertBefore(sidebar, main);
@@ -117,27 +117,9 @@ export const load = async (plugin: QueryViewPlugin): Promise<DocsSite> => {
                 }
             }
 
-            const langBar = document.createElement("div");
-            langBar.className = styles["langBar"];
-            sidebar.appendChild(langBar);
-            for (const l of ["zh_CN", "en_US"] as Lang[]) {
-                const btn = document.createElement("button");
-                btn.type = "button";
-                btn.className = styles["langBtn"];
-                btn.dataset["lang"] = l;
-                btn.textContent = langName(l);
-                langBar.appendChild(btn);
-            }
-
             const setActiveNav = (pageId: PageId): void => {
                 navItems.forEach((el, id) => {
                     el.classList.toggle(styles["navItemActive"], id === pageId);
-                });
-            };
-
-            const setActiveLang = (): void => {
-                langBar.querySelectorAll("button").forEach((b) => {
-                    b.classList.toggle(styles["langBtnActive"], b.dataset["lang"] === state.lang);
                 });
             };
 
@@ -147,14 +129,6 @@ export const load = async (plugin: QueryViewPlugin): Promise<DocsSite> => {
                 const navEl = target.closest<HTMLElement>("[data-page-id]");
                 if (navEl?.dataset["pageId"]) {
                     navigate(state.lang, navEl.dataset["pageId"] as PageId);
-                    return;
-                }
-                const langEl = target.closest<HTMLElement>("[data-lang]");
-                if (langEl?.dataset["lang"]) {
-                    const l = langEl.dataset["lang"] as Lang;
-                    if (l !== state.lang) {
-                        navigate(l, state.pageId);
-                    }
                     return;
                 }
                 const retryEl = target.closest<HTMLElement>("[data-retry]");
@@ -225,7 +199,6 @@ export const load = async (plugin: QueryViewPlugin): Promise<DocsSite> => {
                 state.lang = lang;
                 state.pageId = pageId;
                 setActiveNav(pageId);
-                setActiveLang();
 
                 const result = await content.loadPage(lang, pageId);
                 if (seq !== requestSeq || gen !== siteGeneration || disposed) return;
@@ -258,7 +231,6 @@ export const load = async (plugin: QueryViewPlugin): Promise<DocsSite> => {
 
             tabCleanups.set(this, disposeTab);
             setActiveNav(state.pageId);
-            setActiveLang();
             void navigate(state.lang, state.pageId);
         },
         destroy() {
