@@ -58,8 +58,40 @@ created: 2026-08-11T13:10:02+08:00
 - **构建链**：`npm run build` = `export-types → docs:check → vite:build → zipPack`；`docs:gen` 不在 build 链中（作者操作）。README 只能通过改 docs 后 `docs:gen` 生成，`docs:check` 检测未同步即构建失败。
 - **`public/types.d.ts` 副作用**：`export-types` 会改写其头部版本/时间戳；构建后必须 `git checkout -- public/types.d.ts` 还原（本次已多次还原）。当前 `git status` 中它显示 ` M` 仅是 autocrlf 统计伪影，内容与 HEAD 字节一致。
 - **提交纪律**：`.gitignore`（`.pi-input.md`）与 `.pi/` 是任务外内容，永不提交；生产提交遵循 Conventional Commits + emoji（见仓库 `git-commit-msg` SKILL）。
-- **worker**：长期复用 slug `docs-site-worker`，模型 `opencode-go/deepseek-v4-flash:max`；worker 只写任务规格允许的路径，主 Agent 负责验收与全局文件。small 决策写入 `DECISIONS.md`。
 - **自动化验证脚本**（可复现）：`nodes/build-docs-gui/verify-content.cjs`（14 断言）、`verify-render-selectors.mjs`（33 断言）、`nodes/retire-legacy-help/verify-i18n.mjs`（11 断言）、`nodes/write-core-skill/verify-skill.mjs`（31 断言，需随 Skill 修正同步更新）。
+
+## 主 Agent ↔ worker 协同方式（必须遵守）
+
+本变更的所有具体执行都通过长期复用的 worker subagent 完成。压缩后新 session 必须按此机制继续，否则会破坏已建立的审查闭环。
+
+### 派发参数（每次派发原样使用）
+
+```text
+slug:        docs-site-worker
+presetAgent: worker
+reuse:       true（首次与每次延续都必须；延续只发增量描述，并要求 worker 先重读可能变化的状态）
+cwd:         H:/SrcCode/SiYuanDevelopment/sy-query-view（固定）
+setModel:    opencode-go/deepseek-v4-flash
+setThinking: max
+piArgs:      禁止使用（用户明确要求，避免触发额外用户审查阻塞会话）
+```
+
+### 每个任务的闭环流程
+
+1. **建任务**：主 Agent 在 `nodes/<task-slug>/` 建立 `TASK-NODE.SPEC.md`（目的/输入边界/预期输出/验收条件/状态/结果六要素）+ `code-start.prompt.md`（最小启动提示：预设给定决策正确、不过度调研、遇冲突立即停下报告）。
+2. **派发**：按上方参数调用 subagent，任务描述包含“重读节点规格与全局文件后再动手、只写允许路径、不提交、完成后把状态改为等待验收并填写结果”。
+3. **执行边界**：worker 只写节点目录和任务规格允许的生产文件；不修改全局 change 文件、`.gitignore`、git 历史；不 commit。
+4. **独立审查（必做）**：worker 报告后，主 Agent 派 `code-reviewer` preset（模型 `rrver-codex/gpt-5.6-luna:max`，仅 read/bash 权限）做独立审查，同时主 Agent 亲自抽查关键文件。**绝不只信 worker 报告**。
+5. **打回或验收**：有实质缺陷 → 同一 slug 打回修正（已发生多轮：GUI 两轮、退役两轮）；通过 → 主 Agent 验收：节点状态改“已验收”，更新 `graph.md`/`EVOLVE-STORY.md`/`THIS.RULE.md`/交接文件，必要时记 `DECISIONS.md`。提交由主 Agent 执行。
+6. **worker 生命周期**：每轮报告会带 context 用量（当前约 56% / 1M）；接近上限前先让 worker 产出交接摘要再退休并另开新 slug；耗尽后不可复用。
+
+### 已踩过的坑（教训，新 session 必须规避）
+
+- **worker 报告可能与实际不符**：曾声称 `check-docs-sync.js` 已做 CRLF 归一化但实际文件仍是原始比较；曾声称“逐字节比对”而实现是普通比较。→ 关键声明必须亲自读文件核实，或以可复现脚本断言为准。
+- **按行删除 YAML 键会残留多行值残片**：i18n 退役清理曾把旧文案残片吸入保留键值（YAML 语法吞掉），构建仍能通过。→ 结构化内容必须用解析器（js-yaml）断言键集与值，不能只靠 grep。
+- **推测的 API 不可信**：曾按推测使用 Lute `Md2HTML`，实际仓库只有 `Md2BlockDOM`。→ 契约必须对照真实 SDK 类型/仓库先例，并由验证脚本固定证据。
+- **验证脚本必须自包含可复现**：曾遗留 `verify-emit/` 编译产物，已改为临时目录 + finally 清理；不得把生成物留在仓库。
+- **自动 safe guard 可能返回无效审查结果**：曾因此阻止 commit；主 Agent 不绕过，重试或请用户决定。
 
 ## File Reference Map
 
