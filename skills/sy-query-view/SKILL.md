@@ -97,28 +97,41 @@ uncomment the DataView lines, and end with `dv.render();`.
 
 ## 5. Core API facts (exact names from `public/types.d.ts`)
 
-**Query object** (async unless noted; results are `IWrappedList<IWrappedBlock>`):
+**Query object** (async methods return Promises; `Query.DataView` and
+`Query.Utils` are sync — return types vary per method, check the type
+declaration for exact signatures):
 
-- `Query.sql(sqlString, wrap?)` — run a SiYuan SQL query.
-- Wrapped queries: `Query.backlink(id, limit?)`, `Query.tag(tags, options?)`,
+- `Query.sql(sqlString, wrap?)` — run a SiYuan SQL query; returns
+  `Promise<IWrappedList<IWrappedBlock>>` (the common wrapped-list result).
+- Wrapped queries that also return `Promise<IWrappedList<IWrappedBlock>>`:
+  `Query.backlink(id, limit?)`, `Query.tag(tags, options?)`,
   `Query.task(options?)`, `Query.random(limit?, type?)`,
-  `Query.dailynote(options?)`, `Query.childDoc(b)`, `Query.keyword(words, options?)`,
-  `Query.keywordDoc(words, options?)`, `Query.markdown(input)`.
+  `Query.dailynote(options?)`, `Query.keyword(words, options?)`.
+- Other return shapes: `Query.childDoc(b)` → `Promise<Block[]>`;
+  `Query.keywordDoc(words, options?)` → `Promise<Block[]>` (documents that
+  contain all the given keywords, with a `keywords` property per document);
+  `Query.markdown(input)` → `Promise<any>` (the block's markdown content; the
+  declaration does not pin a more specific type); `Query.thisDoc(protyle)` →
+  `Promise<IWrappedBlock>` (the current document).
 - Utilities: `Query.Utils.today()`, `Query.Utils.thisMonth()`, `Query.Utils.now()`
-  (all sync; more under `Utils`). `Query.thisDoc(protyle)` gets the current
-  document block. `Query.request(url, data)` is the raw kernel API — prefer the
-  wrapped functions.
-- `Query.DataView(protyle, item, top)` — create a renderer (see below).
+  (all sync; more under `Utils`). `Query.request(url, data)` is the raw kernel
+  API — prefer the wrapped functions.
+- `Query.DataView(protyle, item, top)` — create a renderer (see below); this
+  call is sync and returns a `DataView`.
 - `Query.pruneBlocks(blocks, keep?, advanced?)` — merge parent/child block
-  duplicates from keyword search results.
+  duplicates from keyword search results; returns `Promise<Block[]>`.
+- `Query.fb2p(inputs, enable?)` — redirect container-block references; returns
+  `Promise<Block[]>` (runtime alias `Query.redirect`).
 
 **DataView instance** (`dv`):
 
 - `dv.addlist(children, options?)` / `dv.addtable(children, { cols, ... })` /
   `dv.addmd(markdown)` — basic views.
+- `dv.cards(blocks, options?)` — card view.
 - `dv.useState(key, initialValue?)` — persist state across renders.
-- `dv.addElement(el, disposer?)`, `dv.removeview(id)`, `dv.replaceview(id, el)`,
-  `dv.addDisposer(fn, id?)`, `dv.repaint()`, `dv.render()`.
+- `dv.addElement(el, disposer?)`, `dv.removeView(id, beforeRemove?)`,
+  `dv.replaceView(id, viewContainer, disposer?)`, `dv.addDisposer(fn, id?)`,
+  `dv.repaint()`, `dv.render()`.
 
 **Wrapped blocks/lists**:
 
@@ -127,10 +140,24 @@ uncomment the DataView lines, and end with `dv.render();`.
 - `IWrappedList` is an array of wrapped blocks with `list.pick('id')` (extract
   attributes into a new list) and `list.asMap(key)`.
 
-**Legacy spellings to avoid**: some older shipped examples use
-`Query.Dataview`, `Query.utils`, `Query.fb`, `Query.prune`, `dv.cards`,
-`dv.replaceView`, `dv.repaint`. The canonical names above (from the type
-declaration) are what new code should use.
+**Names: canonical, aliases, unsupported** (grounded in the plugin source
+`src/core/query.ts` alias registration and `src/core/data-view.ts`):
+
+- Prefer the canonical names from the type declaration: `Query.DataView`,
+  `Query.Utils`, `Query.pruneBlocks`, `Query.fb2p`, `dv.removeView`,
+  `dv.replaceView`, `dv.cards`, `dv.repaint`.
+- The runtime registers these as **supported aliases** (some older shipped
+  examples use them; new code should prefer the canonical spellings):
+  `Query.Dataview` (= `Query.DataView`), `Query.utils` (= `Query.Utils`),
+  `Query.prune` (= `Query.pruneBlocks`), `Query.redirect` (= `Query.fb2p`),
+  and the lowercase `dv.removeview` / `dv.replaceview` (most Query members also
+  get lowercase aliases at runtime).
+- The `add*` view conveniences (`dv.addlist`, `dv.addtable`, `dv.addmd`) are
+  runtime-registered; the type declaration declares the underlying methods as
+  `dv.list`, `dv.table`, `dv.markdown` (`dv.md` is an alias).
+- `Query.fb` is **not registered or documented**: it does not work. If you see
+  it in old code, use the canonical `Query.fb2p` (runtime alias
+  `Query.redirect`).
 
 ## 6. Adapting shipped examples
 

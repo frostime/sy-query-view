@@ -20,7 +20,7 @@ created: 2026-08-11T13:10:02+08:00
 
 工作区仅剩两项**不应提交**的内容：`.gitignore` 的 `.pi-input.md`（用户任务前既有修改）和 `.pi/`（pi 工具自身会话目录）。
 
-**当前执行节点**：`nodes/write-core-skill/`，需修正下述 API legacy 归类错误后验收。`nodes/fix-runtime-feedback/` 已验收：移除站内语言切换，`zh_CHT` 使用中文，清理代码块/图片 Lute 控件并保留任务复选框，基本概念使用本地 SVG；自动验证与独立审查通过，真实 SiYuan 复测仍按清单执行。
+**当前执行节点**：`nodes/integrate-skill-release/`，把已验收的核心 `SKILL.md` 作为单一源显示在双语文档站并随插件打包，随后执行整体发布验证。`write-core-skill` 已修正 API 分类和返回类型并通过 72 项验证及独立审查。`references/` 研究由用户明确延后，不阻塞本轮。
 
 ## Trajectory
 
@@ -47,10 +47,10 @@ created: 2026-08-11T13:10:02+08:00
 
 ### 剩余任务（按序）
 
-1. 修正并验收 `write-core-skill`（见上）。
-2. **接入 Skill 并做整体发布验证**（graph 最后一个执行任务）：`docs/zh_CN/skill/index.md` 与 `docs/en_US/skill/index.md` 目前是占位页，需显示同一份 SKILL.md 内容（可考虑 `{{skill:...}}` 类占位符扩展生成器，或由 GUI 特判渲染）；验证打包结果符合 `TARGET.SPEC.md` 验收标准。
-3. **`references/` 验证**：延后任务。用户提议用 `SKILL.md` 指示 Agent 用文件读取工具访问 `references/`；主 Agent 已核查 SiYuan v3.7.0 的 `file.read` 仅限 workspace 相对路径、`skill.load` 只返回 SKILL.md 正文，路径边界需实测，不得假定成立。
-4. **真实 SiYuan 运行时人工验收**：`nodes/verify-docs-gui/RUNTIME-CHECKLIST.md` 22 项，需用户在隔离测试工作区执行（本环境从未连接真实 SiYuan 用户数据）。
+1. **已完成：修正并验收 `write-core-skill`**。Skill 将规范 API、合法运行时别名和未支持名称分开；receiver-specific 验证含精确返回类型、错误接收者负向对照和案例源码核对，72/72 通过。
+2. **当前：接入 Skill 并做整体发布验证**。`docs/zh_CN/skill/index.md` 与 `docs/en_US/skill/index.md` 仍为占位页，必须通过占位符/本地展开机制显示同一份 `skills/sy-query-view/SKILL.md`，并验证打包结果。
+3. **明确延后：`references/` 验证**。用户决定本轮不研究；不得作为发布验证依赖。
+4. **真实 SiYuan 运行时人工验收**：继续使用 `nodes/verify-docs-gui/RUNTIME-CHECKLIST.md`，重点复测阶段反馈修复项。
 
 ### 重要约束与工作区事实
 
@@ -98,7 +98,7 @@ piArgs:      禁止使用（用户明确要求，避免触发额外用户审查�
 
 - `TARGET.SPEC.md` — 目标、行为契约、验收标准（状态：实施阶段）。
 - `THIS.RULE.md` — long-task-orchestration 运行规则（权威文件职责、任务图规则、更新纪律、交接顺序）。
-- `graph.md` — 任务图；当前前沿：`write-core-skill`（待修正验收）→ 接入 Skill。
+- `graph.md` — 任务图；当前前沿：`integrate-skill-release`；`references/` 明确延后。
 - `EVOLVE-STORY.md` — 面向用户的演进叙事。
 - `TERM.md`、`DECISIONS.md` — 开发术语与已记录的小型决定。
 - `query-view-docs-portal.MAP.md` — 代码导航索引。

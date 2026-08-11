@@ -1,7 +1,7 @@
 # Query&View 文档站任务图 / Documentation Site Task Graph
 
-**当前状态：** 阶段运行时反馈已修复并验收；核心 Skill 已提交，正在修正 API legacy 归类后完成验收。
-**当前前沿：** “编写核心智能体技能”恢复执行。
+**当前状态：** 文档站阶段反馈与核心 Skill 均已验收；正在把同一份 Skill 接入文档站并执行整体发布验证。
+**当前前沿：** “接入 Skill 并做整体发布验证”正在执行。
 
 ```mermaid
 flowchart LR
@@ -14,8 +14,8 @@ flowchart LR
     retire --> docsVerify["验收人类文档与 GUI"]
     docsVerify --> runtimeFix["修复阶段验收反馈"]
     runtimeFix --> skill["编写核心智能体技能"]
-    skill --> references["验证并补充技能参考材料"]
-    references --> release["接入 Skill 并做整体发布验证"]
+    skill -. "明确延后" .-> references["验证并补充技能参考材料"]
+    skill --> release["接入 Skill 并做整体发布验证"]
 ```
 
 ## 计划任务
@@ -30,12 +30,12 @@ flowchart LR
 | 停用旧帮助笔记机制 | 已移除旧帮助笔记、独立 Examples、d.ts 顶栏菜单和旧设置；保留基础模板与已有帮助笔记，不操作用户数据。 | 已完成的人类文档整合。 | 已验收；见 `nodes/retire-legacy-help/TASK-NODE.SPEC.md` |
 | 验收人类文档与 GUI | 自动验证文档、GUI、离线打包和旧帮助行为均通过；运行时检查清单已生成，真实 SiYuan Tab 验证留给最终人工验收。 | 已验收的旧帮助机制退役。 | 已验收（自动验证）；见 `nodes/verify-docs-gui/` |
 | 修复阶段验收反馈 | 已移除站内语言切换，`zh_CHT` 使用中文文案与中文 docs，代码块/图片原生控件按上下文删除，任务复选框保留，基本概念改用本地 SVG。 | 用户完成第一轮运行时阶段验收。 | 已验收；见 `nodes/fix-runtime-feedback/` |
-| 编写核心智能体技能 | 一份自包含的英文 `SKILL.md`，基于已验收的文档、案例和类型声明说明 Agent 如何编写及查证 Query&View 代码。 | 已验收的阶段反馈修复。 | 执行中；已提交初稿，正在修正 legacy API 归类；见 `nodes/write-core-skill/` |
-| 验证并补充技能参考材料 | 实测目标 Agent 能否通过文件读取工具访问 Skill 安装目录中的参考文件；可行时再加入 `references/`，不可行时保持核心 Skill 自包含并记录限制。 | 编写核心智能体技能。 | 等待 |
-| 接入 Skill 并做整体发布验证 | 文档站显示同一份核心 Skill 内容；验证插件内文档站、核心 Skill、可选参考材料和打包结果符合目标规格。 | 验证并补充技能参考材料。 | 等待 |
+| 编写核心智能体技能 | 已交付英文自包含 `SKILL.md`；API 名称按规范名、合法别名和未支持名称分类，并由 receiver-specific 类型/实现验证固定。 | 已验收的阶段反馈修复。 | 已验收；见 `nodes/write-core-skill/` |
+| 验证并补充技能参考材料 | 实测目标 Agent 能否通过文件读取工具访问 Skill 安装目录中的参考文件；可行时再加入 `references/`，不可行时保持核心 Skill 自包含并记录限制。 | 编写核心智能体技能。 | 明确延后；不阻塞本轮发布验证 |
+| 接入 Skill 并做整体发布验证 | 文档站显示同一份核心 Skill 内容；验证插件内文档站、核心 Skill和打包结果符合目标规格。 | 已验收的核心智能体技能。 | 执行中；见 `nodes/integrate-skill-release/` |
 
 ## 任务推进规则
 
 表中的每一项都是以交付物为单位的计划任务，不是已经批准的编码工作。某项任务只有在依赖满足、仍有必要执行且被主 Agent 转为执行任务后，才会在 `nodes/` 下获得自己的 `TASK-NODE.SPEC.md`。
 
-当前执行任务：`nodes/write-core-skill/TASK-NODE.SPEC.md`。
+当前执行任务：`nodes/integrate-skill-release/TASK-NODE.SPEC.md`。
