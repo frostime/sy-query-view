@@ -3152,8 +3152,6 @@ return query();
 
 `Block`、`BlockType`、`Notebook`、`DocumentId`、`BlockId`、`SiYuanDate` 等基础类型同样定义在类型声明中。
 
-`<!-- REFERENCE-START -->`
-
 > 注：接口文件会随着开发而变动，以下接口代码为构建时自动生成。最新完整的接口文件以随插件发布的 `public/types.d.ts` 为准，也可以在插件内文档站的「API 参考」页打开或下载当前版本的类型声明文件。
 
 ### Query
@@ -3173,8 +3171,6 @@ return query();
 ```ts
 {{DataView}}
 ```
-
-`<!-- REFERENCE-END -->`
 
 
 ## 智能体技能

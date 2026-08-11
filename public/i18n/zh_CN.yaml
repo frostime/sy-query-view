@@ -32,57 +32,41 @@ src_setting_indexts:
   local_command_desc: 本地用于打开代码编辑器的命令, 默认为 "code -w {{filepath}}" 代表使用 VSCode 打开, 其中
     {{filepath}} 在运行时会被替换为真实的代码文件
   open_local_editor: ✒️ 打开本地编辑器
-  plugin_import_help_doc: 插件允许将帮助文档导入到思源笔记中，默认情况下会导入完整的 README 文档以及 Tyepscript Reference；如果开启了这个选项，那么在导入的时候将只导入
-    Reference 部分而不会导入其余部分
   reload: 重新加载
   table_default_columns: 🔑 表格视图默认显示列
   user_custom_view: 用户自定义视图
-  user_doc_import_type_ref: 用户文档只导入类型参考
   user_self_written_view: 用户自行编写的 View 组件, 存放在 '/data/public/custom-query-view.js'
     下
-src_userhelp_examplests:
-  backlinks_table: 以表格的形式显示当前文档的回链
-  daily_quote: 每日一句，这个案例中用到了 state，所以每天只会显示一条句子；不过注意这个例子中用到了随便从网上找到 API，不一定稳定，当个案例看看就行
-  doc_backlinks_grouping: 按照引用块的类型，分组查看当前文档的反向链接，并放入折叠列表中展示
-  doc_outline_tree: 查询当前文档的大纲，并以树状结构展示
-  docs_per_month: 查询每个月创建的文档的数量，并使用 echarts 折线图展示出来
-  echarts_graph_ref: 使用 Echarts Graph 展示当前文档的反链引用块
-  list_doc_subsections: 列出当前文档的所有子文裆，效果类似 notion 等软件
-  query_attr_views: 查询所在文档下，所有的属性视图 (Attribute View) 然后汇总显示在嵌入块中
-  query_doc_tree: 查询当前文档下属的文档树结构，并使用嵌套列表展示; 最大深度由 MAX_DEPTH 变量控制
-  query_this_month_todo: 查询本月所有未完成的 TODO 列表
-  query_unfinished_tasks: 查询所有未完成的任务块，以月份时间线分组横向排列
-  random_text_translate: 随机从思源中选取一段文字，然后使用 GPT 翻译成英文，使用思源内部设置的 GPT API
-  recent_docs: 展示最近更新的 32 篇文档，这个案例中使用了思源的超级块的 markdown 方言语法，用于在同一个列表项中横向展示多列的信息
-  show_tags_card_view: 查询并以卡片视图的形式展示所有的标签 (tags)
-  simple_chatgpt: 一个非常简单的 ChatGPT 对话框，使用思源内部设置的 GPT API
-  sql_exec_result: 在输入框中输入 SQL 语句，点击执行按钮，将执行结果以表格的形式展示
-  unfinished_task_monthly: 查询每个月尚未完成的 Task，汇总显示在看板上
-  updated_docs_today: '查询今天更新的所有文档，并以列表的形式展示；这个案例中使用了 state，今天之后将不会再更新表格而只会显示缓存的记录。
-    实际使用过程中，其实更加建议配合模板使用，在创建的时候直接配置 now 为当天的日期，而非通过 state 来维护日期状态。
-
-    '
-  view_assets_images: 分页查看 assets 目录下所有的图片
 src_userhelp_indexts:
-  create_notebook: 请至少先创建一个笔记本用于存放帮助文档
   download: 下载
   edit_custom_view: 编辑代码
   help_doc: 帮助文档
-  help_doc_2: 帮助文档
   open_custom_view_dir: 打开目录
   open_locally: 在本地打开
   queryview: Query View 基本模板
   unable_open_custom_view: 无法打开自定义视图 JS 文件
   unable_open_custom_view_dir: 无法打开自定义视图目录
-  unable_open_d_ts: 无法打开 d.ts 文件
-  useview: 如果要使用 DataView 请取消下面这行的注释
-  useview2: 如果要使用 DataView 请注释上面的 return, 并取消下方两行注释
-src_userhelp_sydocts:
-  create_user_doc: '创建用户文档:'
-  plugin_setting_doc: '> 🖊️ 由于你在插件中的设置，此帮助文档只包含了 API 的类型定义。'
-  plugin_update_doc: 检查到插件版本已更新，正在更新文档，请稍等...
-user_help:
-  ahead_hint: |
-    > 💡 注: 本文档由 SiYuan Query&View 插件 **{{version}}** 版自动生成，为插件的 README 文档。
-    > 你可以将本文档放在思源的任何地方，如果插件在需要打开的时候未能找到本文档，将会自动创建一个新的文档。
-    > 请不要在这个文档中记录任何对你有价值的东西，这些记录在本文档中的信息很有可能随着重新创建用户文档而丢失！
+  basic_template_load_failed: 基础模板加载失败，请查看控制台
+src_docsite_indexts:
+  tab_title: Query&View 文档站
+  nav_index: 首页
+  nav_group_quickstart: 快速开始
+  nav_group_examples: 案例
+  nav_group_topics: Query / DataView 主题
+  nav_quickstart_concepts: 基本概念
+  nav_quickstart_template: 从模板开始
+  nav_examples: 案例总览
+  nav_topic_query: Query 查询
+  nav_topic_dataview: DataView 视图
+  nav_topic_dataview_advanced: DataView 高级特性
+  nav_topic_editor_tips: 外部编辑器与调试
+  nav_api_reference: API 参考
+  nav_skill: 智能体技能
+  copy: 复制
+  copied: 已复制
+  retry: 重试
+  page_not_found: 页面不存在
+  fallback_notice: 该页面暂无{0}版本，已显示{1}版本
+  load_error: 加载失败，请重试
+  lang_zh: 中文
+  lang_en: English

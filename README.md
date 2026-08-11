@@ -3152,8 +3152,6 @@ Exact members and signatures are defined in the type declaration.
 
 `Block`, `BlockType`, `Notebook`, `DocumentId`, `BlockId`, `SiYuanDate`, and other basic types are also defined in the type declaration.
 
-`<!-- REFERENCE-START -->`
-
 > Note: the interface file changes with development, and the interface code below is generated at build time. The latest complete interface file is the shipped `public/types.d.ts`; you can also open or download the type declaration of the installed version on the "API Reference" page of the in-plugin documentation site.
 
 ### Query
@@ -3173,8 +3171,6 @@ Exact members and signatures are defined in the type declaration.
 ```ts
 {{DataView}}
 ```
-
-`<!-- REFERENCE-END -->`
 
 
 ## Agent Skill

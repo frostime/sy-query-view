@@ -13,7 +13,7 @@ created: 2026-08-11T02:07:23+08:00
 
 ## Current Status
 
-分支为 `feat/query-view-docs-site`。文档结构、人类文档和 GUI 代码结构均已验收；关键 GUI 契约见 `nodes/shape-docs-gui/docs-site.LAND.md`。`nodes/build-docs-gui/` 正在实现桌面文档站，完成并验收后才退役旧帮助笔记机制。
+分支为 `feat/query-view-docs-site`。文档结构、人类文档、GUI、旧帮助退役和自动验证均已验收；运行时检查清单见 `nodes/verify-docs-gui/RUNTIME-CHECKLIST.md`。`nodes/write-core-skill/` 正在编写英文自包含 Skill；不操作真实 SiYuan 数据库，Tab 验证留到最终任务。
 
 ## Key Information for the Successor
 

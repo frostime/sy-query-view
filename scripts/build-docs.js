@@ -54,18 +54,9 @@ const HEADER = {
 };
 
 // d.ts 附录（生成器固定模板，紧跟 api-reference 页之后）。
-// REFERENCE-START/END 标记为旧帮助笔记功能（src/user-help/sy-doc.ts 的
-// onlyImportDtsInUserDoc 提取逻辑）保留的兼容接口：标记格式必须与 sy-doc.ts
-// 中的查找串 '`<!-- REFERENCE-START -->`' 完全一致；docs 页面源文件本身不包含
-// 这些标记，待“停用旧帮助笔记机制”任务原子性删除 sy-doc.ts 与设置项后，
-// 生成器即可移除本段标记。
-const REFERENCE_START = "`<!-- REFERENCE-START -->`";
-const REFERENCE_END = "`<!-- REFERENCE-END -->`";
-
+// 旧帮助笔记功能已退役（sy-doc.ts 与 onlyImportDtsInUserDoc 已删除），不再合成 REFERENCE-START/END 标记。
 const APPENDIX = {
     zh_CN: [
-        REFERENCE_START,
-        "",
         "> 注：接口文件会随着开发而变动，以下接口代码为构建时自动生成。最新完整的接口文件以随插件发布的 `public/types.d.ts` 为准，也可以在插件内文档站的「API 参考」页打开或下载当前版本的类型声明文件。",
         "",
         "### Query",
@@ -86,12 +77,8 @@ const APPENDIX = {
         "{{DataView}}",
         "```",
         "",
-        REFERENCE_END,
-        "",
     ].join("\n"),
     en_US: [
-        REFERENCE_START,
-        "",
         "> Note: the interface file changes with development, and the interface code below is generated at build time. The latest complete interface file is the shipped `public/types.d.ts`; you can also open or download the type declaration of the installed version on the \"API Reference\" page of the in-plugin documentation site.",
         "",
         "### Query",
@@ -111,8 +98,6 @@ const APPENDIX = {
         "```ts",
         "{{DataView}}",
         "```",
-        "",
-        REFERENCE_END,
         "",
     ].join("\n"),
 };
