@@ -235,8 +235,12 @@ export class SiYuanSkillRuntime {
         return fail("MANIFEST_INVALID", `Manifest skill name "${old.skill.name}" does not match "${skillName}".`, skillName, manifestPath);
       }
 
-      // 唯一同步判据。
-      if (old.plugin.version === plugin.version) {
+      // 唯一同步判据：插件版本一致即视为已同步（版本变更才重新发布整包）。
+      // 开发模式例外：dev 构建注入了 DEV_MODE 环境变量（vite define 编译期替换），
+      // 开发期插件版本不变，但 SKILL 内容会频繁修改，因此 dev 下忽略 version 判据，
+      // 每次注册都执行一次完整同步。
+      const devMode = !!process.env.DEV_MODE;  // vite define 编译期替换为字面量，无运行时 process 依赖
+      if (!devMode && old.plugin.version === plugin.version) {
         return { ok: true, action: "current", skillName, pluginVersion: plugin.version, sourceDir, targetDir };
       }
     }
