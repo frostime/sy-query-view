@@ -19,6 +19,7 @@
     "make-install": "pnpm run vite:build-no-minify && npx make-install",
     "auto-i18n": "i18n extract && i18n translate && i18n export",
     "export-types": "node scripts/export-types.js",
+    "gen-ref": "npm run export-types && node scripts/gen-agent-ref.mjs",
     "git-tag": "node scripts/git-tag.js"
   },
   "devDependencies": {

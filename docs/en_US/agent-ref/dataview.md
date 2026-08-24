@@ -1,238 +1,657 @@
-# DataView Reference (agent reference)
+# DataView 组件参考（自动生成，来源：src/core/data-view.ts）
 
-`DataView` renders query results as custom views inside the embedded block.
-This file is the authoritative quick reference: every component, its exact
-signature, behavior-relevant details, and a minimal example. Tutorials with
-screenshots live in `docs/en_US/topics/dataview.md`.
+> 本文件由 `scripts/gen-agent-ref.mjs` 生成——签名取 tsc 声明、注释取源码 JSDoc、别名取 register 调用点。组件经 `register()` 运行时注册，衍生出完整别名集合（含大小写与 `add` 前缀）。请勿手改。
 
-**Deeper dive**: the tutorials `docs/en_US/topics/dataview.md` and
-`docs/en_US/topics/dataview-advanced.md` explain the same components with
-screenshots and more context — but they are user-oriented and verbose.
-Load them **only when you do not understand the usage details of a
-specific component at all** despite this reference.
+## dv.repaint()
 
-## Lifecycle — the mandatory skeleton
-
-```js
-//!js
-let dv = Query.DataView(protyle, item, top);   // 1. create (sync)
-dv.addlist(blocks);                            // 2. add views (any number)
-dv.render();                                   // 3. MUST be the last call
+```ts
+repaint(): void;
 ```
 
-- `protyle`, `item`, `top` are injected always; never redefine them.
-- DataView mode and return mode are exclusive: in DataView mode do **not**
-  `return` anything.
-- The embedded block **re-executes** the whole code on open/refresh — keep
-  side effects in `addDisposer`, not at top level.
-- `dv.root_id` / `dv.embed_id` — ids of the enclosing doc / embed block.
-- `dv.repaint()` — re-run the entire block (same as clicking reload).
+Repaint the embed block, essentially merely click the reload button
 
-## Component registration rules (affect every component below)
+**来源** `src/core/data-view.ts:320`
 
-- Every component has a canonical method (`dv.markdown`, `dv.list`, ...) and
-  an `add`-prefixed variant (`dv.addmarkdown`, `dv.addlist`, ...).
-- `dv.xxx(...)` **creates the element and returns it WITHOUT adding**;
-  `dv.addxxx(...)` **creates, adds to the view, and returns the container**
-  (prefer `addxxx`).
-- Each component also gets aliases and lowercase aliases: `dv.md` =
-  `dv.markdown`; `dv.addmd` = `dv.addmarkdown`. The full alias table is in
-  the tutorial; exact registration lives in `src/core/data-view.ts`
-  (`register()` calls) — when in doubt, grep there.
-- Returned containers carry `data-id` (needed by `removeView`/`replaceView`):
-  `const id = dv.addmd('# hi').dataset.id;`
+---
 
-## Basic components
+## dv.useState(key, initialValue?)
 
-**`dv.addmd(markdown: string) → HTMLElement`** — render markdown text. Aliases `dv.md`, `dv.addmarkdown`.
-
-- Accepts SiYuan-flavored markdown (block quotes, `{{{col}}}` multi-column
-  syntax, IAL `{: style=...}`), including template literals.
-- ⚠️ Does **not** support content needing extra rendering (math formulas).
-
-**`dv.addlist(data, { type?: 'u'|'o', columns?: number, renderer?: (b) => string|number|null|undefined })`** — list of blocks. Defaults: `type: 'u'`, no columns.
-
-- `data` accepts `IWrappedList<IWrappedBlock>`, plain `Block[]`, `ScalarValue`
-  items, or blocks carrying a `children` array (`IBlockWithChilds`) — the
-  presence of `children` renders a **nested list**.
-- `renderer` return value is treated as **markdown** for the item; return
-  `null`/`undefined` to fall back to the default block-link rendering.
-
-```js
-//!js
-let dv = Query.DataView(protyle, item, top);
-let docs = await Query.sql(`select * from blocks where type='d' limit 5`);
-dv.addlist(docs, { type: 'o', columns: 2, renderer: (b) => b.hpath });
-dv.render();
+```ts
+useState<T>(key: string, initialValue?: T): IState<T>;
 ```
 
-**`dv.addtable(blocks, { center?, fullwidth?, index?, cols?, renderer? })`** — table of blocks. Aliases `dv.addtable`, `dv.addBlockTable`.
+Persist state across renders; it will store the state in the block attributes when disposing, and restore it when creating.
 
-- `cols: null` → all columns; an array of attribute names (`['content','hpath','updated']`); or `{type: 'Type', content: 'Content'}` renames headers.
-- Default columns come from the plugin settings.
-- Cells auto-render: `type` → type name, `hpath` → doc hyperlink, `box` →
-  notebook name. `renderer: (b, key) => markdown|null` overrides per column
-  (return `null` for default).
-- `center`/`fullwidth`/`index` are pure styling (row numbers, width).
+**参数**
 
-```js
-//!js
-let dv = Query.DataView(protyle, item, top);
-let blocks = await Query.backlink(protyle.block.rootID);
-dv.addtable(blocks, { cols: ['content', 'hpath'], fullwidth: true });
-dv.render();
+- `key` — The key of the state
+- `initialValue` — The initial value of the state
+
+**返回**：An IState object -- see
+
+**示例**
+
+```ts
+const count = dv.useState('count', 0);
+count(); // Access the value
+count.value; // Access the value, same as count()
+count(1); // Set the value
+count.value = 1; // Set the value, same as count(1)
 ```
 
-## Encapsulated components (pass data/config — safe)
+**来源** `src/core/data-view.ts:340`
 
-**`dv.addcards(blocks, { cardWidth?, cardHeight?, fontSize? })`** — card wall. Defaults `175px` / `175px` / `14px`. Each card: bold title (block-type icon + `block.content`, or "(No content)" when empty) — **clicking the title jumps to the block**; below it metadata rows: notebook name + `hpath` path, and created/updated timestamps.
+---
 
-**`dv.addembed(blocks, { breadcrumb?, limit?, columns?, zoom? })`** — embed blocks like a mini embedded block. Params: `limit` (max blocks), `zoom` (0–1, 1 = none), `columns` (multi-column), `breadcrumb`. Each card has a jump icon.
+## dv.addDisposer(dispose, id?)
 
-**`dv.adddetails(summary: string, content: string | HTMLElement)`** — collapsible `<details>` block.
-
-- ⚠️ **Default open** (`details.open = true`) — if you expect a collapsed
-  panel, this is counter-intuitive.
-- ⚠️ A **string** `content` is inserted into the element as raw `innerHTML`
-  (not parsed as markdown, no escaping) — HTML tags work, but escape
-  user-provided text yourself; pass an `HTMLElement` (e.g. `dv.list(...)`
-  result) for safe content.
-
-**`dv.addmermaid(code: string)`** — render mermaid from a code string.
-
-**`dv.addmermaidRelation(tree, { type?: 'flowchart'|'mindmap', flowchart?: 'TD'|'LR', renderer? })`** — relation diagram from a block tree (`IBlockWithChilds`, same shape as nested list). Node blocks are hoverable/clickable. Convenience twins: `dv.addmflowchart`, `dv.addmmindmap`.
-
-```js
-//!js
-let dv = Query.DataView(protyle, item, top);
-let root = await Query.thisDoc(protyle);
-let kids = await Query.childDoc(protyle.block.rootID);
-for (let k of kids) k.children = await Query.childDoc(k.id);
-root.children = kids;
-dv.addmermaidRelation(root, { type: 'flowchart', flowchart: 'LR' });
-dv.render();
+```ts
+addDisposer(dispose: () => void, id?: string): void;
 ```
 
-**`dv.addmermaidKanban(grouped: Record<string, Block[]>, { priority?, clip?, width? })`** — kanban board. `grouped` = `{groupName: blocks}` → one column per group. `clip` truncates item text (default 50); `width` recommended as `<#groups> x <colWidth>` (e.g. `N * 200 + 'px'`). Alias `mkanban`.
+Register a disposer function to be called when the DataView is disposed.
+Only when you need to add some extra cleanup logic, you should use this method.
 
-```js
-//!js
-let dv = Query.DataView(protyle, item, top);
-let blocks = await Query.task(null, 128);
-let grouped = blocks.groupby((b) => b.createdDate.slice(0, -3));
-dv.addmkanban(grouped, { width: `${Object.keys(grouped).length * 200}px` });
-dv.render();
+**参数**
+
+- `dispose` — The dispose function
+
+**来源** `src/core/data-view.ts:359`
+
+---
+
+## dv.view(ele)
+
+```ts
+view(ele: HTMLElement | string): HTMLElement;
 ```
 
-**`dv.addecharts(echartOption, { height?='300px', width?='100%', events? })`** — any echarts chart from a raw option object (https://echarts.apache.org/option.html). Default renderer: svg (canvas via plugin settings).
+Wrap an element into a view container
 
-```js
-//!js
-let dv = Query.DataView(protyle, item, top);
-dv.addecharts({
-  xAxis: { type: 'category', data: ['Mon','Tue','Wed'] },
-  yAxis: { type: 'value' },
-  series: [{ data: [820, 932, 901], type: 'line' }]
-});
-dv.render();
+**参数**
+
+- `ele` — 
+
+**来源** `src/core/data-view.ts:376`
+
+---
+
+## dv.addElement(ele, disposer?)
+
+```ts
+addElement(ele: HTMLElement | string, disposer?: () => void): HTMLElement;
 ```
 
-**`dv.addechartsLine(x: (number|string)[], y: number[] | number[][], { title?, xlabel?, ylabel?, legends?, height?, width?, seriesOption?, echartsOption? })`** — line chart (`y` arrays = multiple series, use `legends` to name them). Alias `eline`.
+Add a custom element to the DataView.
+If the passing is a view container, it will be directly appended.
+Otherwise, it will be wrapped by a new container
 
-Common x/y source: `blocks.pick('month')` / `blocks.pick('count')` after a
-GROUP BY SQL — values stay strings, which echarts accepts.
+**参数**
 
-**`dv.addechartsBar(...same + { stack?: boolean })`** — bar chart (`stack: true` piles the series). Alias `ebar`.
+- `ele` — 
+- `disposer` — - dispose function, optional
 
-**`dv.addechartsTree(data: ITreeNode | IBlockWithChilds, { orient?: 'LR'|'TB', layout?: 'orthogonal'|'radial', roam?, symbolSize?=14, labelFontSize?=16, title?, tooltipFormatter?, seriesOption?, echartsOption? })`** — tree chart. You may pass a block tree with `children` directly (like mermaidRelation). Nodes interactive (Ctrl+click jumps, hover previews). Alias `etree`.
+**返回**：View Conainer, with a special class name, and a `data-id` attribute
 
-**`dv.addechartsGraph(nodes: (IGraphNode | Block)[], links: {source: id, target: id | id[]}[], { layout?: 'force'|'circular', roam?, symbolSize?=14, labelFontSize?=16, nodeRenderer?, tooltipFormatter?, seriesOption?, echartsOption? })`** — network graph. Alias `egraph`.
+**来源** `src/core/data-view.ts:404`
 
-- **Nodes**: pass queried `Block[]` directly (ids auto-extracted); assign
-  categories with `blocks.addcols({category: 0})` and style per category via
-  `seriesOption.categories`.
-- **Links**: you build them — `{ source: thisdoc.id, target: childs.pick('id') }`.
-  ⚠️ `target` may be an **array** of ids (extension over raw echarts).
-- Interactive like the tree; `roam: true` enables pan/zoom.
+---
 
-```js
-//!js
-let dv = Query.DataView(protyle, item, top);
-let thisdoc = await Query.thisDoc(protyle);
-let childs = await Query.childDoc(dv.root_id);
-let backlinks = await Query.backlink(dv.root_id);
-childs = childs.addcols({ category: 0 });
-backlinks = backlinks.addcols({ category: 1 });
-let nodes = [thisdoc, ...childs, ...backlinks];
-let links = [
-  { source: thisdoc.id, target: childs.pick('id') },
-  { source: thisdoc.id, target: backlinks.pick('id') },
-];
-dv.addegraph(nodes, links, { height: '500px', roam: true });
-dv.render();
+## dv.isValidViewContainer(container)
+
+```ts
+isValidViewContainer(container: HTMLElement): boolean;
 ```
 
-## Layout & advanced (mention — do not write by default)
+> ⚠ 无 JSDoc 说明（行为未验证）——请查阅源码或官方教程
 
-Advanced machinery requires understanding DataView's destroy/refresh
-lifecycle; read `docs/en_US/topics/dataview-advanced.md` before using.
-Interactivity is discouraged: DataView is a *theoretically read-only*
-dashboard — write a lot of user interaction only with explicit user consent.
+**来源** `src/core/data-view.ts:420`
 
-**`dv.addcolumns(elements: HTMLElement[], { gap?='5px', flex?: number[], minWidth?='350px' })`** / **`dv.addrows(elements, { gap?='5px', flex?, maxHeight? })`** — flex layouts of **existing elements** (`dv.md(...)` results work). `flex: [1,1,2]` sets ratios; `minWidth` matters with many columns (horizontal scroll).
+---
 
-**`dv.addElement(ele: HTMLElement | string, disposer?) → HTMLElement`** (aliases `addView`, `addelement`, `addele`) — add an externally created element as a custom view.
+## dv.removeView(id, beforeRemove?)
 
-- What happens under the hood: the element is **wrapped into a view container** (a div with the component class and a `data-id` attribute). `dv.addxxx` and `dv.addele` do this wrapping for you; `dv.addElement` with an already-valid view container appends it directly, otherwise wraps it.
-- The return value is the **container** — take its id via `container.dataset.id`; it is what `dv.removeView` / `dv.replaceView` address.
-- `disposer` (optional): a function run when this view is destroyed by `removeView` / `replaceView`, or when the DataView itself is destroyed. "Destroyed" = the embedded block is refreshed / re-queried / the document is closed.
-- ⚠️ The element must be a real DOM node; if you pass a string it is interpreted as an HTML string and wrapped. For many custom elements prefer the tutorial's "Custom View Component" mechanism instead of raw `addElement`.
-
-```js
-//!js
-let dv = Query.DataView(protyle, item, top);
-const span = document.createElement('span');
-span.innerText = 'hello';
-const id = dv.addele(span, () => console.log('disposed')).dataset.id;
-dv.render();
+```ts
+removeView(id: string, beforeRemove?: (viewContainer: HTMLElement) => void): boolean;
 ```
 
-**`dv.addDisposer(dispose: () => void, id?)`** — register a cleanup callback that runs when the DataView is destroyed (embedded block refresh / re-query / document close / plugin disable).
+Remove the view element (by given the id of the container) from dataview
 
-- Typical use: clear timers, abort fetches, remove event listeners created at top level — the block **re-executes** on every refresh, so anything not cleaned up leaks.
-- With `id`: the disposer is bound to that specific view and also runs when the view is removed/replaced.
-- Ordering: disposers registered via `addElement(ele, disposer)` run before the view is removed; `addDisposer` without id runs on DataView teardown.
+**参数**
 
-```js
-//!js
-let dv = Query.DataView(protyle, item, top);
-let n = 0;
-const span = document.createElement('span');
-span.innerText = '0';
-dv.addele(span);
-const timer = setInterval(() => { n += 1; span.innerText = String(n); }, 1000);
-dv.addDisposer(() => clearInterval(timer));  // no leak on refresh
-dv.render();
+- `id` — Existed view's data-id
+- `beforeRemove` — , an optional callback funcgtion
+
+**返回**：Whether the removal succeeded
+
+**来源** `src/core/data-view.ts:437`
+
+---
+
+## dv.replaceView(id, viewContainer, disposer?)
+
+```ts
+replaceView(id: string, viewContainer: HTMLElement, disposer?: () => void): HTMLElement;
 ```
 
-If the exact destroy/replace timing still feels unclear, and you are stuck,
-read the tutorial section
-`docs/en_US/topics/dataview-advanced.md` ("Understanding DataView's
-Lifecycle") — richer, but user-oriented and verbose.
+Replace the view element (by given the id of the container) with another given element
 
-**`dv.removeView(id)`** — remove a view by its container `data-id`; runs the view's disposer first (prefer over `ele.remove()`).
+**参数**
 
-**`dv.replaceView(id, viewContainer, disposer?)`** — replace a view; old disposer runs first. ⚠️ `viewContainer` must be a view container (use `dv.addxxx(...)` result), and its `data-id` is **rewritten to the old id**.
+- `id` — 
+- `viewContainer` — : must be a conatiner element
+- `disposer` — : dispose functioin, if already specified for viewContainer, this one will be omit!.
 
-## State — do not write by default
+**返回**：
 
-**`dv.useState(key, initialValue?) → state`** — persists values across
-repaints via block attributes (+ session cache). `state()` / `state.value`
-read; `state(v)` / `state.value = v` write.
+**来源** `src/core/data-view.ts:464`
 
-- ⚠️ **Experimental.** Write it only if the user explicitly insists:
-  multi-device synchronization can still produce data conflicts, and the
-  eventual-write mechanism (cache → block attrs on close) is subtle.
-- Typical safe pattern uses the date as key: `dv.useState(Query.Utils.today())`.
-- If used, follow the advanced topic's "State Update Write Mechanism" section
-  exactly and recommend enabling SiYuan's "Generate Conflict Documents".
+---
+
+## dv.markdown(md)
+
+```ts
+markdown(md: string): HTMLElement;
+```
+
+Adds markdown content to the DataView
+
+**参数**
+
+- `md` — Markdown text to be rendered
+
+**返回**：HTMLElement containing the rendered markdown
+
+**示例**
+
+```ts
+dv.addmd(`# Hello`);
+```
+
+**全部可用名**（8，register/别名规则展开）：`Markdown` · `Md` · `addMarkdown` · `addMd` · `addmarkdown` · `addmd` · `markdown` · `md`
+
+**来源** `src/core/data-view.ts:509`
+
+---
+
+## dv.details(summary, content)
+
+```ts
+details(summary: string, content: string | HTMLElement): HTMLDetailsElement;
+```
+
+> ⚠ 无 JSDoc 说明（行为未验证）——请查阅源码或官方教程
+
+> ⚠ content 为字符串时**直拼 innerHTML**——原始 HTML，不是 markdown；默认 `open=true`（默认展开）
+
+**全部可用名**（8，register/别名规则展开）：`Detail` · `Details` · `addDetail` · `addDetails` · `adddetail` · `adddetails` · `detail` · `details`
+
+**来源** `src/core/data-view.ts:515`
+
+---
+
+## dv.list(data, options)
+
+```ts
+list(data: (IBlockWithChilds | ScalarValue)[], options?: IListOptions<Block>): HTMLElement;
+```
+
+Creates a markdown list view for displaying blocks
+
+**参数**
+
+- `data` — Array of blocks to display in the list
+ Can also be scalar values, or block with children property
+- `options` — Configuration options
+- `options.type` — List type, 'u' for unordered, 'o' for ordered
+- `options.columns` — Number of columns to display
+- `options.renderer` — Custom function to render list items, the return will be used as markdown code
+
+**返回**：HTMLElement containing the list
+
+**示例**
+
+```ts
+const children = await Query.childdoc(block);
+dv.addlist(children, { type: 'o' });
+```
+
+**全部可用名**（9，register/别名规则展开）：`BlockList` · `List` · `addBlockList` · `addBlocklist` · `addList` · `addblocklist` · `addlist` · `blocklist` · `list`
+
+**来源** `src/core/data-view.ts:538`
+
+---
+
+## dv.table(blocks, options?)
+
+```ts
+table(blocks: Block[], options?: { center?: boolean; fullwidth?: boolean; index?: boolean; cols?: (string | Record<string, string>)[] | Record<string, string>; renderer?: (b: Block, attr: keyof Block) => string | undefined | null; }): HTMLElement;
+```
+
+Creates a markdown table view for displaying blocks
+
+**参数**
+
+- `blocks` — Array of Block objects to display
+- `options` — Configuration options
+- `options.center` — Center align table contents
+- `options.fullwidth` — Make table full width
+- `options.index` — Show row indices
+- `options.cols` — Array of Block properties to show as columns;
+- if `undefined`, the default columns `['type', 'content', 'hpath', 'box']` will be used;
+but if the blocks don't have these properties, all properties of the first block will be used;
+- Can also be:
+- Record<string, string> to specify the column name, like `{type: 'Type', content: 'Content', 'root_id': 'Document'}`
+- Mixed array, like `['type', {content: 'Content'}, 'hpath']`
+- `null`, in this case, all columns will be shown
+- `options.renderer` — Custom function to render table cells
+- The return will be used as markdown code, and insert into each td cell
+- If returns `null`, the default renderer will be used
+- SPECIAL USAGE: if the returned string is wrapped with {@html ...}, it will be treated as HTML code
+
+**返回**：HTMLElement containing the block table
+
+**示例**
+
+```ts
+const children = await Query.childdoc(block);
+dv.addtable(children, { cols: ['type', 'content'] , fullwidth: true });
+```
+
+**全部可用名**（9，register/别名规则展开）：`BlockTable` · `Table` · `addBlockTable` · `addBlocktable` · `addTable` · `addblocktable` · `addtable` · `blocktable` · `table`
+
+**来源** `src/core/data-view.ts:606`
+
+---
+
+## dv.cards(blocks, options?)
+
+```ts
+cards(blocks: Block[], options?: { cardWidth?: string; cardHeight?: string; fontSize?: string; }): HTMLElement;
+```
+
+Creates a card view for displaying blocks
+
+**参数**
+
+- `blocks` — Array of Block objects to display
+- `options` — Configuration options
+- `options.cardWidth` — Width of each card; default is '175px'
+- `options.cardHeight` — Height of each card; default is '175px'
+- `options.fontSize` — Base font size for the cards; default is '14px'
+
+**返回**：HTMLElement containing the card layout
+
+**示例**
+
+```ts
+const children = await Query.childdoc(block);
+dv.cards(children, { cardWidth: '250px', fontSize: '16px' });
+```
+
+**全部可用名**（8，register/别名规则展开）：`Card` · `Cards` · `addCard` · `addCards` · `addcard` · `addcards` · `card` · `cards`
+
+**来源** `src/core/data-view.ts:642`
+
+---
+
+## dv.columns(elements, options)
+
+```ts
+columns(elements: HTMLElement[], options?: { gap?: string; flex?: number[]; minWidth?: string | number; }): HTMLElement;
+```
+
+Arranges elements in columns
+
+**参数**
+
+- `elements` — Array of HTMLElements to arrange
+- `options` — Configuration options
+- `options.gap` — Style of gap between columns; default is '5px'
+- `options.flex` — Flex ratio of each column; default is [1, 1, 1, ...]
+- `options.minWidth` — The minimum width of **each column**; default is '350px'; This is useful when the columns number is quite large
+
+**返回**：HTMLElement containing the column layout
+
+**示例**
+
+```ts
+dv.addcolumns([dv.md('# Hello'), dv.md('# World')], { gap: '10px', flex: [1, 2] });
+```
+
+> ⚠ `flex:[1,1,2]` 实际未按列生效：实现把 --flex-grow 写为父容器单一变量反复覆盖（已知限制，勿依赖）
+
+**全部可用名**（8，register/别名规则展开）：`Cols` · `Columns` · `addCols` · `addColumns` · `addcols` · `addcolumns` · `cols` · `columns`
+
+**来源** `src/core/data-view.ts:668`
+
+---
+
+## dv.rows(elements, options)
+
+```ts
+rows(elements: HTMLElement[], options?: { gap?: string; maxHeight?: string; flex?: number[]; }): HTMLElement;
+```
+
+Arranges elements in rows
+
+**参数**
+
+- `elements` — Array of HTMLElements to arrange
+- `options` — Configuration options
+- `options.gap` — Style of gap between rows; default is '5px'
+- `options.maxHeight` — Maximum height of the container; default not set
+- `options.flex` — Flex ratio of each row; default not set
+
+**返回**：HTMLElement containing the row layout
+
+**全部可用名**（4，register/别名规则展开）：`Rows` · `addRows` · `addrows` · `rows`
+
+**来源** `src/core/data-view.ts:709`
+
+---
+
+## dv.mermaid(code)
+
+```ts
+mermaid(code: string): HTMLElement;
+```
+
+Creates a Mermaid diagram from Mermaid code
+
+**参数**
+
+- `code` — Mermaid code
+
+**返回**：HTMLElement containing the Mermaid diagram
+
+**全部可用名**（4，register/别名规则展开）：`Mermaid` · `addMermaid` · `addmermaid` · `mermaid`
+
+**来源** `src/core/data-view.ts:747`
+
+---
+
+## dv.mermaidRelation(tree, options)
+
+```ts
+mermaidRelation(tree: IBlockWithChilds | Record<string, Block[]>, options?: { type?: "flowchart" | "mindmap"; flowchart?: 'TD' | 'LR'; renderer?: (b: Block) => string; }): HTMLElement;
+```
+
+Creates a Mermaid diagram from block relationships
+
+**参数**
+
+- `tree` — Object mapping block IDs to their connected blocks
+- `options` — Configuration options
+- `options.blocks` — Array of Block objects
+- `options.type` — Diagram type: "flowchart" or "mindmap"
+- `options.flowchart` — Flow direction: 'TD' or 'LR'
+- `options.renderer` — Custom function to render node content
+
+**返回**：HTMLElement containing the Mermaid diagram
+
+**示例**
+
+```ts
+const children = await Query.childdoc(block);
+dv.addMermaidRelation({...block, children }, { type: 'flowchart' });
+dv.addMermaidRelation({ 'Child': children, 'Backlink': backlinks }, { type: 'flowchart' });
+```
+
+**全部可用名**（7，register/别名规则展开）：`MermaidRelation` · `addMermaidRelation` · `addMermaidrelation` · `addmermaidRelation` · `addmermaidrelation` · `mermaidRelation` · `mermaidrelation`
+
+**来源** `src/core/data-view.ts:772`
+
+---
+
+## dv.mermaidFlowchart(tree, options)
+
+```ts
+mermaidFlowchart(tree: IBlockWithChilds, options?: { renderer?: (b: Block) => string; }): HTMLElement;
+```
+
+Creates a Mermaid flowchart from block relationships
+
+**全部可用名**（14，register/别名规则展开）：`MFlowchart` · `MermaidFlowchart` · `addMFlowchart` · `addMermaidFlowchart` · `addMermaidflowchart` · `addMflowchart` · `addmFlowchart` · `addmermaidFlowchart` · `addmermaidflowchart` · `addmflowchart` · `mFlowchart` · `mermaidFlowchart` · `mermaidflowchart` · `mflowchart`
+
+**来源** `src/core/data-view.ts:806`
+
+---
+
+## dv.mermaidMindmap(tree, options)
+
+```ts
+mermaidMindmap(tree: IBlockWithChilds, options?: { renderer?: (b: Block) => string; }): HTMLElement;
+```
+
+Creates a Mermaid mindmap from block relationships
+
+**全部可用名**（14，register/别名规则展开）：`MMindmap` · `MermaidMindmap` · `addMMindmap` · `addMermaidMindmap` · `addMermaidmindmap` · `addMmindmap` · `addmMindmap` · `addmermaidMindmap` · `addmermaidmindmap` · `addmmindmap` · `mMindmap` · `mermaidMindmap` · `mermaidmindmap` · `mmindmap`
+
+**来源** `src/core/data-view.ts:817`
+
+---
+
+## dv.mermaidKanban(groupedBlocks, options)
+
+```ts
+mermaidKanban(groupedBlocks: Record<string, Block[]>, options: { priority?: (b: Block) => 'Very High' | 'High' | 'Low' | 'Very Low'; clip?: number; width?: string; }): HTMLElement;
+```
+
+Creates a Mermaid gantt chart from block relationships
+
+**参数**
+
+- `groupedBlocks` — : Blocks Array }
+- `options` — 
+- `options.priority` — Function to determine priority of each block, see ://mermaid.js.org/syntax/kanban.html#supported-metadata-keys
+- `options.clip` — Maximum length of text to display in each item, default as 50
+- `options.width` — The width of kanban
+
+**返回**：
+
+**全部可用名**（14，register/别名规则展开）：`MKanban` · `MermaidKanban` · `addMKanban` · `addMermaidKanban` · `addMermaidkanban` · `addMkanban` · `addmKanban` · `addmermaidKanban` · `addmermaidkanban` · `addmkanban` · `mKanban` · `mermaidKanban` · `mermaidkanban` · `mkanban`
+
+**来源** `src/core/data-view.ts:833`
+
+---
+
+## dv.embed(blocks, options)
+
+```ts
+embed(blocks: Block[] | Block, options: { breadcrumb?: boolean; limit?: number; columns?: number; zoom?: number; }): HTMLElement;
+```
+
+Embeds blocks into the DataView
+
+**参数**
+
+- `blocks` — Single Block or array of Blocks to embed
+- `options` — Configuration options
+- `options.breadcrumb` — Whether to show breadcrumb navigation
+- `options.limit` — Maximum number of blocks to embed, if provided, only limited blocks will be embedded
+- `options.columns` — Number of columns to display
+- `options.zoom` — Zoom factor, from 0 to 1
+
+**返回**：HTMLElement containing the embedded blocks
+
+**示例**
+
+```ts
+const children = await Query.childdoc(block);
+dv.addembed(children, { limit: 5 });
+```
+
+**全部可用名**（4，register/别名规则展开）：`Embed` · `addEmbed` · `addembed` · `embed`
+
+**来源** `src/core/data-view.ts:865`
+
+---
+
+## dv.echarts(echartOption, options)
+
+```ts
+echarts(echartOption: IEchartsOption, options?: { height?: string; width?: string; events?: { [eventName: string]: (params: any) => void; }; }): HTMLElement;
+```
+
+Creates a custom ECharts visualization
+
+**参数**
+
+- `echartOption` — ECharts configuration object, see ://echarts.apache.org/zh/option.html#title for more details
+- `options` — Configuration options
+- `options.height` — The height of the container, default as 300px
+- `options.width` — The width of the container, default as 100%
+- `options.events` — Event handlers for chart interactions; see ://echarts.apache.org/handbook/en/concepts/event/ for more details
+
+**返回**：HTMLElement containing the chart
+
+**全部可用名**（4，register/别名规则展开）：`Echarts` · `addEcharts` · `addecharts` · `echarts`
+
+**来源** `src/core/data-view.ts:894`
+
+---
+
+## dv.echartsLine(x, y, options)
+
+```ts
+echartsLine(x: number[], y: number[] | number[][], options?: { height?: string; width?: string; title?: string; xlabel?: string; ylabel?: string; legends?: string[]; seriesOption?: IEchartsSeriesOption | IEchartsSeriesOption[]; echartsOption?: IEchartsOption; }): HTMLElement;
+```
+
+Creates a line chart
+
+**参数**
+
+- `x` — Array of x-axis values
+- `y` — Array of y-axis values, or array of arrays for multiple lines
+- `options` — Configuration options
+- `options.height` — The height of the container, default as 300px
+- `options.width` — The width of the container, default as 100%
+- `options.title` — Chart title
+- `options.xlabel` — X-axis label
+- `options.ylabel` — Y-axis label
+- `options.legends` — Array of legend labels for multiple lines
+- `options.seriesOption` — Additional series configuration. See ://echarts.apache.org/zh/option.html#series-line for more details
+- `options.echartsOption` — Additional ECharts configuration. See ://echarts.apache.org/zh/option.html#title for more details
+
+**返回**：HTMLElement containing the line chart
+
+**全部可用名**（14，register/别名规则展开）：`ELine` · `EchartsLine` · `addELine` · `addEchartsLine` · `addEchartsline` · `addEline` · `addeLine` · `addechartsLine` · `addechartsline` · `addeline` · `eLine` · `echartsLine` · `echartsline` · `eline`
+
+**来源** `src/core/data-view.ts:932`
+
+---
+
+## dv.echartsBar(x, y, options)
+
+```ts
+echartsBar(x: string[], y: number[] | number[][], options?: { height?: string; width?: string; title?: string; xlabel?: string; ylabel?: string; legends?: string[]; stack?: boolean; seriesOption?: IEchartsSeriesOption | IEchartsSeriesOption[]; echartsOption?: IEchartsOption; }): HTMLElement;
+```
+
+Creates a bar chart
+
+**参数**
+
+- `x` — Array of x-axis values
+- `y` — Array of y-axis values, or array of arrays for multiple bars
+- `options` — Configuration options
+- `options.height` — The height of the container, default as 300px
+- `options.width` — The width of the container, default as 100%
+- `options.title` — Chart title
+- `options.xlabel` — X-axis label
+- `options.ylabel` — Y-axis label
+- `options.legends` — Array of legend labels for multiple bars
+- `options.stack` — Whether to stack bars
+- `options.seriesOption` — Additional series configuration. See ://echarts.apache.org/zh/option.html#series-bar for more details
+- `options.echartsOption` — Additional ECharts configuration
+
+**返回**：HTMLElement containing the bar chart
+
+**全部可用名**（14，register/别名规则展开）：`EBar` · `EchartsBar` · `addEBar` · `addEbar` · `addEchartsBar` · `addEchartsbar` · `addeBar` · `addebar` · `addechartsBar` · `addechartsbar` · `eBar` · `ebar` · `echartsBar` · `echartsbar`
+
+**来源** `src/core/data-view.ts:1007`
+
+---
+
+## dv.echartsTree(data, options)
+
+```ts
+echartsTree(data: ITreeNode, options?: { height?: string; width?: string; title?: string; orient?: 'LR' | 'TB'; layout?: 'orthogonal' | 'radial'; roam?: boolean | 'scale' | 'move'; symbolSize?: number; labelFontSize?: number; nodeRenderer?: (node: IGraphNode) => { name?: string; value?: any; [key: string]: any; }; tooltipFormatter?: (node: ITreeNode) => string; seriesOption?: IEchartsSeriesOption; echartsOption?: IEchartsOption; }): HTMLElement;
+```
+
+Creates a tree visualization
+
+**参数**
+
+- `data` — Tree structure data, see  and ://echarts.apache.org/zh/option.html#series-tree.data for more details
+- `options` — Configuration options
+- `options.height` — The height of the container, default as 300px
+- `options.width` — The width of the container, default as 100%
+- `options.title` — Chart title
+- `options.orient` — Tree orientation ('LR' for left-to-right, 'TB' for top-to-bottom)
+- `options.layout` — Tree layout ('orthogonal' for orthogonal layout, 'radial' for radial layout)
+- `options.roam` — Whether to enable roam, default as false
+- `options.symbolSize` — Size of node symbols, default as 14
+- `options.labelFontSize` — Font size of node labels, default as 16
+- `options.nodeRenderer` — Custom function to render nodes. Mostly you don't need to provide this.
+- `options.tooltipFormatter` — Custom function to render tooltip content. Mostly you don't need to provide this.
+- `options.seriesOption` — Additional series configuration; this will be merged within each series option. See ://echarts.apache.org/zh/option.html#series-tree for more details
+- `options.echartsOption` — Additional ECharts configuration, see ://echarts.apache.org/zh/option.html#title for more details
+
+**返回**：HTMLElement containing the tree visualization
+
+> ⚠ 顶层 `layout:'radial'` 参数实际被忽略，实现硬编码为 'orthogonal'
+
+**全部可用名**（14，register/别名规则展开）：`ETree` · `EchartsTree` · `addETree` · `addEchartsTree` · `addEchartstree` · `addEtree` · `addeTree` · `addechartsTree` · `addechartstree` · `addetree` · `eTree` · `echartsTree` · `echartstree` · `etree`
+
+**来源** `src/core/data-view.ts:1085`
+
+---
+
+## dv.echartsGraph(nodes, links, options)
+
+```ts
+echartsGraph(nodes: (IGraphNode | Block)[], links: IGraphLink[], options?: { height?: string; width?: string; title?: string; layout?: 'force' | 'circular'; roam?: boolean; symbolSize?: number; labelFontSize?: number; nodeRenderer?: (node: IGraphNode) => { name?: string; value?: any; category?: number; [key: string]: any; }; tooltipFormatter?: (node: IGraphNode) => string; seriesOption?: IEchartsSeriesOption; echartsOption?: IEchartsOption; }): HTMLElement;
+```
+
+Creates a graph/network visualization
+
+**参数**
+
+- `nodes` — Array of graph nodes, see  and ://echarts.apache.org/zh/option.html#series-graph.data for more details
+- `links` — Array of connections between nodes, see  and ://echarts.apache.org/zh/option.html#series-graph.links for more details
+- `options` — Configuration options
+- `options.height` — The height of the container, default as 300px
+- `options.width` — The width of the container, default as 100%
+- `options.title` — Chart title
+- `options.layout` — Layout type, default as 'force'
+- `options.roam` — Whether to enable roam, default as true
+- `options.symbolSize` — Size of node symbols
+- `options.labelFontSize` — Font size of node labels
+- `options.nodeRenderer` — Custom function to render nodes, return Echarts node type. Mostly you don't need to provide this.
+- `options.tooltipFormatter` — Custom function to render tooltip content. Mostly you don't need to provide this.
+- `options.seriesOption` — Additional series configuration, see ://echarts.apache.org/zh/option.html#series-graph for more details
+- `options.echartsOption` — Additional ECharts configuration, see ://echarts.apache.org/zh/option.html#title for more details
+
+**返回**：HTMLElement containing the graph visualization
+
+**全部可用名**（14，register/别名规则展开）：`EGraph` · `EchartsGraph` · `addEGraph` · `addEchartsGraph` · `addEchartsgraph` · `addEgraph` · `addeGraph` · `addechartsGraph` · `addechartsgraph` · `addegraph` · `eGraph` · `echartsGraph` · `echartsgraph` · `egraph`
+
+**来源** `src/core/data-view.ts:1238`
+
+---
+
+## dv.render()
+
+```ts
+render(): void;
+```
+
+Renders the DataView and sets up event handlers and cleanup
+
+> ⚠ **非纯渲染**：执行时持久化嵌入块（POST /api/search/updateEmbedBlock，内容取该块 innerText）。静态视图末尾调一次；勿在循环/高频路径调用
+
+**来源** `src/core/data-view.ts:1406`
+
+---
+
