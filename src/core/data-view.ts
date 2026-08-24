@@ -373,7 +373,8 @@ export class DataView extends UseStateMixin implements IDataView {
      * Wrap an element into a view container
      * @param ele 
      */
-    view(ele: HTMLElement | string) {
+    /** @internal */
+    private view(ele: HTMLElement | string) {
         let view: HTMLElement;
         if (typeof ele === 'string') {
             view = newViewWrapper();
