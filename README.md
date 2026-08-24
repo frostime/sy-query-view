@@ -15,8 +15,6 @@ dv.render();
 ![image](docs/assets/image-query-view-minimal-example.png "Rendered effect")
 
 > 💡 The code above is only a minimal demo; the complete basic template and the step-by-step guide live in "Start from the Template", and more copyable effects are in the "Example Overview".
->
-> 💡 This example uses top-level await, which requires SiYuan 3.8.0 or newer. On older versions, the await-related code must be wrapped in an async function invoked at the end, e.g. `const query = async () => { … }; return query();`.
 
 > ⚠️ This document assumes that you have a basic understanding of JavaScript syntax concepts (at minimum, basic variables, control flow, function calls, and async/await).
 
@@ -87,6 +85,43 @@ The full documentation is organized into Quickstart, Topics, Examples, API Refer
 **Agent Skill**
 
 - [Agent Skill](docs/en_US/skill/index.md) — a `SKILL.md` that guides AI agents to query and render with this plugin, shipped with the plugin version.
+
+## Technical Details
+
+### What `return` Returns
+
+If you are not using `DataView` to build visual components, `return` should return a list of block IDs (`BlockID[]`). In that case, the embedded block acts essentially as a "premium SQL" replacement and does not affect SiYuan's native embedded block rendering logic.
+
+If you are using `DataView`, do not return a meaningful object.
+
+### The Old and New Styles
+
+If you are an existing user of Query View, you may remember the old generic style, which looked like:
+
+```js
+//!js
+const query = async () => {
+  let dv = Query.Dataview(protyle, item, top);
+  let blocks = await Query.backlink(protyle.block.rootID);
+  blocks = await Query.fb2p(blocks);
+  dv.addList(blocks, { type: 'o', columns: 2 });
+  dv.render();
+}
+return query();
+```
+
+The `const query = async () => ...` wrapper was a must — in older versions of SiYuan, JS embedded query blocks did not allow top-level `await` statements, so the code had to be wrapped in an async function.
+
+After the 3.8.0 update, this restriction is history (though the old style still works). The new version recommends the more concise style:
+
+```js
+//!js
+let dv = Query.Dataview(protyle, item, top);
+let blocks = await Query.backlink(protyle.block.rootID);
+blocks = await Query.fb2p(blocks);
+dv.addList(blocks, { type: 'o', columns: 2 });
+dv.render();
+```
 
 ## Thanks
 

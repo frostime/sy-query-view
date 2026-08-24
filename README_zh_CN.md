@@ -15,8 +15,6 @@ dv.render();
 ![image](docs/assets/image-query-view-minimal-example.png "渲染效果")
 
 > 💡 上面的代码只是一个最小演示；完整的基础模板与逐步说明见「从模板开始」，更多可复制的效果见「案例总览」。
->
-> 💡 示例默认使用顶层 await，这需要思源 3.8.0 及以上版本；在更早的版本中，需要把 await 相关的代码包进一个 async 函数，并以 `return query();` 结尾调用（例如 `const query = async () => { … }; return query();`）。
 
 ⚠️ 注意，本文档默认读者了解基础的 Javascript 语法概念（至少需要理解基础的变量、流程控制、函数调用、async/await）。
 
@@ -87,6 +85,44 @@ dv.render();
 **智能体技能**
 
 - [智能体技能](docs/zh_CN/skill/index.md) —— 指导 AI 代理（Agent）使用本插件进行查询与渲染的 `SKILL.md`，随插件版本一起发布。
+
+## 技术细节说明
+
+### `return` 返回什么
+
+如果你不使用 `DataView` 构建可视化组件，那么 `return` 应当返回一个 Block ID 列表（`BlockID[]`）。此时，嵌入块本质上作为“高级版 SQL”的替代品，不会影响思源原生的嵌入块渲染逻辑。
+
+如果你使用 `DataView`，则不要返回实质性对象。
+
+
+### 新旧两版写法
+
+如果您是 QueryView 的老用户，您可能记得旧版的通用写法形如:
+
+```js
+//!js
+const query = async () => {
+  let dv = Query.Dataview(protyle, item, top);
+  let blocks = await Query.backlink(protyle.block.rootID);
+  blocks = await Query.fb2p(blocks);
+  dv.addList(blocks, { type: 'o', columns: 2 });
+  dv.render();
+}
+return query();
+```
+
+其中 `const query = async () => ...` 必不可少——因为在旧版 SiYuan 中，JS 嵌入查询块内不允许在顶层使用 await 语句，必须将其封装在一个异步函数中。
+
+3.8.0 版本更新后，这一限制已成为历史（但旧写法仍然可用）。新版本推荐使用更简洁的写法：
+
+```js
+//!js
+let dv = Query.Dataview(protyle, item, top);
+let blocks = await Query.backlink(protyle.block.rootID);
+blocks = await Query.fb2p(blocks);
+dv.addList(blocks, { type: 'o', columns: 2 });
+dv.render();
+```
 
 ## 感谢
 
