@@ -174,8 +174,15 @@ Also in `references/dataview.md`: `dv.cards` options, `dv.useState` reference
 
 ## 6. Reference file map (read on demand)
 
-**Level 1 — bundled with this skill** (installed together with SKILL.md;
-paths below are relative to the skill root):
+The bundled references live in the **`references/` directory next to this
+SKILL.md** (same skill root; installed together with the skill, independent
+of the plugin folder). They are always available. Choose the file by what
+you are about to write:
+
+- about to call a `Query.*` API → `references/query-api.md`
+- about to use a DataView component or its options → `references/dataview.md`
+
+**Level 1 — bundled with this skill** (paths relative to the skill root):
 
 | When | Read |
 |---|---|
@@ -199,9 +206,14 @@ paths below are relative to the skill root):
    release builds) and trace the logic directly. Expensive — last resort
    only; the normal path is level 1 → level 2.
 2. If you have web access, the project is open source at
-   <https://github.com/frostime/sy-query-view> — view the docs, examples,
-   and the uncompiled source under `src/` there. Same content, easier to
-   read than the compiled bundle.
+   <https://github.com/frostime/sy-query-view> — prefer the **uncompiled
+   source** there over the shipped `index.js`: `src/core/data-view.ts`
+   (DataView internals and component implementations),
+   `src/core/components.ts` (DOM rendering details of each component),
+   `src/core/query.ts` (Query implementations and aliases),
+   `public/types.d.ts` (types). This also covers the case where the plugin
+   folder is not readable (e.g. symlinked dev workspaces): do not stall on
+   missing level-2 files there — go to GitHub directly.
 
 If `file.read` fails on a level-2 path, the plugin may be a version where
 that file does not exist: tell the user the reference is unavailable and

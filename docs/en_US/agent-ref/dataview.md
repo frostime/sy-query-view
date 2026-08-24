@@ -85,11 +85,18 @@ dv.render();
 
 ## Encapsulated components (pass data/config — safe)
 
-**`dv.addcards(blocks, { cardWidth?, cardHeight?, fontSize? })`** — card wall. Defaults `175px` / `175px` / `14px`. Clicking a card jumps to its block.
+**`dv.addcards(blocks, { cardWidth?, cardHeight?, fontSize? })`** — card wall. Defaults `175px` / `175px` / `14px`. Each card: bold title (block-type icon + `block.content`, or "(No content)" when empty) — **clicking the title jumps to the block**; below it metadata rows: notebook name + `hpath` path, and created/updated timestamps.
 
 **`dv.addembed(blocks, { breadcrumb?, limit?, columns?, zoom? })`** — embed blocks like a mini embedded block. Params: `limit` (max blocks), `zoom` (0–1, 1 = none), `columns` (multi-column), `breadcrumb`. Each card has a jump icon.
 
 **`dv.adddetails(summary: string, content: string | HTMLElement)`** — collapsible `<details>` block.
+
+- ⚠️ **Default open** (`details.open = true`) — if you expect a collapsed
+  panel, this is counter-intuitive.
+- ⚠️ A **string** `content` is inserted into the element as raw `innerHTML`
+  (not parsed as markdown, no escaping) — HTML tags work, but escape
+  user-provided text yourself; pass an `HTMLElement` (e.g. `dv.list(...)`
+  result) for safe content.
 
 **`dv.addmermaid(code: string)`** — render mermaid from a code string.
 
