@@ -2,7 +2,7 @@
  * @name sy-query-view
  * @author frostime
  * @version 1.3.0
- * @updated 2026-08-24T18:31:41.340Z
+ * @updated 2026-08-24T18:37:19.125Z
  */
 
 declare module 'siyuan' {
@@ -636,11 +636,6 @@ export declare class DataView implements IDataView {
      * @param dispose The dispose function
      */
     addDisposer(dispose: () => void, id?: string): void;
-    /**
-     * Wrap an element into a view container
-     * @param ele
-     */
-    view(ele: HTMLElement | string): HTMLElement;
     /**
      * Add a custom element to the DataView.
      * If the passing is a view container, it will be directly appended.
