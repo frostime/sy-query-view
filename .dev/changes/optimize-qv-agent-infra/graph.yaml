@@ -46,12 +46,11 @@ accepted_state:
     - 对象字面量 Query 导出为匿名类型（I-12）；DataView 的 addxxx 动态方法在声明全缺（I-30）。
     - 类型诚实前置：生成器只能印"源码当前声明"，childDoc 等 Wrapped 声明错误须先修（I-17）。
     - 原型 v0 已产出：.dev/changes/optimize-qv-agent-infra/prototypes/agent-ref-v0.md，
-      含附录 A（源码→桥接→文档三对应 + A.4 诚实性前置）。待用户审阅定消费形式（I-01）。
+    含附录 A（源码→桥接→文档三对应 + A.4 诚实性前置）。形态基线已兑现为生成器输出。
   - 用户确认：行为要点必须作为源码注释存在，生成器纯搬运（I-22）；人写信息一律进 JSDoc。
   - N1 收尾完成（2026-08-24）：真实产物样本验证 18 组件/171 别名全自动提取；
-    签名取 tsc 声明 AST（正则文本提取不可靠，曾截断）；唯一无 JSDoc 组件为
-    details（N3 补注释起点）；长签名/无注释占位等格式问题留给 N2/N3。
-    产物临时存 tmp/，结论全文见 HANDOVER-rollback-branch.md。
+    签名取 tsc 声明 AST（正则文本提取不可靠，曾截断）；结论全文见
+    HANDOVER-rollback-branch.md「N1 收尾结论」。
   - 用户拍板（2026-08-24，回退到「方向确认」节点后重新确认）：
     - 方向通过：tsc 核心导出 + register/addAlias 调用点生成动态成员集合 + 结项复核；
       N1 收尾交付「真实产物样本」（带完整别名的 DataView 方法声明 md），连上 N2/N3 格式讨论。
@@ -65,7 +64,8 @@ current_route:
       title: 高保真提取/导出机制验证（已完成）
       desc: >
         高保真提取与导出机制均已验证成立（结论见 accepted_state 与
-        HANDOVER-rollback-branch.md「N1 收尾结论」）。生成器正式化留待 I-11。
+        HANDOVER-rollback-branch.md「N1 收尾结论」）；正式生成器已落地
+        （scripts/gen-agent-ref.mjs，commit 4f6d29a）。
       state: done
       deps: []
 
@@ -125,7 +125,6 @@ current_route:
       state: candidate
   unresolved_areas:
     - 2.0 全新 API 骨架/新增 API 设计 —— 用户明确排除，若日后提出草图再激活候选节点
-    - 消费形式最终选择 —— N1 样本出来后由用户拍板
     - 与文档站教程/参考分层的配合细节 —— v1.3 已建立渐进披露结构，N2/N5 吸收
 
   - 主线推进（2026-08-24）：
@@ -153,7 +152,8 @@ runtime_rules:
   - graph.yaml 唯一写入者：supervisor；用户（target authority）只改目标与成功标准
   - 节点结果须经 supervisor 验收后进入 accepted_state；验收不授权、授权靠证据
   - 只读探索可 out-of-graph；写入共享状态/不可逆动作须先入图
-  - 用户偏好：参考（签名+要点，grep 定位）→ 教程 → 源码/GitHub 后备
+  - 用户偏好：参考（签名+要点，grep 定位）→ 教程 → 源码/GitHub 后备；
+    README 是纯用户门面，勿擅自加 Agent 入口
   - 环境陷阱（继承自 handover）：NODE_ENV=development vite build 会被 livereload 挂起；
     tsconfig strict:false 下判别联合窄化失效，用 in 操作符；types.d.ts 是构建产物，
     提交时单独 chore commit

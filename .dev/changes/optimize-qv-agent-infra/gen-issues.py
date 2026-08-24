@@ -13,28 +13,18 @@ data = {
   "domains": [
     {"key": "milestone", "title": "决策里程碑（悬空优先，需用户拍板）", "issues": [
       {"id": "I-00", "title": "总体成功标准 / 推进深度", "prio": "P0", "status": "hang", "note": "里程碑处拍板走到哪一步（N1 PoC 或 N4 或 N5 集成）"},
-      {"id": "I-01", "title": "消费形式拍板（md 主 / d.ts 核对层）", "prio": "P0", "status": "done", "note": "用户拍板（2026-08-24）：markdown 主格式；类型诚实（I-17）后置。d.ts 作为签名核对层的定位保留"},
       {"id": "I-02", "title": "结项复核的定位与时机（原则确认）", "prio": "P0", "status": "hang", "note": "用户定义：本轮结尾（如 N6 阶段）派 subagent 复核，或写可长期复用的检测脚本；原则已定（第 1 层结束时要有验证手段），细节不提前敲死；对应节点可预订、后置。见 TERM.md『结项复核』"},
       {"id": "I-03", "title": "2.0 全新 API 骨架", "prio": "P0", "status": "hang", "ev": "user", "note": "明确排除在本任务外，独立 backlog；防止本任务范围蔓延"},
     ]},
     {"key": "n1", "title": "N1 — 高保真提取 / 导出机制", "issues": [
-      {"id": "I-10", "title": "签名提取禁止字符串切割", "prio": "P0", "status": "done", "ev": "N1", "note": "原型教训：split(\"{\") 破坏类型；签名一律走类型检查器/tsc 声明"},
-      {"id": "I-11", "title": "签名生成器正式化（ts-morph getType + tsc 声明）", "prio": "P1", "status": "open", "note": "附录 A.2/A.3 桥接表已定义；N1 收尾实现"},
       {"id": "I-12", "title": "Query 对象字面量只有匿名类型", "prio": "P1", "status": "open", "note": "declare const Query: {...} 无命名类型；是否生成命名 QueryAPI interface"},
       {"id": "I-13", "title": "UseStateMixin 不能干净导出", "prio": "P1", "status": "open", "note": "export-types 靠字符串 hack 抹除 extends UseStateMixin；use-state.d.ts 被注释"},
       {"id": "I-14", "title": "export-types.js 脆弱字符串替换", "prio": "P2", "status": "open", "note": "import(\"./proxy\"). 剥离、default;→Query、mixin 抹除；新管线不复刻"},
       {"id": "I-15", "title": "ts-morph getTags(name) 按名过滤失效", "prio": "info", "status": "open", "note": "遍历 + getTagName() 过滤可绕过；工具降级记录，非阻塞"},
-      {"id": "I-16", "title": "依赖升级不解决问题", "prio": "info", "status": "done", "ev": "N1", "note": "TS 5.7.2/ts-morph 24 已够；动态别名进静态类型是语言语义限制，升级无解"},
       {"id": "I-17", "title": "源码类型声明的诚实度是文档准确度天花板", "prio": "P0", "status": "open", "note": "用户拍板（2026-08-24）：后置——等整个生成框架跑通后再回头修源码类型（先跑通，再保证内容正确）。生成器对已知不对齐点先用标注/待核实呈现"},
     ]},
-    {"key": "n2", "title": "N2 — 生成格式与文档结构", "issues": [
-      {"id": "I-20", "title": "嵌套对象字面量展示策略", "prio": "P1", "status": "done", "note": "已实现：Query.Utils 独立子模块节（类型检查器递归成员），commit 4f6d29a"},
-      {"id": "I-21", "title": "每节模板固化", "prio": "P1", "status": "done", "note": "已实现：短签名标题 + ts block 完整签名 + Params/Returns/Example/Source + ⚠ 注入；多行参数续行缩进 2 空格；commit 4f6d29a"},
-      {"id": "I-22", "title": "行为要点 = 源码注释（生成器纯搬运）", "prio": "P0", "status": "active", "ev": "user", "note": "用户已确认：任何人写的信息都进 JSDoc，生成器一个字不编（语义对齐的文档侧来源）"},
-    ]},
     {"key": "n3", "title": "N3 — 生成器机制：动态 API 与注释提取规则", "issues": [
-      {"id": "I-30", "title": "register/addAlias 调用点生成别名", "prio": "P1", "status": "done", "note": "已实现于 gen-agent-ref.mjs（commit 4f6d29a）：19 处 register→171 名、8 组 Query 别名"},
-      {"id": "I-31", "title": "面向 agent 注释约定定稿", "prio": "P0", "status": "hang", "note": "草案机制已运行：生成器 KNOWN_NOTES 注入口 + 源码 JSDoc 纯搬运（I-22）；正式 [agent] tag 结构待 N6 落地时定稿（details 为样板，I-78）"},
+      {"id": "I-31", "title": "面向 agent 注释约定定稿", "prio": "P0", "status": "hang", "note": "草案机制已运行：生成器 KNOWN_NOTES 注入口 + 源码 JSDoc 纯搬运；正式 [agent] tag 结构待 N6 落地时定稿（details 为样板，I-78）"},
     ]},
     {"key": "n4", "title": "N4 — 对齐验证（后置预订，不纳入前期处理）", "issues": [
       {"id": "I-40", "title": "结项复核对象清单（预备清单）", "prio": "P1", "status": "open", "note": "预订到 N6 阶段要验证的已知不对齐点（childDoc wrapped、today hms、pick 标量、details innerHTML、columns flex、render 副作用、alias 存在性）。细节待结项时定"},
@@ -46,7 +36,6 @@ data = {
       {"id": "I-51", "title": "参考文档双语镜像 or 改契约", "prio": "P2", "status": "hang", "ev": "HO", "note": "DOC-STRUCTURE §1.2 要求同构；现只有 en_US"},
       {"id": "I-52", "title": "参考文档是否进文档站导航", "prio": "P2", "status": "hang", "ev": "HO", "note": "PAGE_TREE 无条目；新机制后形态待重估"},
       {"id": "I-53", "title": "SKILL 触发面验证", "prio": "P3", "status": "open", "ev": "HO", "note": "若未来接思源 Agent 自动触发需另验证"},
-      {"id": "I-54", "title": "README 提及 Agent 入口", "prio": "info", "status": "wontfix", "ev": "HO", "note": "用户明确：README 是纯用户门面，勿擅自加"},
     ]},
     {"key": "n6", "title": "N6 — 代码扫清（扫描/类型/注释）+ API 诚实化", "issues": [
       {"id": "I-60", "title": "childDoc/keywordDoc/fb2p/pruneBlocks 声明 Block[] 实为 wrapped", "prio": "P0", "status": "open", "ev": "WB", "disposition": "修类型", "note": "query.ts:729/881/956/1077；d.ts 同错；含 I-17 类型诚实前置。根因：wrapList 无返回标注（proxy.ts:254），new Proxy 推断为 Block[]；修法：wrapList 加 `: IWrappedList<Block>` 返回标注，下游声明自动修正"},
