@@ -88,10 +88,10 @@ current_route:
       deps: [N1]
 
     N4:
-      title: 对齐验证（结项复核，后置预订）
-      desc: 用户定义：第 1 层结尾（如 N6 阶段）派 subagent 复核，或写可长期复用的
-        检测脚本；原则已定，细节（对象清单/脚本形态）后置，不纳入前期处理。
-      state: waiting
+      title: 对齐验证（结项复核）
+      desc: 用户定义：派 subagent 复核，或写可长期复用的检测脚本（I-40/41/42）；
+        复核对象：声明/文档/行为三者一致。N6 主体完成后激活。
+      state: frontier
       deps: [N2, N3, N6]
 
     N5:

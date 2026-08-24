@@ -697,7 +697,8 @@ export class DataView extends UseStateMixin {
         const flex = options.flex ?? Array(elements.length).fill(1);
         const column = (ele: HTMLElement, i: number) => {
             ele.classList.add(styles['column']);
-            flex[i] !== 1 && columns.style.setProperty('--flex-grow', flex[i]);
+            // 写入每列自身，避免覆盖父容器单一变量（--flex-grow 是 CSS 变量，可继承）
+            flex[i] !== 1 && ele.style.setProperty('--flex-grow', flex[i]);
             return ele;
         }
 
@@ -1165,7 +1166,7 @@ export class DataView extends UseStateMixin {
                 roam: options.roam ?? false,
                 data: [data],
                 orient: options.orient || 'TB',
-                layout: 'orthogonal',
+                layout: options.layout ?? 'orthogonal',
                 symbolSize: options.symbolSize ?? 14,
                 initialTreeDepth: -1,
                 lineStyle: {
@@ -1317,16 +1318,14 @@ export class DataView extends UseStateMixin {
             width: 2.5
         };
         for (const link of links) {
-            const source = link.source;
-            const targets = link.target;
-            delete link.source;
-            delete link.target;
-            if (Array.isArray(targets)) {
-                for (const target of targets) {
-                    graphLinks.push({ source, target, lineStyle, ...link });
+            // 非 inplace：解构排除 source/target，不修改调用者传入的 link 对象
+            const { source, target, ...rest } = link;
+            if (Array.isArray(target)) {
+                for (const t of target) {
+                    graphLinks.push({ source, target: t, lineStyle, ...rest });
                 }
             } else {
-                graphLinks.push({ source, target: targets, lineStyle, ...link });
+                graphLinks.push({ source, target, lineStyle, ...rest });
             }
         }
 

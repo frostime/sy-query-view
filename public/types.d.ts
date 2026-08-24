@@ -2,7 +2,7 @@
  * @name sy-query-view
  * @author frostime
  * @version 1.3.0
- * @updated 2026-08-24T18:43:15.196Z
+ * @updated 2026-08-24T19:14:47.402Z
  */
 
 declare module 'siyuan' {
@@ -351,31 +351,35 @@ declare const Query: {
      * Search blocks that contain the given keywords
      * @param keywords {string | string[]} - Keywords to search for; can provide multiple keywords
      * @param options - Options
-     * @param options.join - Join type ('or' or 'and')
+     * @param options.relation - Relation between keywords at block level: 'any' — blocks containing at least one keyword; 'all' — blocks containing every keyword (default: 'any')
      * @param options.limit - Maximum number of results to return, default is 999
      * @param limit - (Deprecated) Maximum number of results to return, default is 999
      * @returns Array of blocks that contain the given keywords
+     * @deprecated-key join: 旧版参数名（'or' | 'and'），语义映射：'or' → 'any'，'and' → 'all'；兼容保留
      */
     keyword: (keywords: string | string[], options?: {
-        join?: "or" | "and";
+        relation?: "any" | "all";
         limit?: number;
-    } | DeprecatedParam<"or" | "and">, limit?: DeprecatedParam<number>) => Promise<IWrappedList<IWrappedBlock>>;
+    } | DeprecatedParam<"any" | "all">, limit?: DeprecatedParam<number>) => Promise<IWrappedList<IWrappedBlock>>;
     /**
      * Search the document that contains all the keywords.
      * @param keywords {string | string[]} keywords to search for; can provide multiple keywords
      * @param options - Options
      * @param options.join - Join type ('or' or 'and')
      * @param options.limit - Maximum number of results to return, default is 999
-     * @returns The document blocks that contains all the given keywords; the blocks will attached a 'keywords' property, which is the matched keyword blocks
+     * @param options.relation - Relation between keywords: 'any' — documents containing at least one keyword; 'all' — documents containing every keyword (default: 'all')
+     * @returns The document blocks matching the keywords; the blocks will attached a 'keywords' property, which is the matched keyword blocks
      * @example
      * let docs = await Query.keywordDoc(['Keywords A', 'Keywords B']);
      * //each block in docs is a document block that contains all the keywords
      * docs[0].keywords['Keywords A'] // get the matched keyword block by using `keywords` property
+     * @deprecated-key join: 旧版参数名（'or' | 'and'），语义映射：'or' → 'any'，'and' → 'all'；兼容保留
+     * @deprecated-key 旧式字符串形态（第二个参数直接传 'or'/'and'）同样兼容
      */
     keywordDoc: (keywords: string | string[], options?: {
-        join?: "or" | "and";
+        relation?: "any" | "all";
         limit?: number;
-    } | DeprecatedParam<"or" | "and">, limit?: DeprecatedParam<number>) => Promise<Block[]>;
+    } | DeprecatedParam<"any" | "all">, limit?: DeprecatedParam<number>) => Promise<Block[]>;
     /**
      * Randomly roam blocks
      * @param limit - Maximum number of results
@@ -1054,9 +1058,12 @@ export interface IWrappedList<T = Block> extends Array<T> {
     asMap: (key: string) => Record<string, Block>;
     /**
      * Returns a new array containing only specified properties
+     * NOTE: a single attribute returns a wrapped array of scalar values
+     * (`pick('id')` → `IWrappedList<T['id']>`); multiple attributes return objects
      * @param attrs - Property names to keep
      */
-    pick(...attrs: (keyof T)[]): IWrappedList<Partial<T>>;
+    pick<A extends keyof T>(attr: A): IWrappedList<T[A]>;
+    pick<A extends keyof T>(...attrs: A[]): IWrappedList<Pick<T, A>>;
     /**
      * Returns a new array excluding specified properties
      * @param attrs - Property names to exclude
@@ -1079,6 +1086,12 @@ export interface IWrappedList<T = Block> extends Array<T> {
      * @param predicate - Filter condition function
      */
     filter(predicate: (value: T, index: number, array: T[]) => boolean): IWrappedList<T>;
+    /**
+     * Returns a new array with mapped elements; the wrapper is preserved
+     * @param fn - Map function
+     * @param useWrapBlock - Whether to wrap the mapped elements (default: true)
+     */
+    map<U>(fn: (value: T, index: number, array: T[]) => U, useWrapBlock?: boolean): IWrappedList<U>;
     /**
      * Returns a new array containing elements in the specified range
      * @param start - Start index

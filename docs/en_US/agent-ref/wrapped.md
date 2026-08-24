@@ -5,7 +5,7 @@
 ## IWrappedList<T = Block> (extends extends Array<T>)
 
 ```ts
-export interface IWrappedList<T = Block> extends Array<T> { /** Method to return the original array */ unwrap(): T[]; /** Original array */ unwrapped: T[]; /** * Converts the array to a map object, where the key is specified by the key parameter. * Equivalent to calling `array.reduce((acc, cur) => ({...acc, [cur[key]]: cur }), {})` * @param key * @returns */ asMap: (key: string) => Record<string, Block>; /** * Returns a new array containing only specified properties * @param attrs - Property names to keep */ pick(...attrs: (keyof T)[]): IWrappedList<Partial<T>>; /** * Returns a new array excluding specified properties * @param attrs - Property names to exclude */ omit(...attrs: (keyof T)[]): IWrappedList<T>; /** * Returns a new array sorted by specified property * @param attr - Property to sort by * @param order - Sort direction, defaults to 'asc' */ sorton(attr: keyof T, order?: 'asc' | 'desc'): IWrappedList<T>; /** * Returns an object grouped by specified condition * @param predicate - Grouping criteria, can be property name or function * @param fnEach - Optional callback function for each group */ groupby( predicate: keyof T | ((item: T) => any), fnEach?: (groupName: any, list: T[]) => unknown ): Record<string, IWrappedList<T>>; /** * Returns a filtered new array, ensuring it's also an IWrappedList * @param predicate - Filter condition function */ filter(predicate: (value: T, index: number, array: T[]) => boolean): IWrappedList<T>; /** * Returns a new array containing elements in the specified range * @param start - Start index * @param end - End index */ slice(start: number, end: number): IWrappedList<T>; /** * Returns a new array with unique elements * @param {keyof Block | Function} key - Unique criteria, can be property name or function * @example * list.unique('id') * list.unique(b => b.updated.slice(0, 4)) */ unique(key?: keyof Block | ((b: Block) => string | number)): IWrappedList<IWrappedBlock>; /** * Returns a new array with added rows * @alias addrows * @alias concat: modify the default method of Array */ addrow(newItems: T[]): IWrappedList<T>; /** * Returns a new array with added columns * @param {Record<string, ScalarValue | ScalarValue[]> | Record<string, ScalarValue>[] | Function} newItems - New columns to add * @alias addcols * @alias stack * @example * list.addcol({ col1: 1, col2: 2 }) // Add two columns, each with repeated elements * list.addcol({ col1: [1, 2], col2: [4, 5] }) // Add two columns * list.addcol([{ col1: 1, col2: 2 }, { col1: 3, col2: 4 }]) // Add two columns, each item in list corresponds to a row * list.addcol((b, i) => ({ col1: i, col2: i * i })) // Add two columns, each with elements generated based on index */ addcol(newItems: Record<string, ScalarValue | ScalarValue[]> | Record<string, ScalarValue>[] | ((b: T, index: number) => Record<string, ScalarValue> | Record<string, ScalarValue[]>)): IWrappedList<T>; }
+export interface IWrappedList<T = Block> extends Array<T> { /** Method to return the original array */ unwrap(): T[]; /** Original array */ unwrapped: T[]; /** * Converts the array to a map object, where the key is specified by the key parameter. * Equivalent to calling `array.reduce((acc, cur) => ({...acc, [cur[key]]: cur }), {})` * @param key * @returns */ asMap: (key: string) => Record<string, Block>; /** * Returns a new array containing only specified properties * NOTE: a single attribute returns a wrapped array of scalar values * (`pick('id')` → `IWrappedList<T['id']>`); multiple attributes return objects * @param attrs - Property names to keep */ pick<A extends keyof T>(attr: A): IWrappedList<T[A]>; pick<A extends keyof T>(...attrs: A[]): IWrappedList<Pick<T, A>>; /** * Returns a new array excluding specified properties * @param attrs - Property names to exclude */ omit(...attrs: (keyof T)[]): IWrappedList<T>; /** * Returns a new array sorted by specified property * @param attr - Property to sort by * @param order - Sort direction, defaults to 'asc' */ sorton(attr: keyof T, order?: 'asc' | 'desc'): IWrappedList<T>; /** * Returns an object grouped by specified condition * @param predicate - Grouping criteria, can be property name or function * @param fnEach - Optional callback function for each group */ groupby( predicate: keyof T | ((item: T) => any), fnEach?: (groupName: any, list: T[]) => unknown ): Record<string, IWrappedList<T>>; /** * Returns a filtered new array, ensuring it's also an IWrappedList * @param predicate - Filter condition function */ filter(predicate: (value: T, index: number, array: T[]) => boolean): IWrappedList<T>; /** * Returns a new array with mapped elements; the wrapper is preserved * @param fn - Map function * @param useWrapBlock - Whether to wrap the mapped elements (default: true) */ map<U>(fn: (value: T, index: number, array: T[]) => U, useWrapBlock?: boolean): IWrappedList<U>; /** * Returns a new array containing elements in the specified range * @param start - Start index * @param end - End index */ slice(start: number, end: number): IWrappedList<T>; /** * Returns a new array with unique elements * @param {keyof Block | Function} key - Unique criteria, can be property name or function * @example * list.unique('id') * list.unique(b => b.updated.slice(0, 4)) */ unique(key?: keyof Block | ((b: Block) => string | number)): IWrappedList<IWrappedBlock>; /** * Returns a new array with added rows * @alias addrows * @alias concat: modify the default method of Array */ addrow(newItems: T[]): IWrappedList<T>; /** * Returns a new array with added columns * @param {Record<string, ScalarValue | ScalarValue[]> | Record<string, ScalarValue>[] | Function} newItems - New columns to add * @alias addcols * @alias stack * @example * list.addcol({ col1: 1, col2: 2 }) // Add two columns, each with repeated elements * list.addcol({ col1: [1, 2], col2: [4, 5] }) // Add two columns * list.addcol([{ col1: 1, col2: 2 }, { col1: 3, col2: 4 }]) // Add two columns, each item in list corresponds to a row * list.addcol((b, i) => ({ col1: i, col2: i * i })) // Add two columns, each with elements generated based on index */ addcol(newItems: Record<string, ScalarValue | ScalarValue[]> | Record<string, ScalarValue>[] | ((b: T, index: number) => Record<string, ScalarValue> | Record<string, ScalarValue[]>)): IWrappedList<T>; }
 ```
 
 ---
@@ -22,13 +22,15 @@ Method to return the original array
 
 ---
 
-### list.pick(attrs)
+### list.pick(attr)
 
 ```ts
-pick(...attrs: (keyof T)[]): IWrappedList<Partial<T>>;
+pick<A extends keyof T>(attr: A): IWrappedList<T[A]>;
 ```
 
 Returns a new array containing only specified properties
+NOTE: a single attribute returns a wrapped array of scalar values
+(`pick('id')` → `IWrappedList<T['id']>`); multiple attributes return objects
 
 **Params**
 
@@ -36,7 +38,21 @@ Returns a new array containing only specified properties
 
 > ⚠ **Return type differs for single vs multiple attrs** (not reflected in the declaration): `pick('id')` returns a scalar array; `pick('id','content')` returns an object array
 
-**Source** `src/core/proxy.ts:74`
+**Source** `src/core/proxy.ts:76`
+
+---
+
+### list.pick(attrs)
+
+```ts
+pick<A extends keyof T>(...attrs: A[]): IWrappedList<Pick<T, A>>;
+```
+
+> ⚠ No JSDoc documentation (behavior unverified) — check the source code or official tutorial
+
+> ⚠ **Return type differs for single vs multiple attrs** (not reflected in the declaration): `pick('id')` returns a scalar array; `pick('id','content')` returns an object array
+
+**Source** `src/core/proxy.ts:77`
 
 ---
 
@@ -52,7 +68,7 @@ Returns a new array excluding specified properties
 
 - `attrs` — Property names to exclude
 
-**Source** `src/core/proxy.ts:80`
+**Source** `src/core/proxy.ts:83`
 
 ---
 
@@ -69,7 +85,7 @@ Returns a new array sorted by specified property
 - `attr` — Property to sort by
 - `order` — Sort direction, defaults to 'asc'
 
-**Source** `src/core/proxy.ts:87`
+**Source** `src/core/proxy.ts:90`
 
 ---
 
@@ -86,7 +102,7 @@ Returns an object grouped by specified condition
 - `predicate` — Grouping criteria, can be property name or function
 - `fnEach` — Optional callback function for each group
 
-**Source** `src/core/proxy.ts:94`
+**Source** `src/core/proxy.ts:97`
 
 ---
 
@@ -102,7 +118,24 @@ Returns a filtered new array, ensuring it's also an IWrappedList
 
 - `predicate` — Filter condition function
 
-**Source** `src/core/proxy.ts:103`
+**Source** `src/core/proxy.ts:106`
+
+---
+
+### list.map(fn, useWrapBlock?)
+
+```ts
+map<U>(fn: (value: T, index: number, array: T[]) => U, useWrapBlock?: boolean): IWrappedList<U>;
+```
+
+Returns a new array with mapped elements; the wrapper is preserved
+
+**Params**
+
+- `fn` — Map function
+- `useWrapBlock` — Whether to wrap the mapped elements (default: true)
+
+**Source** `src/core/proxy.ts:112`
 
 ---
 
@@ -119,7 +152,7 @@ Returns a new array containing elements in the specified range
 - `start` — Start index
 - `end` — End index
 
-**Source** `src/core/proxy.ts:109`
+**Source** `src/core/proxy.ts:118`
 
 ---
 
@@ -142,7 +175,7 @@ list.unique('id')
 list.unique(b => b.updated.slice(0, 4))
 ```
 
-**Source** `src/core/proxy.ts:117`
+**Source** `src/core/proxy.ts:126`
 
 ---
 
@@ -156,7 +189,7 @@ Returns a new array with added rows
 
 **Available names** (3, expanded from register()/addAlias() call sites): `addrow` · `addrows` · `concat: modify the default method of Array`
 
-**Source** `src/core/proxy.ts:123`
+**Source** `src/core/proxy.ts:132`
 
 ---
 
@@ -183,7 +216,7 @@ list.addcol((b, i) => ({ col1: i, col2: i * i })) // Add two columns, each with 
 
 **Available names** (3, expanded from register()/addAlias() call sites): `addcol` · `addcols` · `stack`
 
-**Source** `src/core/proxy.ts:136`
+**Source** `src/core/proxy.ts:145`
 
 ---
 

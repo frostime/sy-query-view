@@ -809,22 +809,39 @@ const Query = {
      * Search blocks that contain the given keywords
      * @param keywords {string | string[]} - Keywords to search for; can provide multiple keywords
      * @param options - Options
-     * @param options.join - Join type ('or' or 'and')
+     * @param options.relation - Relation between keywords at block level: 'any' — blocks containing at least one keyword; 'all' — blocks containing every keyword (default: 'any')
      * @param options.limit - Maximum number of results to return, default is 999
      * @param limit - (Deprecated) Maximum number of results to return, default is 999
      * @returns Array of blocks that contain the given keywords
+     * @deprecated-key join: 旧版参数名（'or' | 'and'），语义映射：'or' → 'any'，'and' → 'all'；兼容保留
      */
-    keyword: async (keywords: string | string[], options?: { join?: 'or' | 'and', limit?: number } | DeprecatedParam<'or' | 'and'>, limit?: DeprecatedParam<number>) => {
+    keyword: async (keywords: string | string[], options?: { relation?: 'any' | 'all', limit?: number } | DeprecatedParam<'any' | 'all'> | { join?: 'or' | 'and', limit?: number } | DeprecatedParam<'or' | 'and'>, limit?: DeprecatedParam<number>) => {
         const opts = handleOptions(
             'keyword',
-            { join: 'or' as 'or' | 'and', limit: 999 as number },
-            options,
+            { relation: 'any' as 'any' | 'all', limit: 999 as number },
+            options as any,
             { limit },
-            'join'
+            'relation'
         );
-        const { join, limit: lim } = opts;
-        keywords = Array.isArray(keywords) ? keywords : [keywords];
-        const sql = `select * from blocks where ${keywords.map(keyword => `content like '%${keyword}%'`).join(` ${join} `)} limit ${lim}`;
+        // 旧版兼容：join → relation（'or' → 'any'，'and' → 'all'）
+        if (options && typeof options === 'object' && 'join' in options) {
+            const oldJoin = (options as any).join;
+            if (oldJoin === 'or' || oldJoin === 'and') {
+                opts.relation = oldJoin === 'or' ? 'any' : 'all';
+                const msg = i18n.src_core_queryts.query_obsolete_params;
+                console.warn(msg.replace('{0}', 'keyword: join → relation'));
+            }
+        }
+        // 旧式字符串形态（keyword(kw, 'or')）同样映射
+        const rel: any = opts.relation;
+        if (rel === 'or' || rel === 'and') {
+            opts.relation = rel === 'or' ? 'any' : 'all';
+        }
+        const { relation, limit: lim } = opts;
+        keywords = (Array.isArray(keywords) ? keywords : [keywords]).filter(keyword => keyword !== '');
+        // 空关键词（或全部为空字符串）→ 空结果，避免生成非法 SQL
+        if (keywords.length === 0) return [] as IWrappedList<IWrappedBlock>;
+        const sql = `select * from blocks where ${keywords.map(keyword => `content like '%${keyword}%'`).join(` ${relation === 'all' ? 'and' : 'or'} `)} limit ${lim}`;
         let results = await Query.sql(sql);
         return results;
     },
@@ -835,51 +852,61 @@ const Query = {
      * @param options - Options
      * @param options.join - Join type ('or' or 'and')
      * @param options.limit - Maximum number of results to return, default is 999
-     * @returns The document blocks that contains all the given keywords; the blocks will attached a 'keywords' property, which is the matched keyword blocks
+     * @param options.relation - Relation between keywords: 'any' — documents containing at least one keyword; 'all' — documents containing every keyword (default: 'all')
+     * @returns The document blocks matching the keywords; the blocks will attached a 'keywords' property, which is the matched keyword blocks
      * @example
      * let docs = await Query.keywordDoc(['Keywords A', 'Keywords B']);
      * //each block in docs is a document block that contains all the keywords
      * docs[0].keywords['Keywords A'] // get the matched keyword block by using `keywords` property
+     * @deprecated-key join: 旧版参数名（'or' | 'and'），语义映射：'or' → 'any'，'and' → 'all'；兼容保留
+     * @deprecated-key 旧式字符串形态（第二个参数直接传 'or'/'and'）同样兼容
      */
-    keywordDoc: async (keywords: string | string[], options?: { join?: 'or' | 'and', limit?: number } | DeprecatedParam<'or' | 'and'>, limit?: DeprecatedParam<number>) => {
+    keywordDoc: async (keywords: string | string[], options?: { relation?: 'any' | 'all', limit?: number } | DeprecatedParam<'any' | 'all'> | { join?: 'or' | 'and', limit?: number } | DeprecatedParam<'or' | 'and'>, limit?: DeprecatedParam<number>) => {
         const opts = handleOptions(
             'keywordDoc',
-            { join: 'or' as 'or' | 'and', limit: 999 as number },
-            options,
+            { relation: 'all' as 'any' | 'all', limit: 999 as number },
+            options as any,
             { limit },
-            'join'
+            'relation'
         );
-        const { join, limit: lim } = opts;
-        keywords = Array.isArray(keywords) ? keywords : [keywords];
-        const sql = `select * from blocks where ${keywords.map(keyword => `content like '%${keyword}%'`).join(` ${join} `)} limit ${lim}`;
-        let results = await Query.sql(sql);
+        // 旧版兼容：join → relation（'or' → 'any'，'and' → 'all'）
+        if (options && typeof options === 'object' && 'join' in options) {
+            const oldJoin = (options as any).join;
+            if (oldJoin === 'or' || oldJoin === 'and') {
+                opts.relation = oldJoin === 'or' ? 'any' : 'all';
+                const msg = i18n.src_core_queryts.query_obsolete_params;
+                console.warn(msg.replace('{0}', 'keywordDoc: join → relation'));
+            }
+        }
+        // 旧式字符串形态（keywordDoc(kw, 'or')）同样映射
+        const rel: any = opts.relation;
+        if (rel === 'or' || rel === 'and') {
+            opts.relation = rel === 'or' ? 'any' : 'all';
+        }
+        const { relation, limit: lim } = opts;
+        keywords = (Array.isArray(keywords) ? keywords : [keywords]).filter(keyword => keyword !== '');
+        // 空关键词（或全部为空字符串）→ 空结果，避免生成非法 SQL
+        if (keywords.length === 0) return [];
 
+        // 文档级聚合：先在块表上按 root_id 分组，HAVING 判定满足 relation 的文档，
+        // limit 作用于文档数（语义：返回的文档数上限，而非 v1.x 的块数上限）
+        const likeClauses = keywords.map(keyword => `content like '%${keyword}%'`);
+        const havingClauses = keywords.map(keyword => `sum(case when content like '%${keyword}%' then 1 else 0 end) > 0`);
+        const sql = `select root_id from blocks where ${likeClauses.join(' or ')} group by root_id having ${havingClauses.join(relation === 'any' ? ' or ' : ' and ')} limit ${lim}`;
+        let rows = await Query.sql(sql);
+        if (rows.length === 0) return [];
+        const rootIds = rows.pick('root_id');
+
+        // 取出这些文档的所有匹配块，构造每个文档的 keywords 属性（关键词 → 命中块）
+        const blocksSql = `select * from blocks where root_id in (${rootIds.map((id: string) => `'${id}'`).join(',')}) and (${likeClauses.join(' or ')})`;
+        let matchedBlocks = await Query.sql(blocksSql);
         let matchedDocs = {};
-        results.groupby(b => b.root_id, (root_id: string, blocks: Block[]) => {
-            // root_id 中检索到的含有关键字的块
-            // 检查一下是不是所有的关键字都有匹配到
-            let contains = Object.fromEntries(keywords.map(keyword => [keyword, null]));
-            blocks.forEach(block => {
-                keywords.forEach(keyword => {
-                    if (block.content.includes(keyword)) {
-                        contains[keyword] = block;
-                    }
-                });
-            });
-            let matched = true;
-            for (let keyword of keywords) {
-                if (!contains[keyword]) {
-                    matched = false;
-                    break;
-                }
-            }
-            if (matched) {
-                // matchedDocs.push(root_id);
-                matchedDocs[root_id] = contains;
-            }
+        matchedBlocks.groupby(b => b.root_id, (root_id: string, blocks: Block[]) => {
+            const contains = Object.fromEntries(keywords.map(keyword => [keyword, blocks.find(b => b.content.includes(keyword)) ?? null]));
+            matchedDocs[root_id] = contains;
         });
-        let matchedDocsRootIds = Object.keys(matchedDocs);
-        let documents: Block[] = await Query.getBlocksByIds(...matchedDocsRootIds);
+
+        let documents: Block[] = await Query.getBlocksByIds(...Object.keys(matchedDocs));
         for (let i = 0; i < documents.length; i++) {
             const doc = documents[i];
             doc['keywords'] = matchedDocs[doc.root_id];

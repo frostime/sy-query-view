@@ -69,9 +69,12 @@ export interface IWrappedList<T = Block> extends Array<T> {
 
     /**
      * Returns a new array containing only specified properties
+     * NOTE: a single attribute returns a wrapped array of scalar values
+     * (`pick('id')` → `IWrappedList<T['id']>`); multiple attributes return objects
      * @param attrs - Property names to keep
      */
-    pick(...attrs: (keyof T)[]): IWrappedList<Partial<T>>;
+    pick<A extends keyof T>(attr: A): IWrappedList<T[A]>;
+    pick<A extends keyof T>(...attrs: A[]): IWrappedList<Pick<T, A>>;
 
     /**
      * Returns a new array excluding specified properties
@@ -101,6 +104,12 @@ export interface IWrappedList<T = Block> extends Array<T> {
      * @param predicate - Filter condition function
      */
     filter(predicate: (value: T, index: number, array: T[]) => boolean): IWrappedList<T>;
+    /**
+     * Returns a new array with mapped elements; the wrapper is preserved
+     * @param fn - Map function
+     * @param useWrapBlock - Whether to wrap the mapped elements (default: true)
+     */
+    map<U>(fn: (value: T, index: number, array: T[]) => U, useWrapBlock?: boolean): IWrappedList<U>;
     /**
      * Returns a new array containing elements in the specified range
      * @param start - Start index
@@ -417,11 +426,16 @@ export const wrapList = (list: Block[], useWrapBlock: boolean = true): IWrappedL
                         const results = Array.prototype.slice.call(target, start, end);
                         return wrapList(results);
                     }
-                // case 'map':
-                //     return (fn: (b: Block, index: number) => any, useWrapBlock: boolean = true) => {
-                //         const map = Reflect.get(target, prop);
-                //         return wrapList(map(fn), useWrapBlock);
-                //     }
+                case 'map':
+                    /**
+                     * Returns a new array with mapped elements; the wrapper is preserved
+                     * @param fn - Map function
+                     * @param useWrapBlock - Whether to wrap the mapped elements (default: true)
+                     */
+                    return (fn: (b: Block, index: number) => any, useWrapBlock: boolean = true) => {
+                        const map = Reflect.get(target, prop);
+                        return wrapList(map.call(target, fn), useWrapBlock);
+                    }
                 case 'unique':
                     /**
                      * 返回一个去重后的新数组

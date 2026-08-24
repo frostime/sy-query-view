@@ -366,7 +366,7 @@ await query.nearby('block123', { direction: 'previous', number: 3 });
 ## Query.keyword(keywords, options?, limit?)
 
 ```ts
-keyword: (keywords: string | string[], options?: { join?: "or" | "and"; limit?: number; } | DeprecatedParam<"or" | "and">, limit?: DeprecatedParam<number>) => Promise<IWrappedList<IWrappedBlock>>
+keyword: (keywords: string | string[], options?: { relation?: "any" | "all"; limit?: number; } | DeprecatedParam<"any" | "all"> | { join?: "or" | "and"; limit?: number; } | DeprecatedParam<"or" | "and">, limit?: DeprecatedParam<number>) => Promise<IWrappedList<IWrappedBlock>>
 ```
 
 Search blocks that contain the given keywords
@@ -375,20 +375,20 @@ Search blocks that contain the given keywords
 
 - `keywords` — Keywords to search for; can provide multiple keywords
 - `options` — Options
-- `options.join` — Join type ('or' or 'and')
+- `options.relation` — Relation between keywords at block level: 'any' — blocks containing at least one keyword; 'all' — blocks containing every keyword (default: 'any')
 - `options.limit` — Maximum number of results to return, default is 999
 - `limit` — (Deprecated) Maximum number of results to return, default is 999
 
 **Returns**: Array of blocks that contain the given keywords
 
-**Source** `src/core/query.ts:817`
+**Source** `src/core/query.ts:818`
 
 ---
 
 ## Query.keywordDoc(keywords, options?, limit?)
 
 ```ts
-keywordDoc: (keywords: string | string[], options?: { join?: "or" | "and"; limit?: number; } | DeprecatedParam<"or" | "and">, limit?: DeprecatedParam<number>) => Promise<Block[]>
+keywordDoc: (keywords: string | string[], options?: { relation?: "any" | "all"; limit?: number; } | DeprecatedParam<"any" | "all"> | { join?: "or" | "and"; limit?: number; } | DeprecatedParam<"or" | "and">, limit?: DeprecatedParam<number>) => Promise<Block[]>
 ```
 
 Search the document that contains all the keywords.
@@ -399,8 +399,9 @@ Search the document that contains all the keywords.
 - `options` — Options
 - `options.join` — Join type ('or' or 'and')
 - `options.limit` — Maximum number of results to return, default is 999
+- `options.relation` — Relation between keywords: 'any' — documents containing at least one keyword; 'all' — documents containing every keyword (default: 'all')
 
-**Returns**: The document blocks that contains all the given keywords; the blocks will attached a 'keywords' property, which is the matched keyword blocks
+**Returns**: The document blocks matching the keywords; the blocks will attached a 'keywords' property, which is the matched keyword blocks
 
 **Example**
 
@@ -412,7 +413,7 @@ docs[0].keywords['Keywords A'] // get the matched keyword block by using `keywor
 
 > ⚠ `join:'or'` is not a true OR: the SQL stage uses OR, but the post-filter still requires every keyword to match — effectively AND
 
-**Source** `src/core/query.ts:844`
+**Source** `src/core/query.ts:864`
 
 ---
 
@@ -431,7 +432,7 @@ Randomly roam blocks
 
 **Returns**: Array of randomly roamed blocks
 
-**Source** `src/core/query.ts:896`
+**Source** `src/core/query.ts:923`
 
 ---
 
@@ -443,7 +444,7 @@ markdown: (input: BlockId | Block) => Promise<any>
 
 > ⚠ No JSDoc documentation (behavior unverified) — check the source code or official tutorial
 
-**Source** `src/core/query.ts:904`
+**Source** `src/core/query.ts:931`
 
 ---
 
@@ -461,7 +462,7 @@ Return the statistics of the document with given document ID
 
 **Returns**: The statistics of the document; .runeCount - The number of characters in the document; .wordCount - The number of words (Chinese characters are counted as one word) in the document; .linkCount - The number of links in the document; .imageCount - The number of images in the document; .refCount - The number of references in the document; .blockCount - The number of blocks in the document
 
-**Source** `src/core/query.ts:934`
+**Source** `src/core/query.ts:961`
 
 ---
 
@@ -484,7 +485,7 @@ Redirects first block IDs to their parent containers
 
 **Available names** (2, expanded from register()/addAlias() call sites): `fb2p` · `redirect`
 
-**Source** `src/core/query.ts:957`
+**Source** `src/core/query.ts:984`
 
 ---
 
@@ -521,7 +522,7 @@ This function resolves this duplication issue by merging related blocks based on
 
 **Available names** (4, expanded from register()/addAlias() call sites): `pruneBlocks` · `prune` · `mergeBlocks` · `merge`
 
-**Source** `src/core/query.ts:1078`
+**Source** `src/core/query.ts:1105`
 
 ---
 
@@ -550,7 +551,7 @@ Send GPT request, use AI configuration in `siyuan.config.ai.openAI` by default
 
 **Notes**: The only API that sends external HTTP(S) requests via fetch; every other Query API is a SiYuan kernel request.
 
-**Source** `src/core/query.ts:1100`
+**Source** `src/core/query.ts:1127`
 
 ---
 
