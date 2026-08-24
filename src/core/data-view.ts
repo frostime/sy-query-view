@@ -43,7 +43,7 @@ const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
  * DataView class for creating and managing dynamic data visualizations
  * Provides various methods for visualizing data.
  */
-export class DataView extends UseStateMixin implements IDataView {
+export class DataView extends UseStateMixin {
     /** @internal */
     private protyle: IProtyle;
 
@@ -329,6 +329,7 @@ export class DataView extends UseStateMixin implements IDataView {
      * Persist state across renders; it will store the state in the block attributes when disposing, and restore it when creating.
      * @param key - The key of the state
      * @param initialValue - The initial value of the state
+     * @note Changes are written to the block attributes when the view is disposed — not persisted in real time
      * @returns An IState object -- see {@link IState}
      * @example
      * const count = dv.useState('count', 0);

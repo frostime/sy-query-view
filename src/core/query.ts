@@ -299,14 +299,14 @@ const Query = {
 
         /**
          * Gets the timestamp for the start of today
-         * @param {boolean} hms - Whether to include time, e.g today(false) returns 20241201, today(true) returns 20241201000000
+         * @param {boolean} hms - Whether to include time (default: true), e.g today(false) returns 20241201, today(true) returns 20241201000000
          * @returns Timestamp string in yyyyMMddHHmmss format
          */
         today: (hms: boolean = true) => new SiYuanDate().beginOfDay().toString(hms),
 
         /**
          * Gets the timestamp for the start of current week
-         * @param {boolean} hms - Whether to include time, e.g thisWeek(false) returns 20241201, thisWeek(true) returns 20241201000000
+         * @param {boolean} hms - Whether to include time (default: true), e.g thisWeek(false) returns 20241201, thisWeek(true) returns 20241201000000
          * @returns Timestamp string in yyyyMMddHHmmss format
          */
         thisWeek: (hms: boolean = true) => {
@@ -466,6 +466,7 @@ const Query = {
 
     /**
      * SiYuan Kernel Request API
+     * @note Kernel request only — NOT arbitrary HTTP. Use Query.gpt for external HTTP(S) fetch.
      * @example
      * await Query.request('/api/outline/getDocOutline', {
      *     id: docId
@@ -1094,6 +1095,7 @@ const Query = {
      * @param options.streamMsg - Callback function for streaming messages, only works when options.stream is true
      * @param options.streamInterval - Interval for calling options.streamMsg on each chunk, default: 1
      * @returns GPT response
+     * @note The only API that sends external HTTP(S) requests via fetch; every other Query API is a SiYuan kernel request.
      */
     gpt: async (input: string | { role: 'user' | 'assistant', content: string }[], options?: {
         url?: string,

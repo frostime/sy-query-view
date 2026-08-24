@@ -29,6 +29,8 @@ Persist state across renders; it will store the state in the block attributes wh
 
 **Returns**: An IState object -- see IState
 
+**Notes**: Changes are written to the block attributes when the view is disposed — not persisted in real time
+
 **Example**
 
 ```ts
@@ -39,7 +41,7 @@ count(1); // Set the value
 count.value = 1; // Set the value, same as count(1)
 ```
 
-**Source** `src/core/data-view.ts:340`
+**Source** `src/core/data-view.ts:341`
 
 ---
 
@@ -56,23 +58,7 @@ Only when you need to add some extra cleanup logic, you should use this method.
 
 - `dispose` — The dispose function
 
-**Source** `src/core/data-view.ts:359`
-
----
-
-## dv.view(ele)
-
-```ts
-view(ele: HTMLElement | string): HTMLElement;
-```
-
-Wrap an element into a view container
-
-**Params**
-
-- `ele` — 
-
-**Source** `src/core/data-view.ts:376`
+**Source** `src/core/data-view.ts:360`
 
 ---
 
@@ -93,7 +79,7 @@ Otherwise, it will be wrapped by a new container
 
 **Returns**: View Conainer, with a special class name, and a `data-id` attribute
 
-**Source** `src/core/data-view.ts:404`
+**Source** `src/core/data-view.ts:406`
 
 ---
 
@@ -112,7 +98,7 @@ Remove the view element (by given the id of the container) from dataview
 
 **Returns**: Whether the removal succeeded
 
-**Source** `src/core/data-view.ts:438`
+**Source** `src/core/data-view.ts:440`
 
 ---
 
@@ -132,7 +118,7 @@ Replace the view element (by given the id of the container) with another given e
 
 **Returns**: 
 
-**Source** `src/core/data-view.ts:465`
+**Source** `src/core/data-view.ts:467`
 
 ---
 
@@ -158,7 +144,7 @@ dv.addmd(`# Hello`);
 
 **Available names** (8, expanded from register()/addAlias() call sites): `Markdown` · `Md` · `addMarkdown` · `addMd` · `addmarkdown` · `addmd` · `markdown` · `md`
 
-**Source** `src/core/data-view.ts:510`
+**Source** `src/core/data-view.ts:512`
 
 ---
 
@@ -187,7 +173,7 @@ dv.adddetails('Summary text', '<p>Body content</p>');
 
 **Available names** (8, expanded from register()/addAlias() call sites): `Detail` · `Details` · `addDetail` · `addDetails` · `adddetail` · `adddetails` · `detail` · `details`
 
-**Source** `src/core/data-view.ts:524`
+**Source** `src/core/data-view.ts:526`
 
 ---
 
@@ -219,7 +205,7 @@ dv.addlist(children, { type: 'o' });
 
 **Available names** (9, expanded from register()/addAlias() call sites): `BlockList` · `List` · `addBlockList` · `addBlocklist` · `addList` · `addblocklist` · `addlist` · `blocklist` · `list`
 
-**Source** `src/core/data-view.ts:547`
+**Source** `src/core/data-view.ts:549`
 
 ---
 
@@ -261,7 +247,7 @@ dv.addtable(children, { cols: ['type', 'content'] , fullwidth: true });
 
 **Available names** (9, expanded from register()/addAlias() call sites): `BlockTable` · `Table` · `addBlockTable` · `addBlocktable` · `addTable` · `addblocktable` · `addtable` · `blocktable` · `table`
 
-**Source** `src/core/data-view.ts:615`
+**Source** `src/core/data-view.ts:617`
 
 ---
 
@@ -292,7 +278,7 @@ dv.cards(children, { cardWidth: '250px', fontSize: '16px' });
 
 **Available names** (8, expanded from register()/addAlias() call sites): `Card` · `Cards` · `addCard` · `addCards` · `addcard` · `addcards` · `card` · `cards`
 
-**Source** `src/core/data-view.ts:651`
+**Source** `src/core/data-view.ts:653`
 
 ---
 
@@ -324,7 +310,7 @@ dv.addcolumns([dv.md('# Hello'), dv.md('# World')], { gap: '10px', flex: [1, 2] 
 
 **Available names** (8, expanded from register()/addAlias() call sites): `Cols` · `Columns` · `addCols` · `addColumns` · `addcols` · `addcolumns` · `cols` · `columns`
 
-**Source** `src/core/data-view.ts:677`
+**Source** `src/core/data-view.ts:679`
 
 ---
 
@@ -348,7 +334,7 @@ Arranges elements in rows
 
 **Available names** (4, expanded from register()/addAlias() call sites): `Rows` · `addRows` · `addrows` · `rows`
 
-**Source** `src/core/data-view.ts:718`
+**Source** `src/core/data-view.ts:720`
 
 ---
 
@@ -368,7 +354,7 @@ Creates a Mermaid diagram from Mermaid code
 
 **Available names** (4, expanded from register()/addAlias() call sites): `Mermaid` · `addMermaid` · `addmermaid` · `mermaid`
 
-**Source** `src/core/data-view.ts:756`
+**Source** `src/core/data-view.ts:758`
 
 ---
 
@@ -401,7 +387,7 @@ dv.addMermaidRelation({ 'Child': children, 'Backlink': backlinks }, { type: 'flo
 
 **Available names** (7, expanded from register()/addAlias() call sites): `MermaidRelation` · `addMermaidRelation` · `addMermaidrelation` · `addmermaidRelation` · `addmermaidrelation` · `mermaidRelation` · `mermaidrelation`
 
-**Source** `src/core/data-view.ts:781`
+**Source** `src/core/data-view.ts:783`
 
 ---
 
@@ -415,7 +401,7 @@ Creates a Mermaid flowchart from block relationships
 
 **Available names** (14, expanded from register()/addAlias() call sites): `MFlowchart` · `MermaidFlowchart` · `addMFlowchart` · `addMermaidFlowchart` · `addMermaidflowchart` · `addMflowchart` · `addmFlowchart` · `addmermaidFlowchart` · `addmermaidflowchart` · `addmflowchart` · `mFlowchart` · `mermaidFlowchart` · `mermaidflowchart` · `mflowchart`
 
-**Source** `src/core/data-view.ts:815`
+**Source** `src/core/data-view.ts:817`
 
 ---
 
@@ -429,7 +415,7 @@ Creates a Mermaid mindmap from block relationships
 
 **Available names** (14, expanded from register()/addAlias() call sites): `MMindmap` · `MermaidMindmap` · `addMMindmap` · `addMermaidMindmap` · `addMermaidmindmap` · `addMmindmap` · `addmMindmap` · `addmermaidMindmap` · `addmermaidmindmap` · `addmmindmap` · `mMindmap` · `mermaidMindmap` · `mermaidmindmap` · `mmindmap`
 
-**Source** `src/core/data-view.ts:826`
+**Source** `src/core/data-view.ts:828`
 
 ---
 
@@ -453,7 +439,7 @@ Creates a Mermaid gantt chart from block relationships
 
 **Available names** (14, expanded from register()/addAlias() call sites): `MKanban` · `MermaidKanban` · `addMKanban` · `addMermaidKanban` · `addMermaidkanban` · `addMkanban` · `addmKanban` · `addmermaidKanban` · `addmermaidkanban` · `addmkanban` · `mKanban` · `mermaidKanban` · `mermaidkanban` · `mkanban`
 
-**Source** `src/core/data-view.ts:842`
+**Source** `src/core/data-view.ts:844`
 
 ---
 
@@ -485,7 +471,7 @@ dv.addembed(children, { limit: 5 });
 
 **Available names** (4, expanded from register()/addAlias() call sites): `Embed` · `addEmbed` · `addembed` · `embed`
 
-**Source** `src/core/data-view.ts:874`
+**Source** `src/core/data-view.ts:876`
 
 ---
 
@@ -509,7 +495,7 @@ Creates a custom ECharts visualization
 
 **Available names** (4, expanded from register()/addAlias() call sites): `Echarts` · `addEcharts` · `addecharts` · `echarts`
 
-**Source** `src/core/data-view.ts:903`
+**Source** `src/core/data-view.ts:905`
 
 ---
 
@@ -539,7 +525,7 @@ Creates a line chart
 
 **Available names** (14, expanded from register()/addAlias() call sites): `ELine` · `EchartsLine` · `addELine` · `addEchartsLine` · `addEchartsline` · `addEline` · `addeLine` · `addechartsLine` · `addechartsline` · `addeline` · `eLine` · `echartsLine` · `echartsline` · `eline`
 
-**Source** `src/core/data-view.ts:941`
+**Source** `src/core/data-view.ts:943`
 
 ---
 
@@ -570,7 +556,7 @@ Creates a bar chart
 
 **Available names** (14, expanded from register()/addAlias() call sites): `EBar` · `EchartsBar` · `addEBar` · `addEbar` · `addEchartsBar` · `addEchartsbar` · `addeBar` · `addebar` · `addechartsBar` · `addechartsbar` · `eBar` · `ebar` · `echartsBar` · `echartsbar`
 
-**Source** `src/core/data-view.ts:1016`
+**Source** `src/core/data-view.ts:1018`
 
 ---
 
@@ -605,7 +591,7 @@ Creates a tree visualization
 
 **Available names** (14, expanded from register()/addAlias() call sites): `ETree` · `EchartsTree` · `addETree` · `addEchartsTree` · `addEchartstree` · `addEtree` · `addeTree` · `addechartsTree` · `addechartstree` · `addetree` · `eTree` · `echartsTree` · `echartstree` · `etree`
 
-**Source** `src/core/data-view.ts:1094`
+**Source** `src/core/data-view.ts:1096`
 
 ---
 
@@ -638,7 +624,7 @@ Creates a graph/network visualization
 
 **Available names** (14, expanded from register()/addAlias() call sites): `EGraph` · `EchartsGraph` · `addEGraph` · `addEchartsGraph` · `addEchartsgraph` · `addEgraph` · `addeGraph` · `addechartsGraph` · `addechartsgraph` · `addegraph` · `eGraph` · `echartsGraph` · `echartsgraph` · `egraph`
 
-**Source** `src/core/data-view.ts:1247`
+**Source** `src/core/data-view.ts:1249`
 
 ---
 
@@ -652,7 +638,7 @@ Renders the DataView and sets up event handlers and cleanup
 
 > ⚠ **Not a pure render**: it persists the embed block (POST /api/search/updateEmbedBlock, content from the block's innerText). Call once at the end of a static view; do not call in loops/hot paths
 
-**Source** `src/core/data-view.ts:1415`
+**Source** `src/core/data-view.ts:1417`
 
 ---
 

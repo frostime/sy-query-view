@@ -53,6 +53,8 @@ request: typeof request
 
 SiYuan Kernel Request API
 
+**Notes**: Kernel request only — NOT arbitrary HTTP. Use Query.gpt for external HTTP(S) fetch.
+
 **Example**
 
 ```ts
@@ -61,7 +63,7 @@ await Query.request('/api/outline/getDocOutline', {
 });
 ```
 
-**Source** `src/core/query.ts:474`
+**Source** `src/core/query.ts:475`
 
 ---
 
@@ -79,9 +81,11 @@ Gets blocks by their IDs
 
 **Returns**: Array of wrapped blocks
 
+**Notes**: This API recieve sequence of block IDs, and always return an array of Block.
+
 **Available names** (3, expanded from register()/addAlias() call sites): `getBlocksByIds` · `getBlockById` · `getBlocksById`
 
-**Source** `src/core/query.ts:483`
+**Source** `src/core/query.ts:484`
 
 ---
 
@@ -101,7 +105,7 @@ Similar to `getBlocksByIds`, but :
 
 **Returns**: Single block or array of blocks
 
-**Source** `src/core/query.ts:496`
+**Source** `src/core/query.ts:497`
 
 ---
 
@@ -121,7 +125,7 @@ Gets the current document's ID
 
 **Available names** (2, expanded from register()/addAlias() call sites): `root_id` · `docId`
 
-**Source** `src/core/query.ts:509`
+**Source** `src/core/query.ts:510`
 
 ---
 
@@ -139,7 +143,7 @@ Gets the current document as a block
 
 **Returns**: Wrapped document block
 
-**Source** `src/core/query.ts:516`
+**Source** `src/core/query.ts:517`
 
 ---
 
@@ -158,7 +162,7 @@ Executes SQL query and optionally wraps results
 
 **Returns**: Query results
 
-**Source** `src/core/query.ts:528`
+**Source** `src/core/query.ts:529`
 
 ---
 
@@ -179,7 +183,7 @@ Finds backlinks to a specific block
 
 **Available names** (2, expanded from register()/addAlias() call sites): `backlink` · `backlinks`
 
-**Source** `src/core/query.ts:543`
+**Source** `src/core/query.ts:544`
 
 ---
 
@@ -202,7 +206,7 @@ Finds blocks with specific attributes
 
 **Returns**: Array of matching blocks
 
-**Source** `src/core/query.ts:561`
+**Source** `src/core/query.ts:562`
 
 ---
 
@@ -233,7 +237,7 @@ Query.tag(['tag1', 'tag2'], { join: 'or' }) // Search for blocks with 'tag1' or 
 Query.tag(['tag1', 'tag2'], { join: 'and' }) // Search for blocks with 'tag1' and 'tag2'
 ```
 
-**Source** `src/core/query.ts:604`
+**Source** `src/core/query.ts:605`
 
 ---
 
@@ -262,7 +266,7 @@ Query.task({ after: '2024101000' })
 Query.task({ limit: 32 })
 ```
 
-**Source** `src/core/query.ts:658`
+**Source** `src/core/query.ts:659`
 
 ---
 
@@ -290,7 +294,7 @@ Query.dailynote({ notebook: '20231224140619-bpyuay4' })
 Query.dailynote({ limit: 32 })
 ```
 
-**Source** `src/core/query.ts:693`
+**Source** `src/core/query.ts:694`
 
 ---
 
@@ -308,7 +312,7 @@ Gets child documents of a block
 
 **Returns**: Array of child document blocks
 
-**Source** `src/core/query.ts:729`
+**Source** `src/core/query.ts:730`
 
 ---
 
@@ -355,7 +359,7 @@ await query.nearby('block123');
 await query.nearby('block123', { direction: 'previous', number: 3 });
 ```
 
-**Source** `src/core/query.ts:778`
+**Source** `src/core/query.ts:779`
 
 ---
 
@@ -377,7 +381,7 @@ Search blocks that contain the given keywords
 
 **Returns**: Array of blocks that contain the given keywords
 
-**Source** `src/core/query.ts:816`
+**Source** `src/core/query.ts:817`
 
 ---
 
@@ -408,7 +412,7 @@ docs[0].keywords['Keywords A'] // get the matched keyword block by using `keywor
 
 > ⚠ `join:'or'` is not a true OR: the SQL stage uses OR, but the post-filter still requires every keyword to match — effectively AND
 
-**Source** `src/core/query.ts:843`
+**Source** `src/core/query.ts:844`
 
 ---
 
@@ -427,7 +431,7 @@ Randomly roam blocks
 
 **Returns**: Array of randomly roamed blocks
 
-**Source** `src/core/query.ts:895`
+**Source** `src/core/query.ts:896`
 
 ---
 
@@ -439,7 +443,7 @@ markdown: (input: BlockId | Block) => Promise<any>
 
 > ⚠ No JSDoc documentation (behavior unverified) — check the source code or official tutorial
 
-**Source** `src/core/query.ts:903`
+**Source** `src/core/query.ts:904`
 
 ---
 
@@ -457,7 +461,7 @@ Return the statistics of the document with given document ID
 
 **Returns**: The statistics of the document; .runeCount - The number of characters in the document; .wordCount - The number of words (Chinese characters are counted as one word) in the document; .linkCount - The number of links in the document; .imageCount - The number of images in the document; .refCount - The number of references in the document; .blockCount - The number of blocks in the document
 
-**Source** `src/core/query.ts:933`
+**Source** `src/core/query.ts:934`
 
 ---
 
@@ -480,7 +484,7 @@ Redirects first block IDs to their parent containers
 
 **Available names** (2, expanded from register()/addAlias() call sites): `fb2p` · `redirect`
 
-**Source** `src/core/query.ts:956`
+**Source** `src/core/query.ts:957`
 
 ---
 
@@ -517,7 +521,7 @@ This function resolves this duplication issue by merging related blocks based on
 
 **Available names** (4, expanded from register()/addAlias() call sites): `pruneBlocks` · `prune` · `mergeBlocks` · `merge`
 
-**Source** `src/core/query.ts:1077`
+**Source** `src/core/query.ts:1078`
 
 ---
 
@@ -544,7 +548,9 @@ Send GPT request, use AI configuration in `siyuan.config.ai.openAI` by default
 
 **Returns**: GPT response
 
-**Source** `src/core/query.ts:1098`
+**Notes**: The only API that sends external HTTP(S) requests via fetch; every other Query API is a SiYuan kernel request.
+
+**Source** `src/core/query.ts:1100`
 
 ---
 
@@ -597,7 +603,7 @@ Gets the timestamp for the start of today
 
 **Params**
 
-- `hms` — Whether to include time, e.g today(false) returns 20241201, today(true) returns 20241201000000
+- `hms` — Whether to include time (default: true), e.g today(false) returns 20241201, today(true) returns 20241201000000
 
 **Returns**: Timestamp string in yyyyMMddHHmmss format
 
@@ -617,7 +623,7 @@ Gets the timestamp for the start of current week
 
 **Params**
 
-- `hms` — Whether to include time, e.g thisWeek(false) returns 20241201, thisWeek(true) returns 20241201000000
+- `hms` — Whether to include time (default: true), e.g thisWeek(false) returns 20241201, thisWeek(true) returns 20241201000000
 
 **Returns**: Timestamp string in yyyyMMddHHmmss format
 

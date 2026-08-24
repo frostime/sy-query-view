@@ -52,7 +52,7 @@ export interface IWrappedBlock extends Block {
 }
 
 /** Wrapped array interface with extended convenient methods */
-export interface IWrappedList<T> extends Array<T> {
+export interface IWrappedList<T = Block> extends Array<T> {
     /** Method to return the original array */
     unwrap(): T[];
 

@@ -96,7 +96,9 @@ current_route:
 
     N5:
       title: 与 SKILL/发布体系集成
-      desc: 2.0 以新机制替换 v1.3 手工 agent-ref 的落地方案（打包/分发/文档站配合）。
+      desc: 2.0 以新机制替换 v1.3 手工 agent-ref 的落地方案（打包/分发/文档站配合）；
+        含 SKILL 修正（I-73：minAppVersion 表述与新参考格式匹配）——用户指示作为
+        N5 内工作项，不提前处理。
       state: waiting
       deps: [N4]
 
@@ -123,6 +125,11 @@ current_route:
       title: 第 2 层 — 长期对齐规范（AGENTS.md / SKILL）
       condition: 第 1 层结项后，由用户评估是否启动（对应 I-80）
       state: candidate
+    - id: C-3
+      title: deprecated 参数处置（I-79，用户单独决策）
+      condition: 用户决定保留 or 2.0 清理 optionDeprecatedAsValMatch 等参数后激活
+      state: candidate
+      note: 2026-08-24 用户指示：单独作为节点，不做进 N6 本批
   unresolved_areas:
     - 2.0 全新 API 骨架/新增 API 设计 —— 用户明确排除，若日后提出草图再激活候选节点
     - 与文档站教程/参考分层的配合细节 —— v1.3 已建立渐进披露结构，N2/N5 吸收

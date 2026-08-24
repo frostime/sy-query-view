@@ -13,7 +13,7 @@ interface ICustomView {
      * Use the custom view
      * @param dv - DataView instance, might be empty while validating process
      */
-    use: (dv?: IDataView) => {
+    use: (dv?: any) => {// dv is a DataView instance at runtime
         render: (container: HTMLElement, ...args: any[]) => void | string | HTMLElement; //Create the user custom view.
         dispose?: () => void;  // Unmount hook for the user custom view.
     },

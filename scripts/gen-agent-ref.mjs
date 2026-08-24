@@ -53,7 +53,7 @@ function extractDoc(compilerNode) {
   const jsdoc = units.find(ts.isJSDoc);
   if (!jsdoc) return null;
   const desc = commentToText(jsdoc.comment);
-  const params = [], examples = [], returns = [], aliases = [];
+  const params = [], examples = [], returns = [], aliases = [], notes = [];
   for (const tag of jsdoc.tags ?? []) {
     const c = commentToText(tag.comment).replace(/^-\s*/, ""); // 剥风格化前导 "- "
     switch (tag.tagName.text) {
@@ -61,9 +61,10 @@ function extractDoc(compilerNode) {
       case "example": examples.push(c); break;
       case "returns": returns.push(c); break;
       case "alias": aliases.push(c); break;
+      case "note": notes.push(c); break;
     }
   }
-  return { desc, params, examples, returns, aliases, hasDoc: true };
+  return { desc, params, examples, returns, aliases, notes, hasDoc: true };
 }
 
 /** 短签名：名字 + 参数名列表（永不做字符串切割） */
@@ -92,6 +93,7 @@ function renderSection({ heading, fullSig, doc, aliases, source, notes, noDoc, l
       s += doc.params.map(p => `- \`${p.name}\` — ${p.comment.replace(/\n/g, "\n  ")}`).join("\n") + "\n\n";
     }
     if (doc.returns.length) s += "**Returns**: " + doc.returns.join("; ") + "\n\n";
+    if (doc.notes.length) s += "**Notes**: " + doc.notes.join("; ") + "\n\n";
     if (doc.examples.length) {
       s += "**Example**\n\n```ts\n" + doc.examples.join("\n\n") + "\n```\n\n";
     }
