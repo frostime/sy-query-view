@@ -70,19 +70,21 @@ current_route:
       deps: []
 
     N2:
-      title: 生成格式与文档结构设计
-      desc: 每节结构（签名+要点+最小示例）、分模块划分、grep 定位性、与 SKILL
-        渐进披露配合。受 N1 提取能力边界约束。
-      state: waiting
+      title: 生成格式与文档结构设计（已实现，待用户整体审阅）
+      desc: 模板已固化（I-20/I-21 done）：短签名标题 + ts block 完整签名 +
+        Params/Returns/Example/Source + ⚠ 注入 + 多行参数续行缩进；四模块划分
+        （query-api/dataview/wrapped-list/types.md）。commit 4f6d29a/c080ea2。
+      state: done
       deps: [N1]
 
     N3:
-      title: 生成器机制：动态 API 与注释提取规则
+      title: 生成器机制：动态 API 与注释提取规则（机制已实现）
       desc: >
-        DataView.register 的 addxxx 别名/动态成员如何进入参考（已实现于
-        gen-agent-ref.mjs，I-30）；JSDoc 提取规则与面向 agent 注释约定的
-        设计（I-31）——仅设计约定，**落实到源码的扫注释动作归 N6**。
-      state: waiting
+        register/addAlias 调用点别名展开已实现（I-30 done，commit 4f6d29a）；
+        JSDoc 提取规则已定（TS 官方 API，纯搬运）。注释约定（I-31）为草案
+        机制（KNOWN_NOTES 注入口），正式 [agent] tag 结构待 N6 落地时定稿——
+        落实注释动作归 N6。
+      state: done
       deps: [N1]
 
     N4:
