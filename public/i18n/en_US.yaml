@@ -62,16 +62,15 @@ src_userhelp_indexts:
 src_docsite_indexts:
   tab_title: Query & View Docs
   nav_index: Home
-  nav_group_quickstart: Quick Start
-  nav_group_examples: Examples
-  nav_group_topics: Query / DataView Topics
+  nav_group_tutorials: Tutorials
+  nav_group_reference: Reference
   nav_quickstart_concepts: Basic Concepts
   nav_quickstart_template: Start from the Template
-  nav_examples: Examples
   nav_topic_query: Query API
   nav_topic_dataview: DataView Views
   nav_topic_dataview_advanced: DataView Advanced Features
   nav_topic_editor_tips: External Editor & Tips
+  nav_examples: Examples
   nav_api_reference: API Reference
   nav_skill: Agent Skill
   copy: Copy

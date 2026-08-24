@@ -50,16 +50,15 @@ src_userhelp_indexts:
 src_docsite_indexts:
   tab_title: Query&View 文档站
   nav_index: 首页
-  nav_group_quickstart: 快速开始
-  nav_group_examples: 案例
-  nav_group_topics: Query / DataView 主题
+  nav_group_tutorials: 教程
+  nav_group_reference: 参考
   nav_quickstart_concepts: 基本概念
   nav_quickstart_template: 从模板开始
-  nav_examples: 案例总览
   nav_topic_query: Query 查询
   nav_topic_dataview: DataView 视图
   nav_topic_dataview_advanced: DataView 高级特性
   nav_topic_editor_tips: 外部编辑器与调试
+  nav_examples: 案例总览
   nav_api_reference: API 参考
   nav_skill: 智能体技能
   copy: 复制

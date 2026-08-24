@@ -81,7 +81,8 @@ export default defineConfig({
                             }
                         }
                     },
-                    replaceMDImgUrl(outputDir)
+                    replaceMDImgUrl(outputDir),
+                    copySkillReferences(outputDir)
                 ] : [
                     // Clean up unnecessary files under dist dir
                     cleanupDistFiles({
@@ -89,6 +90,7 @@ export default defineConfig({
                         distDir: outputDir
                     }),
                     replaceMDImgUrl(outputDir),
+                    copySkillReferences(outputDir),
                     zipPack({
                         inDir: './dist',
                         outDir: './',
@@ -168,6 +170,30 @@ function cleanupDistFiles(options: { patterns: string[], distDir: string }) {
     };
 }
 
+
+function copySkillReferences(dirname: string) {
+    return {
+        name: 'rollup-plugin-copy-skill-references',
+        enforce: 'post',
+        writeBundle: {
+            sequential: true,
+            order: 'post' as 'post',
+            async handler() {
+                const fs = await import('fs');
+                const path = await import('path');
+                // 真相源：docs/en_US/agent-ref（文档站体系的一部分）；
+                // 产物：技能包内 references/（SDK 整目录同步，SKILL 自包含）
+                const srcDir = path.resolve(__dirname, 'docs/en_US/agent-ref');
+                const destDir = path.join(dirname, 'skills/sy-query-view/references');
+                fs.mkdirSync(destDir, { recursive: true });
+                for (const f of ['query-api.md', 'dataview.md']) {
+                    fs.copyFileSync(path.join(srcDir, f), path.join(destDir, f));
+                    console.log(`[skill-refs] copied ${f}`);
+                }
+            }
+        }
+    };
+}
 
 function replaceMDImgUrl(dirname: string) {
     return {

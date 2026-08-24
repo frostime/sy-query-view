@@ -1,204 +1,216 @@
 ---
 name: sy-query-view
 description: >-
-  Help write, understand, and verify Query&View (sy-query-view) JavaScript
-  embedded blocks for SiYuan: SQL and wrapped queries through the Query API,
-  DataView rendering, and adapting the plugin's shipped examples. Use when the
-  user asks for help with Query&View code, Query View, JS embedded blocks, or
-  the qv-basic template.
+  Write, adapt, and hand over JavaScript embedded blocks for the Query&View
+  (sy-query-view) SiYuan plugin: `//!js` blocks using the Query API for
+  queries and DataView for rendering. Use when the user asks for help writing
+  Query&View code, JS embedded blocks, Query View, or Dataview-style queries
+  in SiYuan.
 ---
 
 # Query&View Code Assistant
 
-## 1. Purpose and scope
+## 0. Prerequisites — check before writing any code
 
-This skill helps the user write, understand, and verify **Query&View** JavaScript
-embedded blocks in SiYuan. Query&View is a SiYuan plugin that extends JS
-embedded blocks with a `Query` API and a `DataView` renderer.
+All of the following must hold before you write or adapt Query&View code. If
+any is missing, tell the user what to enable/install and stop:
 
-In scope:
+1. **The sy-query-view plugin is enabled.** Otherwise the `Query` API and
+   DataView do not exist in the embedded block environment.
+2. **Your agent toolset includes file reading tools** (`file.read`, and
+   `file.list` if available). The skill is self-contained: its reference
+   files ship **inside the skill package** (`references/` next to this
+   SKILL.md) and are installed together with it. Without these tools you
+   cannot read the references and must ask the user to open the docs site
+   instead.
+3. **SiYuan 3.8.0 or newer** (the plugin's own minimum version requirement
+   will guarantee this; if the user runs an older version, top-level `await`
+   — used in every example below — is unavailable. Ask them to upgrade, or,
+   with explicit user consent, fall back to the legacy style: wrap the code
+   in `const query = async () => { ... }; return query();`).
 
-- Writing and adapting `//!js` embedded block code (queries and DataView views).
-- Explaining the Query API, DataView, and the wrapped block/list types.
-- Adapting the plugin's shipped examples instead of inventing code.
+## 1. What Query&View is (30 seconds)
 
-Out of scope — do not claim or attempt:
+The plugin extends SiYuan JS embedded blocks. A block whose content starts
+with `//!js` is executed as JavaScript and receives three variables:
+`protyle`, `item`, `top`. The plugin injects a global `Query` API for queries
+(SQL / keyword / backlink / task ...) and a `DataView` renderer for custom
+views. There are exactly two output modes:
 
-- Installing, enabling, or invoking this skill or the plugin.
-- Writing into the user's notes (creating/updating help notes or any other
-  blocks) on your own initiative.
-- Using files under a `references/` directory: **no `references/` material is
-  assumed to be readable** in this version. Everything needed is inline here.
+- **Return mode**: `return` a list of block IDs (`BlockID[]`); SiYuan renders
+  those blocks in place. This is just a "better SQL" — for when plain block
+  rendering is enough.
+- **DataView mode**: build views with `Query.DataView(protyle, item, top)`
+  and finish with `dv.render()`; do **not** return IDs.
 
-## 2. How a Query&View embedded block works
+## 2. How to write a Query&View block
 
-Grounded facts (sources: `public/example/basic-template.js`, `public/types.d.ts`):
+### 2.1 The code (draft form — readable, multi-line)
 
-- An embedded block whose content starts with `//!js` is executed as JavaScript
-  by SiYuan.
-- The code receives three variables: `protyle` (the document's Protyle object),
-  `item` (the embedded block's HTML element), and `top` (an opaque marker;
-  usually ignore it).
-- Async code must be wrapped in an `async` function and invoked, e.g.
-  `return query();`.
-- Two output modes:
-  1. **Return block IDs**: return a `BlockID[]` (e.g. `blocks.pick('id')`);
-     SiYuan renders those blocks into the embedded block.
-  2. **Render with DataView**: create `Query.DataView(protyle, item, top)`,
-     add views with `dv.addlist(...)` / `dv.addtable(...)` / `dv.addmd(...)`,
-     and finish with `dv.render()` — do **not** return IDs in this mode.
-
-## 3. Working workflow
-
-1. **Clarify the goal**: what data does the user want (SQL query, backlinks,
-   tags, tasks, documents...), and how should it be displayed (plain block
-   list, DataView list/table/markdown, chart)?
-2. **Start from the minimal template or a close example**: never write from
-   scratch when a shipped example already matches. The minimal template is
-   inline in section 4; shipped examples are listed in section 6.
-3. **Verify API details before writing**: if you can read the plugin's shipped
-   `public/types.d.ts` (or the docs site's API reference), use it for exact
-   signatures and exact names. Prefer `Query.sql`, `Query.backlink`,
-   `Query.tag`, `Query.task`... over raw `request()` calls.
-4. **Produce a single copy-pasteable `//!js` block**, matching the user's
-   language of choice only in comments — identifiers and API names stay exact.
-5. **Explain how to verify and iterate** (section 7), and let the user paste
-   and run the block themselves.
-
-## 4. Minimal skeleton
-
-Based on `public/example/basic-template.js` (the authoritative template also
-inserted by the `/qv` slash menu):
+Always start from this minimal skeleton and adapt it:
 
 ```js
 //!js
-const query = async () => {
-    //To use DataView, uncomment the following line
-    //let dv = Query.DataView(protyle, item, top);
-
-    const SQL = `
-        select * from blocks
-        order by random()
-        limit 5;
-    `;
-    let blocks = await Query.sql(SQL);
-
-    return blocks.pick('id');
-    //To use DataView, comment out the above return and uncomment the following two lines
-    //dv.addlist(blocks);
-    //dv.render();
-}
-
-return query();
+let dv = Query.DataView(protyle, item, top);  // delete this line in return mode
+let blocks = await Query.sql(`select * from blocks order by random() limit 5`);
+dv.addlist(blocks);  // or addtable / addmd — see §3.2 below
+dv.render();         // delete this line in return mode
 ```
 
-To render a DataView instead: comment out `return blocks.pick('id');`,
-uncomment the DataView lines, and end with `dv.render();`.
+In **return mode** the skeleton is:
 
-## 5. Core API facts (exact names from `public/types.d.ts`)
+```js
+//!js
+let blocks = await Query.sql(`select * from blocks order by random() limit 5`);
+return blocks.pick('id');
+```
 
-**Query object** (async methods return Promises; `Query.DataView` and
-`Query.Utils` are sync — return types vary per method, check the type
-declaration for exact signatures):
+Rules that are not optional:
 
-- `Query.sql(sqlString, wrap?)` — run a SiYuan SQL query; returns
-  `Promise<IWrappedList<IWrappedBlock>>` (the common wrapped-list result).
-- Wrapped queries that also return `Promise<IWrappedList<IWrappedBlock>>`:
-  `Query.backlink(id, limit?)`, `Query.tag(tags, options?)`,
-  `Query.task(options?)`, `Query.random(limit?, type?)`,
-  `Query.dailynote(options?)`, `Query.keyword(words, options?)`.
-- Other return shapes: `Query.childDoc(b)` → `Promise<Block[]>`;
-  `Query.keywordDoc(words, options?)` → `Promise<Block[]>` (documents that
-  contain all the given keywords, with a `keywords` property per document);
-  `Query.markdown(input)` → `Promise<any>` (the block's markdown content; the
-  declaration does not pin a more specific type); `Query.thisDoc(protyle)` →
-  `Promise<IWrappedBlock>` (the current document).
-- Utilities: `Query.Utils.today()`, `Query.Utils.thisMonth()`, `Query.Utils.now()`
-  (all sync; more under `Utils`). `Query.request(url, data)` is the raw kernel
-  API — prefer the wrapped functions.
-- `Query.DataView(protyle, item, top)` — create a renderer (see below); this
-  call is sync and returns a `DataView`.
-- `Query.pruneBlocks(blocks, keep?, advanced?)` — merge parent/child block
-  duplicates from keyword search results; returns `Promise<Block[]>`.
-- `Query.fb2p(inputs, enable?)` — redirect container-block references; returns
-  `Promise<Block[]>` (runtime alias `Query.redirect`).
+- Code **always** starts with `//!js` as the first line.
+- The three inputs `protyle`, `item`, `top` are always available; never
+  invent or redefine them.
+- Top-level `await` is fine (3.8.0+). Never wrap code in
+  `const query = async () => { ... }; return query();` unless explicitly
+  asked to target pre-3.8.0.
+- Do not use HTML entities: `=>` is `=>`, not `=&gt;`.
 
-**DataView instance** (`dv`):
+### 2.2 The delivery form — two cases
 
-- `dv.addlist(children, options?)` / `dv.addtable(children, { cols, ... })` /
-  `dv.addmd(markdown)` — basic views.
-- `dv.cards(blocks, options?)` — card view.
-- `dv.useState(key, initialValue?)` — persist state across renders.
-- `dv.addElement(el, disposer?)`, `dv.removeView(id, beforeRemove?)`,
-  `dv.replaceView(id, viewContainer, disposer?)`, `dv.addDisposer(fn, id?)`,
-  `dv.repaint()`, `dv.render()`.
+**Case A (default): the user pastes the code themselves.** Deliver readable
+multi-line code as in §2.1. The user copies it into an embedded block in
+their own document. Nothing else is needed.
 
-**Wrapped blocks/lists**:
+**Case B (only when the user asks you to write into their SiYuan notes
+yourself, e.g. editing a document via file tools):** SiYuan embedded block
+syntax is a single `{{...}}` line — newlines are not allowed and must be
+escaped as `_esc_newline_`. Produce the escaped single-line form:
 
-- `IWrappedBlock` adds conveniences over a `Block`, e.g. `b.aslink`
-  (SiYuan link), `b.asurl`, `b.asref`.
-- `IWrappedList` is an array of wrapped blocks with `list.pick('id')` (extract
-  attributes into a new list) and `list.asMap(key)`.
+````
+{{//!js_esc_newline_let dv = Query.DataView(protyle, item, top);_esc_newline_let blocks = await Query.sql(`_esc_newline_    select * from blocks order by random() limit 5;_esc_newline_`);_esc_newline_dv.addlist(blocks);_esc_newline_dv.render();}}
+````
 
-**Names: canonical, aliases, unsupported** (grounded in the plugin source
-`src/core/query.ts` alias registration and `src/core/data-view.ts`):
+Mapping rule (explain it when the user will maintain the block by hand):
+each newline of the natural code becomes `_esc_newline_`, then the whole
+block is wrapped in `{{...}}` as one line. If you are writing the block into
+note content yourself, always use Case B form — multi-line `{{...}}` does not
+parse.
 
-- Prefer the canonical names from the type declaration: `Query.DataView`,
-  `Query.Utils`, `Query.pruneBlocks`, `Query.fb2p`, `dv.removeView`,
-  `dv.replaceView`, `dv.cards`, `dv.repaint`.
-- The runtime registers these as **supported aliases** (some older shipped
-  examples use them; new code should prefer the canonical spellings):
-  `Query.Dataview` (= `Query.DataView`), `Query.utils` (= `Query.Utils`),
-  `Query.prune` (= `Query.pruneBlocks`), `Query.redirect` (= `Query.fb2p`),
-  and the lowercase `dv.removeview` / `dv.replaceview` (most Query members also
-  get lowercase aliases at runtime).
-- The `add*` view conveniences (`dv.addlist`, `dv.addtable`, `dv.addmd`) are
-  runtime-registered; the type declaration declares the underlying methods as
-  `dv.list`, `dv.table`, `dv.markdown` (`dv.md` is an alias).
-- `Query.fb` is **not registered or documented**: it does not work. If you see
-  it in old code, use the canonical `Query.fb2p` (runtime alias
-  `Query.redirect`).
+## 3. What to put inside the block
 
-## 6. Adapting shipped examples
+### 3.1 Queries
 
-The plugin ships runnable examples in `public/example/exp-*.js`. Prefer the
-closest one and adapt it. Useful starting points (grounded in the shipped
-files):
+Match the user's intent to an API, then verify the exact signature in
+`references/query-api.md` before writing:
 
-- `exp-doc-backlinks-table.js` — backlinks of the current document in a table
-  (`Query.backlink` + `dv.addtable`).
-- `exp-sql-executor.js` — interactive SQL input executed with `Query.sql`.
-- `exp-list-tags.js` — tags in a card view.
-- `exp-month-todo.js` — unfinished TODOs with `Query.task`.
-- `exp-today-updated.js` — documents updated today, with `dv.useState`.
-- `exp-created-docs.js` — a line chart of documents created per month.
-- `exp-gpt-chat.js` — a simple GPT chat (uses `Query.gpt`).
+| Intent (example) | API to use |
+|---|---|
+| arbitrary SQL | `Query.sql(sql)` |
+| backlinks of a document | `Query.backlink(protyle.block.rootID)` |
+| keyword search | `Query.keyword(words)` + `Query.pruneBlocks` |
+| tasks / TODO | `Query.task(options)` |
+| random blocks | `Query.random(limit)` |
+| today's updated docs | `Query.sql` with `Query.Utils.today()` |
 
-When adapting: keep the query/rendering structure, change only what the goal
-requires, and keep exact API names from section 5.
+These are calibration examples, not an exhaustive map — for any other intent
+scan `query-api.md` (it groups all Query members with signature, return
+shape, and aliases). Prefer wrapped Query APIs over raw kernel calls.
 
-## 7. Verification and iteration
+### 3.2 Rendering
 
-- The user pastes the `//!js` block into an embedded block and runs it; the
-  block renders the result or shows nothing if it fails.
-- Check the SiYuan console for errors (note: errors inside the `Function`
-  wrapper may not surface as normal exceptions — ask the user to look at the
-  console).
-- Suggest a minimal change per iteration; never silently rewrite a whole block.
-- For exact signatures, point the user to the docs site's "API Reference" page
-  or the shipped `public/types.d.ts`.
+- Plain block list / table / markdown: `dv.addlist`, `dv.addtable`,
+  `dv.addmd` — the workhorses; see `references/dataview.md` for options.
+- Also fine (fully encapsulated, pass data or an option object, they build
+  the DOM for you): `dv.cards`, `dv.details`, `dv.embed`, `dv.mermaid` and
+  the `dv.echarts` family.
+- Advanced, dynamic machinery — **do not write by default**; mention that it
+  exists and, if the user insists, point them to the docs site topic
+  `docs/en_US/topics/dataview-advanced.md`: `dv.addElement` (raw DOM),
+  `dv.columns`/`dv.rows` (you must build the elements yourself),
+  `dv.removeView`/`dv.replaceView`, and custom view registration
+  (`dv.xxx()` / `dv.addxxx()`).
+- **`dv.useState` — do not write, period.** It persists state across renders
+  by writing into block attributes; written imperfectly it triggers
+  hard-to-debug bugs and its side effects are hard for you to verify. Write
+  it only if the user is confident and explicitly asks for it — then follow
+  `references/dataview.md` and the advanced topic exactly.
 
-## 8. Safety boundaries
+Also in `references/dataview.md`: `dv.cards` options, `dv.useState` reference
+(if ever needed), and the full component option tables.
 
-- **Never modify existing user blocks or notes without explicit permission.**
-  The user pastes and runs code themselves; this skill only produces code and
-  explanations.
-- **Ask first** when the request involves: writing/updating/deleting note
-  content, external network calls (e.g. GPT or arbitrary HTTP APIs), unknown
-  or undocumented SiYuan APIs, or anything destructive (e.g. batch updates).
-- Do not fabricate API names or behaviors: every API mentioned above is
-  grounded in the shipped type declaration, template, or examples. If a needed
-  API is not in section 5 and you cannot read the type declaration, say so
-  instead of guessing.
-- This skill is guidance only: it does not install itself, does not load the
-  documentation site, and makes no promise about how SiYuan loads skill files.
+## 4. Workflow
+
+1. **Clarify**: what data, and how should it be displayed (plain blocks,
+   list/table/markdown, chart)?
+2. **Reuse before writing**: check `docs/en_US/examples/index.md` in the
+   plugin folder (or use `file.list` on it) for a shipped `exp-*.js` that is
+   close to the goal; adapt the closest one rather than starting from
+   scratch.
+3. **Verify API details** in `references/query-api.md` /
+   `references/dataview.md` before writing. The reference files are long — **when the
+   target is specific (one API, one component), locate it first with grep,
+   then read only the matched section** (a few lines) instead of the whole
+   file. If a signature is still ambiguous, grep the exact symbol in
+   `public/types.d.ts` of the plugin folder — never read the whole file.
+4. **Produce one copy-pasteable block** in the delivery form of §2.2,
+   matching the user's language only in comments.
+5. **Hand over for verification**: the user pastes and runs it; tell them to
+   watch the SiYuan console for errors (embed errors may not surface as
+   normal exceptions). Iterate with minimal changes.
+
+## 5. Safety boundaries
+
+- Never modify the user's notes or blocks without an explicit request
+  (Case B of §2.2 is the only exception, and only on explicit request).
+- Ask first when the request involves: external network calls (e.g. GPT or
+  arbitrary HTTP via `Query.request`), destructive operations (mass deletes),
+  or undocumented APIs.
+- Never fabricate API names or behaviors. Everything above is grounded in
+  `types.d.ts`, the shipped examples, and the reference files. If you need a
+  name that is not in `references/query-api.md` and you cannot read the type
+  declaration, say so instead of guessing.
+- This skill does not install, enable, or invoke the plugin, and it makes no
+  promise about how SiYuan loads skill files.
+
+## 6. Reference file map (read on demand)
+
+**Level 1 — bundled with this skill** (installed together with SKILL.md;
+paths below are relative to the skill root):
+
+| When | Read |
+|---|---|
+| verifying a Query signature | `references/query-api.md` |
+| choosing a component / its options | `references/dataview.md` |
+
+**Level 2 — plugin folder** (paths relative to the plugin root, e.g.
+`data/plugins/sy-query-view/...`; only when level 1 is insufficient):
+
+| When | Read |
+|---|---|
+| finding an example to adapt | `docs/en_US/examples/index.md` (you may `file.list` the folder) |
+| richer explanations of a specific API/component (verbose, user-oriented) | `docs/en_US/topics/query.md` / `docs/en_US/topics/dataview.md` |
+| user insists on useState / custom views / raw DOM / lifecycle | `docs/en_US/topics/dataview-advanced.md` |
+| exact type of one symbol | grep `types.d.ts` |
+
+**Fallbacks** (in order):
+
+1. If you still cannot understand the internal mechanism of a feature, read
+   the plugin's shipped `index.js` (compiled plugin code; minified in
+   release builds) and trace the logic directly. Expensive — last resort
+   only; the normal path is level 1 → level 2.
+2. If you have web access, the project is open source at
+   <https://github.com/frostime/sy-query-view> — view the docs, examples,
+   and the uncompiled source under `src/` there. Same content, easier to
+   read than the compiled bundle.
+
+If `file.read` fails on a level-2 path, the plugin may be a version where
+that file does not exist: tell the user the reference is unavailable and
+point them to the plugin's in-built docs site ("Help" in the plugin menu)
+or the GitHub repository instead.
+
+**Reading strategy**: all reference files above are intentionally compact,
+but still too long to read end-to-end when you only need one API. When the
+goal is specific, `grep` or filter the file for the exact member name
+(e.g. `Query.childDoc`, `state`, `addechartsBar`) and read only the matched
+section. Read a file fully only when the task is genuinely open-ended
+(choosing among many components).

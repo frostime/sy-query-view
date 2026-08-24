@@ -20,6 +20,7 @@ import * as Setting from "./setting";
 import * as UserHelp from "./user-help";
 import { confirmDialog, siyuanVersion } from "@frostime/siyuan-plugin-kits";
 import { simpleDialog } from "./libs/dialog";
+import { createSiYuanSkillRuntime } from "./libs/siyuan-skill.skd";
 
 let i18n: I18n;
 let app: App;
@@ -116,6 +117,14 @@ export default class QueryViewPlugin extends Plugin {
         Setting.load(this);
         DataQuery.load(this);
         UserHelp.load(this);
+
+        // 注册插件自带的 Agent Skill（skills/ 目录随插件包分发）
+        const skills = createSiYuanSkillRuntime({ pluginName: this.name });
+        const skill = await skills.registerPluginSkill("skills/sy-query-view");
+        // 注意：项目 tsconfig 为 strict:false，`ok` 判别无法窄化，改用 `action` 存在性判别
+        if (!("action" in skill)) {
+            console.warn(`[sy-query-view] skill register failed: ${skill.code} ${skill.error ?? ""}`);
+        }
     }
 
     async onunload() {

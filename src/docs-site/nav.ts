@@ -25,16 +25,15 @@ export type PageId =
  */
 export type NavLabelKey =
     | "nav_index"
-    | "nav_group_quickstart"
-    | "nav_group_examples"
-    | "nav_group_topics"
+    | "nav_group_tutorials"
+    | "nav_group_reference"
     | "nav_quickstart_concepts"
     | "nav_quickstart_template"
-    | "nav_examples"
     | "nav_topic_query"
     | "nav_topic_dataview"
     | "nav_topic_dataview_advanced"
     | "nav_topic_editor_tips"
+    | "nav_examples"
     | "nav_api_reference"
     | "nav_skill";
 
@@ -59,31 +58,25 @@ export const PAGE_TREE: NavNode[] = [
     { kind: "item", id: "index", path: "index.md", labelKey: "nav_index" },
     {
         kind: "group",
-        labelKey: "nav_group_quickstart",
+        labelKey: "nav_group_tutorials",
         children: [
             { kind: "item", id: "quickstart-concepts", path: "quickstart/concepts.md", labelKey: "nav_quickstart_concepts" },
             { kind: "item", id: "quickstart-template", path: "quickstart/template.md", labelKey: "nav_quickstart_template" },
-        ],
-    },
-    {
-        kind: "group",
-        labelKey: "nav_group_examples",
-        children: [
+            { kind: "item", id: "topic-query", path: "topics/query.md", labelKey: "nav_topic_query" },
+            { kind: "item", id: "topic-dataview", path: "topics/dataview.md", labelKey: "nav_topic_dataview" },
+            { kind: "item", id: "topic-dataview-advanced", path: "topics/dataview-advanced.md", labelKey: "nav_topic_dataview_advanced" },
+            { kind: "item", id: "topic-editor-tips", path: "topics/editor-tips.md", labelKey: "nav_topic_editor_tips" },
             { kind: "item", id: "examples", path: "examples/index.md", labelKey: "nav_examples" },
         ],
     },
     {
         kind: "group",
-        labelKey: "nav_group_topics",
+        labelKey: "nav_group_reference",
         children: [
-            { kind: "item", id: "topic-query", path: "topics/query.md", labelKey: "nav_topic_query" },
-            { kind: "item", id: "topic-dataview", path: "topics/dataview.md", labelKey: "nav_topic_dataview" },
-            { kind: "item", id: "topic-dataview-advanced", path: "topics/dataview-advanced.md", labelKey: "nav_topic_dataview_advanced" },
-            { kind: "item", id: "topic-editor-tips", path: "topics/editor-tips.md", labelKey: "nav_topic_editor_tips" },
+            { kind: "item", id: "api-reference", path: "api/reference.md", labelKey: "nav_api_reference" },
+            { kind: "item", id: "skill", path: "skill/index.md", labelKey: "nav_skill" },
         ],
     },
-    { kind: "item", id: "api-reference", path: "api/reference.md", labelKey: "nav_api_reference" },
-    { kind: "item", id: "skill", path: "skill/index.md", labelKey: "nav_skill" },
 ];
 
 /** 页面相对 docs/{lang}/ 的路径，如 "topics/query.md"。 */

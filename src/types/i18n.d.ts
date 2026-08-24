@@ -26,16 +26,15 @@ interface I18n {
     src_docsite_indexts: {
         tab_title: string;
         nav_index: string;
-        nav_group_quickstart: string;
-        nav_group_examples: string;
-        nav_group_topics: string;
+        nav_group_tutorials: string;
+        nav_group_reference: string;
         nav_quickstart_concepts: string;
         nav_quickstart_template: string;
-        nav_examples: string;
         nav_topic_query: string;
         nav_topic_dataview: string;
         nav_topic_dataview_advanced: string;
         nav_topic_editor_tips: string;
+        nav_examples: string;
         nav_api_reference: string;
         nav_skill: string;
         copy: string;

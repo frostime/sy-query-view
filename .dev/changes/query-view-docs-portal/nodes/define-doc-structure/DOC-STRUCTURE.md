@@ -48,32 +48,31 @@ docs/
 | # | 页面 ID | 文件路径 | 侧边栏位置 | 页面目的 |
 |---|---|---|---|---|
 | 1 | `index` | `index.md` | 第 1 项（首页） | 功能速览 + 两条任务路径（见 §2）；说明文档站是什么、旧帮助笔记不再更新 |
-| 2 | `quickstart-concepts` | `quickstart/concepts.md` | 快速开始 ① | 基本概念：JS 嵌入块、执行环境、`protyle/item/top` 变量 |
-| 3 | `quickstart-template` | `quickstart/template.md` | 快速开始 ② | “从模板开始”完整路径：复制模板 → 插入嵌入块 → 运行 → 改造 |
-| 4 | `examples` | `examples/index.md` | 案例 | 案例总览：机器可读元数据表（§7）+ 19 个案例小节（锚点 `#exp-<文件名>`） |
-| 5 | `topic-query` | `topics/query.md` | 主题 ① | Query API：SQL 查询、WrappedList/WrappedBlock、Query.Utils、fb2p、pruneBlocks |
-| 6 | `topic-dataview` | `topics/dataview.md` | 主题 ② | DataView 基础（list/Table/md）与全部视图组件（cards/embed/mermaid/echarts/columns/details/addElement/addDisposer/removeView/replaceView） |
-| 7 | `topic-dataview-advanced` | `topics/dataview-advanced.md` | 主题 ③ | 自定义视图组件、useState、生命周期、只读建议 |
-| 8 | `topic-editor-tips` | `topics/editor-tips.md` | 主题 ④ | 外部编辑器编辑、调试、配合思源模板、常见问题 |
-| 9 | `api-reference` | `api/reference.md` | API 参考 | API 可读导览 + 打开/下载 `types.d.ts` 的按钮（docs-only）；精确签名以类型声明为准 |
-| 10 | `skill` | `skill/index.md` | 智能体技能 | 占位页：说明技能是什么、何时可用；未来内容 = 核心 SKILL.md 的同一份内容（本节点不写） |
+| 2 | `quickstart-concepts` | `quickstart/concepts.md` | 教程 ① | 基本概念：JS 嵌入块、执行环境、`protyle/item/top` 变量 |
+| 3 | `quickstart-template` | `quickstart/template.md` | 教程 ② | “从模板开始”完整路径：复制模板 → 插入嵌入块 → 运行 → 改造 |
+| 4 | `topic-query` | `topics/query.md` | 教程 ③ | Query API：SQL 查询、WrappedList/WrappedBlock、Query.Utils、fb2p、pruneBlocks |
+| 5 | `topic-dataview` | `topics/dataview.md` | 教程 ④ | DataView 基础（list/Table/md）与全部视图组件（cards/embed/mermaid/echarts/columns/details/addElement/addDisposer/removeView/replaceView） |
+| 6 | `topic-dataview-advanced` | `topics/dataview-advanced.md` | 教程 ⑤ | 自定义视图组件、useState、生命周期、只读建议 |
+| 7 | `topic-editor-tips` | `topics/editor-tips.md` | 教程 ⑥ | 外部编辑器编辑、调试、配合思源模板、常见问题 |
+| 8 | `examples` | `examples/index.md` | 教程 ⑦ | 案例总览：机器可读元数据表（§7）+ 19 个案例小节（锚点 `#exp-<文件名>`） |
+| 9 | `api-reference` | `api/reference.md` | 参考 ① | API 可读导览 + 打开/下载 `types.d.ts` 的按钮（docs-only）；精确签名以类型声明为准 |
+| 10 | `skill` | `skill/index.md` | 参考 ② | 占位页：说明技能是什么、何时可用；未来内容 = 核心 SKILL.md 的同一份内容（本节点不写） |
 
 侧边栏组结构（GUI 内置导航树，见 §10-2）：
 
 ```
 首页 (index)
-快速开始
+教程
   基本概念 (quickstart-concepts)
   从模板开始 (quickstart-template)
-案例
-  案例总览 (examples)
-Query / DataView 主题
   Query 查询 (topic-query)
   DataView 视图 (topic-dataview)
   DataView 高级特性 (topic-dataview-advanced)
   外部编辑器与调试 (topic-editor-tips)
-API 参考 (api-reference)
-智能体技能 (skill)
+  案例总览 (examples)
+参考
+  API 参考 (api-reference)
+  智能体技能 (skill)
 ```
 
 ## 2. 首页两条任务路径
