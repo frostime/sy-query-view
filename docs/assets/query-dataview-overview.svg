@@ -1,107 +1,324 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 600" font-family="'PingFang SC','Microsoft YaHei',Arial,sans-serif" role="img" aria-labelledby="qv-title qv-desc">
-  <title id="qv-title">Query 与 DataView 关系图</title>
-  <desc id="qv-desc">JS 嵌入块收到 Query 对象：Query 含查询方法与 Utils，并通过 DataView(protyle, item, top) 创建 DataView 实例；DataView 含 markdown/list/table/mermaid/echarts 等渲染方法；CustomView 可注册进 DataView 作为 dv.xxx() 使用。</desc>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 660"
+  font-family="'PingFang SC','Microsoft YaHei',Arial,sans-serif"
+  role="img" aria-labelledby="title desc">
 
-  <!-- 语言中立：仅代码标识符（中英页面共用同一张图）。
-       关系用包含（卡片容纳方法列表）+ 两条语义边表达，不再为每个方法画扇出连线。 -->
+  <title id="title">QueryView minimal runnable example</title>
+  <desc id="desc">
+    Left: a SiYuan JavaScript block with two translucent blue highlighted regions.
+    Each highlighted region has exactly one horizontal blue arrow pointing to its related internal API card.
+    Right-top: QueryView internal API reference.
+    Right-bottom: the actual rendered result in SiYuan, visually separated in green.
+    A horizontal green flow connector starts from the outer edge of the entire code box.
+  </desc>
 
   <defs>
-    <marker id="arrow-accent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
-      <path d="M0,0 L10,5 L0,10 Z" fill="#2563eb"/>
-    </marker>
-    <marker id="arrow-dark" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
-      <path d="M0,0 L10,5 L0,10 Z" fill="#202124"/>
+    <filter id="shadow" x="-10%" y="-10%" width="125%" height="130%">
+      <feDropShadow dx="0" dy="4" stdDeviation="7"
+        flood-color="#0f172a" flood-opacity=".10"/>
+    </filter>
+
+    <marker id="arrow-blue" viewBox="0 0 10 10" refX="9" refY="5"
+      markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0 0L10 5L0 10Z" fill="#2563eb"/>
     </marker>
   </defs>
 
-  <rect x="0" y="0" width="900" height="600" fill="#ffffff"/>
+  <rect width="1200" height="660" fill="#ffffff"/>
 
-  <!-- 入口提示：嵌入块收到的对象 -->
-  <text x="90" y="50" font-family="'JetBrains Mono',Consolas,Menlo,monospace" font-size="13" fill="#5f6368">//!js embedded block</text>
+  <!-- =========================================================
+       LEFT · CODE BLOCK
+       ========================================================= -->
+  <g id="code-zone">
+    <rect x="24" y="24" width="586" height="612" rx="16"
+      fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"
+      filter="url(#shadow)"/>
 
-  <!-- ============ Query 卡片 ============ -->
-  <g id="node-query">
-    <rect x="60" y="70" width="300" height="410" rx="14" fill="#ffffff" stroke="#202124" stroke-width="2"/>
-    <text x="90" y="110" font-size="22" font-weight="600" fill="#202124">Query</text>
-    <line x1="90" y1="126" x2="330" y2="126" stroke="#dadce0" stroke-width="1.2"/>
+    <rect x="24" y="24" width="586" height="52" rx="16" fill="#f1f5f9"/>
+    <path d="M24 60V76H610V60" fill="#f1f5f9"/>
 
-    <!-- 查询方法组（包含关系，无扇出连线） -->
-    <text x="90" y="152" font-size="13" fill="#5f6368">queries</text>
-    <g font-family="'JetBrains Mono',Consolas,Menlo,monospace" font-size="15" fill="#202124">
-      <text x="92" y="178">sql</text>
-      <text x="92" y="202">backlink</text>
-      <text x="92" y="226">childDoc</text>
-      <text x="92" y="250">random</text>
-      <text x="92" y="274">thisDoc</text>
-      <text x="92" y="298" fill="#5f6368">…</text>
+    <text x="44" y="57" font-size="18" font-weight="700" fill="#0f172a">
+      Minimal runnable example
+    </text>
+    <text x="588" y="57" text-anchor="end" font-size="13" fill="#64748b">
+      SiYuan JavaScript
+    </text>
+
+    <line x1="74" y1="92" x2="74" y2="608" stroke="#e2e8f0"/>
+
+    <!--
+      Highlight 1:
+      aligned to the code indentation rather than floating around it.
+      14px top/bottom breathing room; 16px left padding around the inner code.
+    -->
+    <rect x="96" y="157" width="470" height="184" rx="9"
+      fill="#2563eb" fill-opacity=".045"
+      stroke="#2563eb" stroke-opacity=".82" stroke-width="2"/>
+
+    <!-- Highlight 2: covers build view (L9..L12); bottom raised so // render + dv.render() fall outside -->
+    <rect x="96" y="349" width="470" height="125" rx="9"
+      fill="#2563eb" fill-opacity=".045"
+      stroke="#2563eb" stroke-opacity=".82" stroke-width="2"/>
+
+    <!-- line numbers -->
+    <g font-family="'JetBrains Mono','Consolas',Menlo,monospace"
+      font-size="13" fill="#94a3b8" text-anchor="end">
+      <text x="61" y="112">1</text>
+      <text x="61" y="144">2</text>
+      <text x="61" y="176">3</text>
+      <text x="61" y="208">4</text>
+      <text x="61" y="240">5</text>
+      <text x="61" y="272">6</text>
+      <text x="61" y="304">7</text>
+      <text x="61" y="336">8</text>
+      <text x="61" y="368">9</text>
+      <text x="61" y="400">10</text>
+      <text x="61" y="432">11</text>
+      <text x="61" y="464">12</text>
+      <text x="61" y="496">13</text>
+      <text x="61" y="528">14</text>
+      <text x="61" y="560">15</text>
+      <text x="61" y="592">16</text>
     </g>
 
-    <line x1="90" y1="318" x2="330" y2="318" stroke="#dadce0" stroke-width="1.2"/>
+    <!-- code -->
+    <g font-family="'JetBrains Mono','Consolas',Menlo,monospace"
+      font-size="15.5" fill="#1e293b">
 
-    <!-- 工具组 -->
-    <text x="90" y="340" font-size="13" fill="#5f6368">utils</text>
-    <g font-family="'JetBrains Mono',Consolas,Menlo,monospace" font-size="14" fill="#202124">
-      <text x="92" y="362">Date · now · today · …</text>
-      <text x="92" y="384">asLink · asRef · asMap · …</text>
+      <text x="92" y="112">
+        <tspan fill="#7e22ce">//!js</tspan>
+        <tspan fill="#94a3b8"> // protyle, item, top: injected by SiYuan</tspan>
+      </text>
+
+      <text x="92" y="144">
+        <tspan fill="#0369a1">const</tspan> query =
+        <tspan fill="#0369a1">async</tspan> () =&gt; {
+      </text>
+
+      <!-- box 1 -->
+      <text x="112" y="176" fill="#94a3b8">// init</text>
+
+      <text x="128" y="208">
+        <tspan fill="#0369a1">let</tspan> dv =
+        Query.<tspan fill="#7e22ce">Dataview</tspan>(protyle, item, top);
+      </text>
+
+      <text x="112" y="240" fill="#94a3b8">// query</text>
+
+      <text x="128" y="272">
+        <tspan fill="#0369a1">let</tspan> blocks =
+        <tspan fill="#0369a1">await</tspan>
+        Query.<tspan fill="#7e22ce">backlink</tspan>(
+      </text>
+
+      <text x="152" y="304">protyle.block.rootID</text>
+      <text x="128" y="336">);</text>
+
+      <!-- box 2 -->
+      <text x="112" y="368" fill="#94a3b8">// build view</text>
+
+      <text x="128" y="400">
+        dv.<tspan fill="#7e22ce">addtable</tspan>(blocks, {
+      </text>
+
+      <text x="152" y="432">
+        fullwidth: <tspan fill="#0369a1">true</tspan>,
+      </text>
+
+      <text x="128" y="464">});</text>
+
+      <text x="112" y="496" fill="#94a3b8">// render</text>
+
+      <text x="128" y="528">
+        dv.<tspan fill="#7e22ce">render</tspan>();
+      </text>
+
+      <text x="92" y="560">}</text>
+
+      <text x="92" y="592">
+        <tspan fill="#0369a1">return</tspan> query();
+      </text>
+    </g>
+  </g>
+
+  <!-- =========================================================
+       RIGHT TOP · QUERYVIEW INTERNAL API EXPLANATION
+       ========================================================= -->
+  <g id="api-reference">
+    <rect x="648" y="24" width="528" height="388" rx="18"
+      fill="#f8fbff" stroke="#bfdbfe" stroke-width="1.5"/>
+
+    <circle cx="678" cy="52" r="16" fill="#2563eb"/>
+    <path d="M669 52l9-7 9 7-9 7z" fill="none" stroke="#fff" stroke-width="1.8"/>
+    <path d="M669 57l9 7 9-7" fill="none" stroke="#fff" stroke-width="1.8"/>
+
+    <text x="704" y="60" font-size="20" font-weight="700" fill="#1d4ed8">
+      QueryView
+    </text>
+    <text x="810" y="60" font-size="15" font-weight="700" fill="#1d4ed8">
+      (API Reference)
+    </text>
+
+    <rect x="1080" y="39" width="76" height="26" rx="13" fill="#eaf2ff"/>
+    <text x="1118" y="57" text-anchor="middle" font-size="12"
+      font-weight="700" fill="#2563eb">Internal APIs</text>
+
+    <!-- Query card -->
+    <g id="query-card">
+      <rect x="668" y="84" width="488" height="146" rx="14"
+        fill="#fff" stroke="#cbd5e1" stroke-width="1.2"
+        filter="url(#shadow)"/>
+      <rect x="668" y="84" width="5" height="146" rx="2.5" fill="#2563eb"/>
+
+      <text x="690" y="114" font-size="19" font-weight="700" fill="#0f172a">Query</text>
+      <text x="1136" y="114" text-anchor="end" font-size="12" fill="#2563eb">
+        fetch / create
+      </text>
+
+      <rect x="690" y="130" width="302" height="34" rx="7"
+        fill="#eff6ff" stroke="#93c5fd"/>
+      <text x="702" y="153"
+        font-family="'JetBrains Mono','Consolas',Menlo,monospace"
+        font-size="14.5" fill="#1e293b">
+        Dataview(protyle, item, top)
+      </text>
+      <text x="1136" y="153" text-anchor="end" font-size="12" fill="#64748b">
+        factory
+      </text>
+
+      <text x="702" y="200"
+        font-family="'JetBrains Mono','Consolas',Menlo,monospace"
+        font-size="14.5" fill="#1e293b">
+        backlink(id)
+        <tspan fill="#64748b"> · sql · random · …</tspan>
+      </text>
+      <text x="1136" y="200" text-anchor="end" font-size="12" fill="#64748b">
+        query
+      </text>
     </g>
 
-    <!-- 工厂方法：主关系箭头的起点 -->
-    <rect x="80" y="404" width="260" height="56" rx="10" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
-    <text x="210" y="428" text-anchor="middle" font-family="'JetBrains Mono',Consolas,Menlo,monospace" font-size="14" font-weight="600" fill="#202124">DataView(protyle, item, top)</text>
-    <text x="210" y="448" text-anchor="middle" font-size="12" fill="#5f6368">returns DataView</text>
+    <!-- Query creates DataView -->
+    <line x1="912" y1="230" x2="912" y2="260"
+      stroke="#2563eb" stroke-width="2.5" marker-end="url(#arrow-blue)"/>
+    <rect x="877" y="234" width="70" height="22" rx="11" fill="#dbeafe"/>
+    <text x="912" y="249" text-anchor="middle" font-size="11.5"
+      font-weight="700" fill="#1d4ed8">creates</text>
+
+    <!-- DataView card -->
+    <g id="dataview-card">
+      <rect x="668" y="262" width="488" height="132" rx="14"
+        fill="#fff" stroke="#cbd5e1" stroke-width="1.2"
+        filter="url(#shadow)"/>
+      <rect x="668" y="262" width="5" height="132" rx="2.5" fill="#334155"/>
+
+      <text x="690" y="293" font-size="19" font-weight="700" fill="#0f172a">DataView</text>
+      <text x="1136" y="293" text-anchor="end" font-size="12" fill="#64748b">
+        build / render
+      </text>
+
+      <text x="702" y="335"
+        font-family="'JetBrains Mono','Consolas',Menlo,monospace"
+        font-size="14.5" fill="#1e293b">
+        addtable(blocks, {…})
+        <tspan fill="#64748b"> · list · markdown · …</tspan>
+      </text>
+      <text x="1136" y="335" text-anchor="end" font-size="12" fill="#64748b">
+        view
+      </text>
+
+      <text x="702" y="373"
+        font-family="'JetBrains Mono','Consolas',Menlo,monospace"
+        font-size="14.5" fill="#1e293b">render()</text>
+      <text x="1136" y="373" text-anchor="end" font-size="12" fill="#64748b">
+        lifecycle
+      </text>
+    </g>
   </g>
 
-  <!-- ============ DataView 卡片 ============ -->
-  <g id="node-dataview">
-    <rect x="540" y="70" width="300" height="410" rx="14" fill="#ffffff" stroke="#202124" stroke-width="2"/>
-    <text x="570" y="110" font-size="22" font-weight="600" fill="#202124">DataView</text>
-    <line x1="570" y1="126" x2="810" y2="126" stroke="#dadce0" stroke-width="1.2"/>
+  <!-- =========================================================
+       ONE HORIZONTAL BLUE ARROW PER HIGHLIGHT
+       ========================================================= -->
+  <line x1="566" y1="190" x2="660" y2="190"
+    stroke="#2563eb" stroke-width="3.2"
+    stroke-linecap="round" marker-end="url(#arrow-blue)"/>
 
-    <!-- 渲染方法组 -->
-    <text x="570" y="152" font-size="13" fill="#5f6368">render</text>
-    <g font-family="'JetBrains Mono',Consolas,Menlo,monospace" font-size="15" fill="#202124">
-      <text x="572" y="178">markdown</text>
-      <text x="572" y="202">list</text>
-      <text x="572" y="226">table</text>
-      <text x="572" y="250">mermaid</text>
-      <text x="572" y="274">echarts</text>
-      <text x="572" y="298">addElement</text>
-      <text x="572" y="322" fill="#5f6368">…</text>
+  <line x1="566" y1="375" x2="660" y2="375"
+    stroke="#2563eb" stroke-width="3.2"
+    stroke-linecap="round" marker-end="url(#arrow-blue)"/>
+
+  <!-- =========================================================
+       RIGHT BOTTOM · RENDERED OUTPUT
+       ========================================================= -->
+  <g id="rendered-output">
+    <rect x="648" y="438" width="528" height="198" rx="16"
+      fill="#f5fff7" stroke="#22c55e" stroke-width="1.8"/>
+
+    <circle cx="678" cy="466" r="16" fill="#16a34a"/>
+    <rect x="670" y="459" width="16" height="11" rx="1.5"
+      fill="none" stroke="#fff" stroke-width="1.7"/>
+    <line x1="674" y1="473" x2="682" y2="473" stroke="#fff" stroke-width="1.7"/>
+    <line x1="678" y1="470" x2="678" y2="474" stroke="#fff" stroke-width="1.7"/>
+
+    <text x="704" y="473" font-size="19" font-weight="700" fill="#15803d">
+      Rendered Output
+    </text>
+
+    <rect x="1035" y="453" width="121" height="26" rx="13"
+      fill="#e7f8eb" stroke="#bbf7d0"/>
+    <text x="1095" y="471" text-anchor="middle" font-size="11.5"
+      fill="#15803d">Rendered by SiYuan</text>
+
+    <text x="662" y="502" font-size="12.5" fill="#334155">
+      The JavaScript block on the left is rendered as follows in SiYuan.
+    </text>
+
+    <!-- table -->
+    <rect x="662" y="516" width="500" height="102" rx="8"
+      fill="#fff" stroke="#cbd5e1"/>
+
+    <rect x="662" y="516" width="500" height="30" rx="8" fill="#f1f5f9"/>
+    <path d="M662 538V546H1162V538" fill="#f1f5f9"/>
+
+    <g font-size="12" fill="#1e293b">
+      <text x="674" y="536" font-weight="700">type</text>
+      <text x="758" y="536" font-weight="700">content</text>
+      <text x="854" y="536" font-weight="700">hpath</text>
+      <text x="1008" y="536" font-weight="700">box</text>
+      <text x="1068" y="536" font-weight="700">updated</text>
+
+      <text x="674" y="571">Document</text>
+      <text x="758" y="571">Sample</text>
+      <text x="854" y="571">/daily note/2024-01</text>
+      <text x="1008" y="571">Inbox</text>
+      <text x="1068" y="571">06-14 10:18</text>
+
+      <text x="674" y="602">List</text>
+      <text x="758" y="602">Use Sample</text>
+      <text x="854" y="602">/Draft</text>
+      <text x="1008" y="602">Inbox</text>
+      <text x="1068" y="602">06-13 22:17</text>
     </g>
 
-    <line x1="570" y1="342" x2="810" y2="342" stroke="#dadce0" stroke-width="1.2"/>
-
-    <!-- 生命周期 -->
-    <text x="570" y="364" font-size="13" fill="#5f6368">lifecycle</text>
-    <g font-family="'JetBrains Mono',Consolas,Menlo,monospace" font-size="14" fill="#202124">
-      <text x="572" y="386">render() · addDisposer()</text>
+    <g stroke="#e2e8f0" stroke-width="1">
+      <line x1="662" y1="546" x2="1162" y2="546"/>
+      <line x1="662" y1="584" x2="1162" y2="584"/>
+      <line x1="746" y1="516" x2="746" y2="618"/>
+      <line x1="842" y1="516" x2="842" y2="618"/>
+      <line x1="996" y1="516" x2="996" y2="618"/>
+      <line x1="1056" y1="516" x2="1056" y2="618"/>
     </g>
-
-    <!-- 自定义视图挂载位提示 -->
-    <text x="570" y="430" font-size="13" fill="#5f6368">custom (registered)</text>
-    <text x="572" y="452" font-family="'JetBrains Mono',Consolas,Menlo,monospace" font-size="14" fill="#202124">dv.xxx() · dv.addXxx()</text>
   </g>
 
-  <!-- ============ 主关系：Query.DataView() → DataView ============ -->
-  <polyline points="340,432 440,432 440,275 540,275" fill="none" stroke="#2563eb" stroke-width="3" marker-end="url(#arrow-accent)"/>
-  <rect x="452" y="262" width="68" height="24" rx="12" fill="#dbeafe"/>
-  <text x="486" y="279" text-anchor="middle" font-size="13" fill="#1d4ed8">creates</text>
-
-  <!-- ============ 次关系：CustomView →(Register)→ DataView ============ -->
-  <g id="node-customview">
-    <rect x="540" y="510" width="300" height="70" rx="14" fill="#ffffff" stroke="#202124" stroke-width="2"/>
-    <text x="570" y="542" font-size="17" font-weight="600" fill="#202124">CustomView</text>
-    <text x="570" y="564" font-size="13" fill="#5f6368">user-defined view · use()</text>
+  <!-- =========================================================
+       WHOLE CODE BOX -> RENDERED OUTPUT
+       Horizontal flow connector with open chevron head
+       (instead of a single filled triangle marker).
+       Starts from the OUTER EDGE of the code box.
+       ========================================================= -->
+  <g id="render-flow" fill="none" stroke="#16a34a"
+     stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="610" cy="548" r="4.5" fill="#16a34a" stroke="none"/>
+    <line x1="614" y1="548" x2="636" y2="548" stroke-width="4"/>
+    <path d="M631 540L641 548L631 556" stroke-width="4"/>
   </g>
-  <line x1="690" y1="510" x2="690" y2="482" stroke="#202124" stroke-width="2" stroke-dasharray="6 5" marker-end="url(#arrow-dark)"/>
-  <rect x="704" y="486" width="78" height="24" rx="12" fill="#f1f3f4"/>
-  <text x="743" y="503" text-anchor="middle" font-size="13" fill="#202124">Register</text>
 
-  <!-- ============ 图例 ============ -->
-  <g font-size="13" fill="#5f6368">
-    <line x1="60" y1="540" x2="92" y2="540" stroke="#2563eb" stroke-width="3" marker-end="url(#arrow-accent)"/>
-    <text x="100" y="544">primary: creates instance</text>
-    <line x1="60" y1="566" x2="92" y2="566" stroke="#202124" stroke-width="2" stroke-dasharray="6 5" marker-end="url(#arrow-dark)"/>
-    <text x="100" y="570">extension: register custom view</text>
-  </g>
 </svg>
