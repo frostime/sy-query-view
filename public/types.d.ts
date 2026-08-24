@@ -2,7 +2,7 @@
  * @name sy-query-view
  * @author frostime
  * @version 1.3.0
- * @updated 2026-08-24T18:37:19.125Z
+ * @updated 2026-08-24T18:43:15.196Z
  */
 
 declare module 'siyuan' {
@@ -66,13 +66,13 @@ declare const Query: {
         now: (days?: number | string, hms?: boolean) => any;
         /**
          * Gets the timestamp for the start of today
-         * @param {boolean} hms - Whether to include time, e.g today(false) returns 20241201, today(true) returns 20241201000000
+         * @param {boolean} hms - Whether to include time (default: true), e.g today(false) returns 20241201, today(true) returns 20241201000000
          * @returns Timestamp string in yyyyMMddHHmmss format
          */
         today: (hms?: boolean) => any;
         /**
          * Gets the timestamp for the start of current week
-         * @param {boolean} hms - Whether to include time, e.g thisWeek(false) returns 20241201, thisWeek(true) returns 20241201000000
+         * @param {boolean} hms - Whether to include time (default: true), e.g thisWeek(false) returns 20241201, thisWeek(true) returns 20241201000000
          * @returns Timestamp string in yyyyMMddHHmmss format
          */
         thisWeek: (hms?: boolean) => any;
@@ -184,6 +184,7 @@ declare const Query: {
     wrapBlocks: (blocks: Block[] | Block, useWrapBlock?: boolean) => IWrappedBlock | IWrappedList<Block>;
     /**
      * SiYuan Kernel Request API
+     * @note Kernel request only — NOT arbitrary HTTP. Use Query.gpt for external HTTP(S) fetch.
      * @example
      * await Query.request('/api/outline/getDocOutline', {
      *     id: docId
@@ -453,6 +454,7 @@ declare const Query: {
      * @param options.streamMsg - Callback function for streaming messages, only works when options.stream is true
      * @param options.streamInterval - Interval for calling options.streamMsg on each chunk, default: 1
      * @returns GPT response
+     * @note The only API that sends external HTTP(S) requests via fetch; every other Query API is a SiYuan kernel request.
      */
     gpt: (input: string | {
         role: "user" | "assistant";
@@ -547,21 +549,14 @@ interface IEchartsOption {
 }
 
 /**
- * Implemented by class DataView
- */
-interface IDataView {
-    render: () => void;
-}
-
-/**
  * User customized view. If registered, you can use it inside DataView by `dv.xxx()` or `dv.addxxx()`
  */
 interface ICustomView {
     /**
      * Use the custom view
-     * @param dv - DataView instance, might be empty while validating process
+     * @param dv - DataView instance (declared as `any` for declaration simplicity; at runtime it is a DataView instance), might be empty while validating process
      */
-    use: (dv?: IDataView) => {
+    use: (dv?: any) => {
         render: (container: HTMLElement, ...args: any[]) => void | string | HTMLElement; //Create the user custom view.
         dispose?: () => void;  // Unmount hook for the user custom view.
     },
@@ -603,7 +598,7 @@ interface IState<T> {
  * DataView class for creating and managing dynamic data visualizations
  * Provides various methods for visualizing data.
  */
-export declare class DataView implements IDataView {
+export declare class DataView {
     /**
      * The id of the root document
      */
@@ -621,6 +616,7 @@ export declare class DataView implements IDataView {
      * Persist state across renders; it will store the state in the block attributes when disposing, and restore it when creating.
      * @param key - The key of the state
      * @param initialValue - The initial value of the state
+     * @note Changes are written to the block attributes when the view is disposed — not persisted in real time
      * @returns An IState object -- see {@link IState}
      * @example
      * const count = dv.useState('count', 0);
@@ -1044,7 +1040,7 @@ export interface IWrappedBlock extends Block {
 }
 
 /** Wrapped array interface with extended convenient methods */
-export interface IWrappedList<T> extends Array<T> {
+export interface IWrappedList<T = Block> extends Array<T> {
     /** Method to return the original array */
     unwrap(): T[];
     /** Original array */
