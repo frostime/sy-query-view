@@ -27,7 +27,7 @@ Persist state across renders; it will store the state in the block attributes wh
 - `key` — The key of the state
 - `initialValue` — The initial value of the state
 
-**Returns**: An IState object -- see
+**Returns**: An IState object -- see IState
 
 **Example**
 
@@ -444,7 +444,7 @@ Creates a Mermaid gantt chart from block relationships
 
 - `groupedBlocks` — : Blocks Array }
 - `options` — 
-- `options.priority` — Function to determine priority of each block, see ://mermaid.js.org/syntax/kanban.html#supported-metadata-keys
+- `options.priority` — Function to determine priority of each block, see https://mermaid.js.org/syntax/kanban.html#supported-metadata-keys
 - `options.clip` — Maximum length of text to display in each item, default as 50
 - `options.width` — The width of kanban
 
@@ -498,11 +498,11 @@ Creates a custom ECharts visualization
 
 **Params**
 
-- `echartOption` — ECharts configuration object, see ://echarts.apache.org/zh/option.html#title for more details
+- `echartOption` — ECharts configuration object, see https://echarts.apache.org/zh/option.html#title for more details
 - `options` — Configuration options
 - `options.height` — The height of the container, default as 300px
 - `options.width` — The width of the container, default as 100%
-- `options.events` — Event handlers for chart interactions; see ://echarts.apache.org/handbook/en/concepts/event/ for more details
+- `options.events` — Event handlers for chart interactions; see https://echarts.apache.org/handbook/en/concepts/event/ for more details
 
 **Returns**: HTMLElement containing the chart
 
@@ -531,8 +531,8 @@ Creates a line chart
 - `options.xlabel` — X-axis label
 - `options.ylabel` — Y-axis label
 - `options.legends` — Array of legend labels for multiple lines
-- `options.seriesOption` — Additional series configuration. See ://echarts.apache.org/zh/option.html#series-line for more details
-- `options.echartsOption` — Additional ECharts configuration. See ://echarts.apache.org/zh/option.html#title for more details
+- `options.seriesOption` — Additional series configuration. See https://echarts.apache.org/zh/option.html#series-line for more details
+- `options.echartsOption` — Additional ECharts configuration. See https://echarts.apache.org/zh/option.html#title for more details
 
 **Returns**: HTMLElement containing the line chart
 
@@ -562,7 +562,7 @@ Creates a bar chart
 - `options.ylabel` — Y-axis label
 - `options.legends` — Array of legend labels for multiple bars
 - `options.stack` — Whether to stack bars
-- `options.seriesOption` — Additional series configuration. See ://echarts.apache.org/zh/option.html#series-bar for more details
+- `options.seriesOption` — Additional series configuration. See https://echarts.apache.org/zh/option.html#series-bar for more details
 - `options.echartsOption` — Additional ECharts configuration
 
 **Returns**: HTMLElement containing the bar chart
@@ -583,7 +583,7 @@ Creates a tree visualization
 
 **Params**
 
-- `data` — Tree structure data, see  and ://echarts.apache.org/zh/option.html#series-tree.data for more details
+- `data` — Tree structure data, see ITreeNode and https://echarts.apache.org/zh/option.html#series-tree.data for more details
 - `options` — Configuration options
 - `options.height` — The height of the container, default as 300px
 - `options.width` — The width of the container, default as 100%
@@ -595,8 +595,8 @@ Creates a tree visualization
 - `options.labelFontSize` — Font size of node labels, default as 16
 - `options.nodeRenderer` — Custom function to render nodes. Mostly you don't need to provide this.
 - `options.tooltipFormatter` — Custom function to render tooltip content. Mostly you don't need to provide this.
-- `options.seriesOption` — Additional series configuration; this will be merged within each series option. See ://echarts.apache.org/zh/option.html#series-tree for more details
-- `options.echartsOption` — Additional ECharts configuration, see ://echarts.apache.org/zh/option.html#title for more details
+- `options.seriesOption` — Additional series configuration; this will be merged within each series option. See https://echarts.apache.org/zh/option.html#series-tree for more details
+- `options.echartsOption` — Additional ECharts configuration, see https://echarts.apache.org/zh/option.html#title for more details
 
 **Returns**: HTMLElement containing the tree visualization
 
@@ -618,8 +618,8 @@ Creates a graph/network visualization
 
 **Params**
 
-- `nodes` — Array of graph nodes, see  and ://echarts.apache.org/zh/option.html#series-graph.data for more details
-- `links` — Array of connections between nodes, see  and ://echarts.apache.org/zh/option.html#series-graph.links for more details
+- `nodes` — Array of graph nodes, see IGraphNode and https://echarts.apache.org/zh/option.html#series-graph.data for more details
+- `links` — Array of connections between nodes, see IGraphLink and https://echarts.apache.org/zh/option.html#series-graph.links for more details
 - `options` — Configuration options
 - `options.height` — The height of the container, default as 300px
 - `options.width` — The width of the container, default as 100%
@@ -630,8 +630,8 @@ Creates a graph/network visualization
 - `options.labelFontSize` — Font size of node labels
 - `options.nodeRenderer` — Custom function to render nodes, return Echarts node type. Mostly you don't need to provide this.
 - `options.tooltipFormatter` — Custom function to render tooltip content. Mostly you don't need to provide this.
-- `options.seriesOption` — Additional series configuration, see ://echarts.apache.org/zh/option.html#series-graph for more details
-- `options.echartsOption` — Additional ECharts configuration, see ://echarts.apache.org/zh/option.html#title for more details
+- `options.seriesOption` — Additional series configuration, see https://echarts.apache.org/zh/option.html#series-graph for more details
+- `options.echartsOption` — Additional ECharts configuration, see https://echarts.apache.org/zh/option.html#title for more details
 
 **Returns**: HTMLElement containing the graph visualization
 

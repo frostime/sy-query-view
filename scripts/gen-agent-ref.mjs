@@ -33,7 +33,16 @@ function commentToText(comment) {
   // JSDocComment 节点数组：递归拼接（含 {@link X} 内联标签的文本）
   return comment.map(c => {
     if (typeof c === "string") return c;
-    return c.text ?? ""; // JSDocText / JSDocInlineTag 均有 .text
+    if (ts.isJSDocLinkLike(c)) {
+      // {@link https://...} 被 TS 拆为 name="https" + text="://..."（预期行为，
+      // 复刻 TS formatJSDocLink 的还原规则：name + (空/"://"开头不插空格) + text）
+      const name = c.name ? c.name.getText() : "";
+      const text = c.text ?? "";
+      if (!name) return text;
+      const space = text === "" || text.startsWith("://") ? "" : " ";
+      return name + space + text;
+    }
+    return c.text ?? ""; // JSDocText
   }).join("").trim();
 }
 
@@ -69,8 +78,9 @@ function singleLine(text) {
 }
 
 /** 渲染一节 */
-function renderSection({ heading, fullSig, doc, aliases, source, notes, noDoc }) {
-  let s = `## ${heading}\n\n`;
+function renderSection({ heading, fullSig, doc, aliases, source, notes, noDoc, level = 2 }) {
+  const h = "#".repeat(level);
+  let s = `${h} ${heading}\n\n`;
   s += "```ts\n" + fullSig + "\n```\n\n";
   if (noDoc) {
     s += `> ⚠ No JSDoc documentation (behavior unverified) — check the source code or official tutorial\n\n`;
@@ -210,6 +220,7 @@ function genQuery() {
         notes: KNOWN_NOTES[`Query.Utils.${p.getName()}`],
         aliases: aliasList.length ? [p.getName(), ...aliasList] : null,
         source: `src/core/query.ts:${p.getStartLineNumber()}`,
+        level: 3, // Utils 成员为三级标题（子树）
       });
     }
   }
@@ -266,10 +277,10 @@ function genDataView() {
   return md;
 }
 
-// ============ 3. WrappedList 模块 ============
-function genWrappedList() {
+// ============ 3. Wrapped 模块（IWrappedList + IWrappedBlock，层级：interface=##，成员=###） ============
+function genWrapped() {
   const src = project.getSourceFileOrThrow("src/core/proxy.ts");
-  let md = "# WrappedList Reference (auto-generated from src/core/proxy.ts)\n\n";
+  let md = "# Wrapped Reference (auto-generated from src/core/proxy.ts)\n\n";
   md += "> Wrapped lists and wrapped blocks returned by the query/component APIs, plus their data-processing methods. Do not edit by hand.\n\n";
 
   for (const iname of ["IWrappedList", "IWrappedBlock"]) {
@@ -289,6 +300,7 @@ function genWrappedList() {
         notes: KNOWN_NOTES[`list.${m.getName()}`],
         aliases: aliasList.length ? [m.getName(), ...aliasList] : null,
         source: `src/core/proxy.ts:${m.getStartLineNumber()}`,
+        level: 3,
       });
     }
   }
@@ -319,7 +331,7 @@ fs.mkdirSync(OUT_DIR, { recursive: true });
 const outputs = [
   ["query-api.md", genQuery()],
   ["dataview.md", genDataView()],
-  ["wrapped-list.md", genWrappedList()],
+  ["wrapped.md", genWrapped()],
   ["types.md", genTypes()],
 ];
 

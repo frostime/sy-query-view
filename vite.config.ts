@@ -186,7 +186,7 @@ function copySkillReferences(dirname: string) {
                 const srcDir = path.resolve(__dirname, 'docs/en_US/agent-ref');
                 const destDir = path.join(dirname, 'skills/sy-query-view/references');
                 fs.mkdirSync(destDir, { recursive: true });
-                for (const f of ['query-api.md', 'dataview.md', 'wrapped-list.md', 'types.md']) {
+                for (const f of ['query-api.md', 'dataview.md', 'wrapped.md', 'types.md']) {
                     fs.copyFileSync(path.join(srcDir, f), path.join(destDir, f));
                     console.log(`[skill-refs] copied ${f}`);
                 }

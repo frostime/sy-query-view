@@ -556,7 +556,7 @@ Send GPT request, use AI configuration in `siyuan.config.ai.openAI` by default
 
 ---
 
-## Query.Utils.Date(args)
+### Query.Utils.Date(args)
 
 ```ts
 Date: (value: string | number | Date) => SiYuanDate
@@ -568,7 +568,7 @@ Date: (value: string | number | Date) => SiYuanDate
 
 ---
 
-## Query.Utils.now(days?, hms)
+### Query.Utils.now(days?, hms)
 
 ```ts
 now: (days?: number | string, hms?: boolean) => any
@@ -589,7 +589,7 @@ Gets timestamp for current time with optional day offset
 
 ---
 
-## Query.Utils.today(hms)
+### Query.Utils.today(hms)
 
 ```ts
 today: (hms?: boolean) => any
@@ -609,7 +609,7 @@ Gets the timestamp for the start of today
 
 ---
 
-## Query.Utils.thisWeek(hms)
+### Query.Utils.thisWeek(hms)
 
 ```ts
 thisWeek: (hms?: boolean) => any
@@ -629,7 +629,7 @@ Gets the timestamp for the start of current week
 
 ---
 
-## Query.Utils.lastWeek(hms)
+### Query.Utils.lastWeek(hms)
 
 ```ts
 lastWeek: (hms?: boolean) => any
@@ -643,7 +643,7 @@ Gets the timestamp for the start of next week
 
 ---
 
-## Query.Utils.thisMonth(hms)
+### Query.Utils.thisMonth(hms)
 
 ```ts
 thisMonth: (hms?: boolean) => any
@@ -657,7 +657,7 @@ Gets the timestamp for the start of current month
 
 ---
 
-## Query.Utils.lastMonth(hms)
+### Query.Utils.lastMonth(hms)
 
 ```ts
 lastMonth: (hms?: boolean) => string
@@ -671,7 +671,7 @@ Gets the timestamp for the start of last month
 
 ---
 
-## Query.Utils.thisYear(hms)
+### Query.Utils.thisYear(hms)
 
 ```ts
 thisYear: (hms?: boolean) => string
@@ -685,7 +685,7 @@ Gets the timestamp for the start of current year
 
 ---
 
-## Query.Utils.asDate(timestr)
+### Query.Utils.asDate(timestr)
 
 ```ts
 asDate: (timestr: string) => SiYuanDate
@@ -704,7 +704,7 @@ asDate: (timestr: string) => SiYuanDate
 
 ---
 
-## Query.Utils.asTimestr(date)
+### Query.Utils.asTimestr(date)
 
 ```ts
 asTimestr: (date: Date) => any
@@ -722,7 +722,7 @@ Converts Date object to SiYuan timestamp format
 
 ---
 
-## Query.Utils.asLink(b)
+### Query.Utils.asLink(b)
 
 ```ts
 asLink: (b: Block) => string
@@ -740,7 +740,7 @@ Converts a block to a SiYuan link format
 
 ---
 
-## Query.Utils.asRef(b)
+### Query.Utils.asRef(b)
 
 ```ts
 asRef: (b: Block) => string
@@ -758,7 +758,7 @@ Converts a block to a SiYuan reference format
 
 ---
 
-## Query.Utils.asMap(blocks, key)
+### Query.Utils.asMap(blocks, key)
 
 ```ts
 asMap: (blocks: Block[], key?: string) => { [key: string]: Block; [key: number]: Block; }
@@ -770,7 +770,7 @@ asMap: (blocks: Block[], key?: string) => { [key: string]: Block; [key: number]:
 
 ---
 
-## Query.Utils.notebook(input)
+### Query.Utils.notebook(input)
 
 ```ts
 notebook: (input: Block | NotebookId) => Notebook
@@ -788,7 +788,7 @@ Gets notebook information from block or notebook ID
 
 ---
 
-## Query.Utils.boxName(boxid)
+### Query.Utils.boxName(boxid)
 
 ```ts
 boxName: (boxid: NotebookId) => string
@@ -812,7 +812,7 @@ Query.Utils.boxName(block['box']) // 'Notebook 123'
 
 ---
 
-## Query.Utils.typeName(type)
+### Query.Utils.typeName(type)
 
 ```ts
 typeName: (type: BlockType) => any
@@ -836,7 +836,7 @@ Query.Utils.typename(block['type']) // 'Heading'
 
 ---
 
-## Query.Utils.docIcon(document)
+### Query.Utils.docIcon(document)
 
 ```ts
 docIcon: (document: Block) => string
@@ -854,7 +854,7 @@ Given a document block (type='d'), return its emoji icon
 
 ---
 
-## Query.Utils.emoji(code)
+### Query.Utils.emoji(code)
 
 ```ts
 emoji: (code: string) => string
@@ -872,7 +872,7 @@ Given emoji code, returl emoji icon
 
 ---
 
-## Query.Utils.renderAttr()
+### Query.Utils.renderAttr()
 
 ```ts
 renderAttr: (b: Block & { [key: string | number]: string | number; }, attr: (keyof Block & string) | number, options?: { onlyDate?: boolean; onlyTime?: boolean; }) => string
@@ -884,7 +884,7 @@ Renders the value of a block attribute as markdown format
 
 ---
 
-## Query.Utils.openBlock()
+### Query.Utils.openBlock()
 
 ```ts
 openBlock: (id: BlockId, options?: { zoomIn?: boolean; action?: import("siyuan").TProtyleAction[]; position?: Parameters<typeof import("siyuan").openTab>[0]["position"]; keepCursor?: boolean; }) => void

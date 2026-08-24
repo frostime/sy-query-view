@@ -1,4 +1,4 @@
-# WrappedList Reference (auto-generated from src/core/proxy.ts)
+# Wrapped Reference (auto-generated from src/core/proxy.ts)
 
 > Wrapped lists and wrapped blocks returned by the query/component APIs, plus their data-processing methods. Do not edit by hand.
 
@@ -10,7 +10,7 @@ export interface IWrappedList<T> extends Array<T> { /** Method to return the ori
 
 ---
 
-## list.unwrap()
+### list.unwrap()
 
 ```ts
 unwrap(): T[];
@@ -22,7 +22,7 @@ Method to return the original array
 
 ---
 
-## list.pick(attrs)
+### list.pick(attrs)
 
 ```ts
 pick(...attrs: (keyof T)[]): IWrappedList<Partial<T>>;
@@ -40,7 +40,7 @@ Returns a new array containing only specified properties
 
 ---
 
-## list.omit(attrs)
+### list.omit(attrs)
 
 ```ts
 omit(...attrs: (keyof T)[]): IWrappedList<T>;
@@ -56,7 +56,7 @@ Returns a new array excluding specified properties
 
 ---
 
-## list.sorton(attr, order?)
+### list.sorton(attr, order?)
 
 ```ts
 sorton(attr: keyof T, order?: 'asc' | 'desc'): IWrappedList<T>;
@@ -73,7 +73,7 @@ Returns a new array sorted by specified property
 
 ---
 
-## list.groupby(predicate, fnEach?)
+### list.groupby(predicate, fnEach?)
 
 ```ts
 groupby( predicate: keyof T | ((item: T) => any), fnEach?: (groupName: any, list: T[]) => unknown ): Record<string, IWrappedList<T>>;
@@ -90,7 +90,7 @@ Returns an object grouped by specified condition
 
 ---
 
-## list.filter(predicate)
+### list.filter(predicate)
 
 ```ts
 filter(predicate: (value: T, index: number, array: T[]) => boolean): IWrappedList<T>;
@@ -106,7 +106,7 @@ Returns a filtered new array, ensuring it's also an IWrappedList
 
 ---
 
-## list.slice(start, end)
+### list.slice(start, end)
 
 ```ts
 slice(start: number, end: number): IWrappedList<T>;
@@ -123,7 +123,7 @@ Returns a new array containing elements in the specified range
 
 ---
 
-## list.unique(key?)
+### list.unique(key?)
 
 ```ts
 unique(key?: keyof Block | ((b: Block) => string | number)): IWrappedList<IWrappedBlock>;
@@ -146,7 +146,7 @@ list.unique(b => b.updated.slice(0, 4))
 
 ---
 
-## list.addrow(newItems)
+### list.addrow(newItems)
 
 ```ts
 addrow(newItems: T[]): IWrappedList<T>;
@@ -160,7 +160,7 @@ Returns a new array with added rows
 
 ---
 
-## list.addcol(newItems)
+### list.addcol(newItems)
 
 ```ts
 addcol(newItems: Record<string, ScalarValue | ScalarValue[]> | Record<string, ScalarValue>[] | ((b: T, index: number) => Record<string, ScalarValue> | Record<string, ScalarValue[]>)): IWrappedList<T>;
@@ -187,7 +187,7 @@ list.addcol((b, i) => ({ col1: i, col2: i * i })) // Add two columns, each with 
 
 ---
 
-## list.unwrapped()
+### list.unwrapped()
 
 ```ts
 unwrapped: T[];
@@ -199,7 +199,7 @@ Original array
 
 ---
 
-## list.asMap()
+### list.asMap()
 
 ```ts
 asMap: (key: string) => Record<string, Block>;
@@ -226,7 +226,7 @@ export interface IWrappedBlock extends Block { /** Method to return the original
 
 ---
 
-## list.unwrap()
+### list.unwrap()
 
 ```ts
 unwrap(): Block;
@@ -238,7 +238,7 @@ Method to return the original Block object
 
 ---
 
-## list.attr(attr, renderer?)
+### list.attr(attr, renderer?)
 
 ```ts
 attr(attr: keyof Block, renderer?: (block: Block, attr: keyof Block) => string | null): string;
@@ -264,7 +264,7 @@ block.attr('root_id') // Returns the block link of the document
 
 ---
 
-## list.unwrapped()
+### list.unwrapped()
 
 ```ts
 unwrapped: Block;
@@ -276,7 +276,7 @@ Original Block object
 
 ---
 
-## list.asurl()
+### list.asurl()
 
 ```ts
 asurl: string;
@@ -288,7 +288,7 @@ Block's URI link in format: siyuan://blocks/xxx
 
 ---
 
-## list.aslink()
+### list.aslink()
 
 ```ts
 aslink: string;
@@ -300,7 +300,7 @@ Block's Markdown format link [content](siyuan://blocks/xxx)
 
 ---
 
-## list.asref()
+### list.asref()
 
 ```ts
 asref: string;
@@ -312,7 +312,7 @@ Block's SiYuan reference format text
 
 ---
 
-## list.asial()
+### list.asial()
 
 ```ts
 asial: Record<string, string>;
@@ -330,7 +330,7 @@ let icon = block.asial['icon'];
 
 ---
 
-## list.updatedDate()
+### list.updatedDate()
 
 ```ts
 updatedDate: string;
@@ -342,7 +342,7 @@ Update date in YYYY-MM-DD format
 
 ---
 
-## list.createdDate()
+### list.createdDate()
 
 ```ts
 createdDate: string;
@@ -354,7 +354,7 @@ Creation date in YYYY-MM-DD format
 
 ---
 
-## list.updatedTime()
+### list.updatedTime()
 
 ```ts
 updatedTime: string;
@@ -366,7 +366,7 @@ Update time in HH:mm:ss format
 
 ---
 
-## list.createdTime()
+### list.createdTime()
 
 ```ts
 createdTime: string;
@@ -378,7 +378,7 @@ Creation time in HH:mm:ss format
 
 ---
 
-## list.updatedDatetime()
+### list.updatedDatetime()
 
 ```ts
 updatedDatetime: string;
@@ -390,7 +390,7 @@ Update datetime in YYYY-MM-DD HH:mm:ss format
 
 ---
 
-## list.createdDatetime()
+### list.createdDatetime()
 
 ```ts
 createdDatetime: string;
