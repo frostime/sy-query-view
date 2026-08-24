@@ -13,6 +13,9 @@ import { Lute } from "siyuan";
 export interface ILute extends Lute {
     SetHTMLTag2TextMark: (enable: boolean) => void;
     InlineMd2BlockDOM: (md: string) => string;
+    // 产出纯净标准 HTML（<p>/<ul>/<pre><code>/<a href>/<img src>/<h1>），无 protyle 编辑控件；
+    // Lute 运行时存在但 siyuan 类型未声明，故在此补充。
+    Md2HTML: (md: string) => string;
     // HTML2Markdown: (html: string) => string;
     HTML2Md: (html: string) => string;
     SetGitConflict: (args: boolean) => void;

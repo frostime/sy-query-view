@@ -12,10 +12,21 @@
     background-color: var(--b3-theme-background);
     color: var(--b3-theme-on-background);
 
-    // 代码块（Lute 产物 [data-type="NodeCodeBlock"]/.code-block）：为复制按钮留位
-    :global(.code-block) {
+    // 代码块（Md2HTML 产物 <pre><code>）：为复制按钮留位，并确保可选可复制
+    // （部分主题/protyle 样式会对 pre/code 设 user-select:none，外溢到 b3-typography）
+    :global(.b3-typography pre) {
         position: relative;
         padding-right: 52px;
+        user-select: text;
+    }
+    // 重置代码块内 code 的框/背景/padding：只保留 pre 一层框，避免复制按钮夹在两层框中间。
+    // 仅命中 pre>code（代码块），不影响 p/li 内 inline code 的主题样式。
+    :global(.b3-typography pre code) {
+        display: block;
+        border: none;
+        background: transparent;
+        padding: 0;
+        user-select: text;
     }
 
     .copy {
@@ -40,13 +51,11 @@
         }
     }
 
-    // 原生编辑器控件已由 render.ts 从 DOM 删除（不再依赖 CSS 隐藏）
-    // Lute 链接 DOM：仅对可渲染链接（data-href 非空；危险协议被 Lute 清空为 data-href=""）
-    // 提供可点击外观，与 render.ts 的点击注入条件一致
-    [data-type~="a"][data-href]:not([data-href=""]) {
-        cursor: pointer;
+    // Md2HTML 链接：标准 <a href>，外链由 render.ts 补 target=_blank
+    :global(.b3-typography a[href]) {
         color: var(--b3-protyle-inline-link-color);
     }
+    // inline code（非代码块内的 code）保持主题样式，此处不干预
 }
 
 .sidebar {
