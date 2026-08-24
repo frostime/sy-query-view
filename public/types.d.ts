@@ -2,7 +2,7 @@
  * @name sy-query-view
  * @author frostime
  * @version 1.3.0
- * @updated 2026-08-24T18:01:42.608Z
+ * @updated 2026-08-24T18:31:41.340Z
  */
 
 declare module 'siyuan' {
@@ -181,7 +181,7 @@ declare const Query: {
      * @param useWrapBlock - Whether to wrap blocks inside the WrappedList
      * @returns Wrapped block(s)
      */
-    wrapBlocks: (blocks: Block[] | Block, useWrapBlock?: boolean) => Block[] | IWrappedBlock;
+    wrapBlocks: (blocks: Block[] | Block, useWrapBlock?: boolean) => IWrappedBlock | IWrappedList<Block>;
     /**
      * SiYuan Kernel Request API
      * @example
@@ -301,7 +301,7 @@ declare const Query: {
      * @param b - Parent block or block ID
      * @returns Array of child document blocks
      */
-    childDoc: (b: BlockId | Block) => Promise<Block[]>;
+    childDoc: (b: BlockId | Block) => Promise<IWrappedList<Block>>;
     /**
      * Get nearby blocks relative to the specified block within the same container.
      *
@@ -414,7 +414,7 @@ declare const Query: {
     fb2p: (inputs: Block[], enable?: {
         heading?: boolean;
         doc?: boolean;
-    }) => Promise<Block[]>;
+    }) => Promise<IWrappedList<Block>>;
     /**
      * Prune/Merge blocks from SQL search results to eliminate duplicates.
      *
@@ -439,7 +439,7 @@ declare const Query: {
      * @returns {Block[]} - A new array containing only the unique (pruned) blocks.
      * @alias `prune`
      */
-    pruneBlocks: (blocks: Block[], keep?: "leaf" | "root", advanced?: boolean) => Promise<Block[]>;
+    pruneBlocks: (blocks: Block[], keep?: "leaf" | "root", advanced?: boolean) => Promise<IWrappedList<Block>>;
     /**
      * Send GPT request, use AI configuration in `siyuan.config.ai.openAI` by default
      * @param prompt - Prompt
@@ -651,7 +651,6 @@ export declare class DataView implements IDataView {
      * @alias addele
      */
     addElement(ele: HTMLElement | string, disposer?: () => void): HTMLElement;
-    isValidViewContainer(container: HTMLElement): boolean;
     /**
      * Remove the view element (by given the id of the container) from dataview
      * @param id Existed view's data-id
@@ -678,6 +677,14 @@ export declare class DataView implements IDataView {
      * dv.addmd(`# Hello`);
      */
     markdown(md: string): HTMLElement;
+    /**
+     * Renders a collapsible details/summary element
+     * @param summary - Text placed in the <summary> tag; inserted as raw HTML, not markdown — do not pass untrusted content
+     * @param content - Detail body; a string is inserted as raw HTML (not markdown); an HTMLElement is appended directly
+     * @returns An HTMLDetailsElement, expanded by default (open=true)
+     * @example
+     * dv.adddetails('Summary text', '<p>Body content</p>');
+     */
     details(summary: string, content: string | HTMLElement): HTMLDetailsElement;
     /**
      * Creates a markdown list view for displaying blocks
