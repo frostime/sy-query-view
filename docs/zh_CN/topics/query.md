@@ -14,14 +14,11 @@
 
 ```js
 //!js
-const query = async () => {
-  let blocks = await Query.backlink(protyle.block.rootID);
-  return blocks.pick('id'); //特殊工具函数，后面会介绍; 等价于blocks.map(b => b.id);
-}
-return query();
+let blocks = await Query.backlink(protyle.block.rootID);
+return blocks.pick('id'); //特殊工具函数，后面会介绍; 等价于blocks.map(b => b.id);
 ```
 
-> 注：由于这个代码中用到了 async/await 语句，所以必须要把 await 相关的代码包裹在一个 async 函数里面，而不能直接放到外面。
+> 注：示例中的代码直接使用了顶层 await，这需要思源 3.8.0 及以上版本；在更早的版本中，需要把 await 相关的代码包裹在一个 async 函数中，并以 `return query();` 结尾调用。
 
 不难看出，由于在代码中可以通过 `protyle.block.rootID`​ 自动获取到所在文档的 ID，也就免去了每次编写嵌入块的时候需要手动修改 `root_id`​ 字段的麻烦了，所以完全可以做到编写一次，到处运行——这也是 JS 查询的一个小优点。
 
@@ -212,7 +209,6 @@ interface IWrappedBlock extends Block {
 
 ```js
 //!js
-const query = async () => {
     let dv = Query.DataView(protyle, item, top);
 
     let blocks = await Query.random(1);
@@ -230,10 +226,6 @@ const query = async () => {
     `)
 
     dv.render();
-
-}
-
-return query();
 ```
 
 ![image](../../assets/image-20241213184747-0ma9dj4.png)
@@ -479,15 +471,12 @@ declare interface Partial<Query['Utils']> {
 
 ```js
 //!js
-const query = async () => {
-  const sql = `select * from blocks
-  where updated >= '${Query.Utils.thisWeek()}'
-  limit 5
-  `;
-  const blocks = await Query.sql(sql);
-  return blocks.map(b => b.id);
-}
-return query();
+const sql = `select * from blocks
+where updated >= '${Query.Utils.thisWeek()}'
+limit 5
+`;
+const blocks = await Query.sql(sql);
+return blocks.map(b => b.id);
 ```
 
 ### 其他工具函数
@@ -622,12 +611,8 @@ pruneBlocks(blocks: Block[], keep: 'leaf' | 'root' = 'leaf', advanced: boolean =
 
 ```js
 //!js
-const query = async () => {
-    let blocks = await Query.keyword('重要内容')
-    return blocks.pick('id');
-}
-
-return query();
+let blocks = await Query.keyword('重要内容')
+return blocks.pick('id');
 ```
 
 ![image](../../assets/image-20250308171816-crrru54.png)​
@@ -636,13 +621,9 @@ return query();
 
 ```js
 //!js
-const query = async () => {
-    let blocks = await Query.keyword('重要内容');
-    blocks = await Query.pruneBlocks(blocks);
-    return blocks.pick('id');
-}
-
-return query();
+let blocks = await Query.keyword('重要内容');
+blocks = await Query.pruneBlocks(blocks);
+return blocks.pick('id');
 ```
 
 效果如下，由于默认的策略是 leaf，所以仅仅保留了底层的段落块。

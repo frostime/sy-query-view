@@ -69,47 +69,43 @@ const useControl = (files) => {
     };
 }
 
-const query = async () => {
-    let dv = Query.DataView(protyle, item, top);
-    let files = await assetFile();
-    files = files.filter(file => {
-        return file.endsWith('.jpg') || file.endsWith('.png') || file.endsWith('.jpeg');
+let dv = Query.DataView(protyle, item, top);
+let files = await assetFile();
+files = files.filter(file => {
+    return file.endsWith('.jpg') || file.endsWith('.png') || file.endsWith('.jpeg');
+});
+
+let control = useControl(files);
+
+dv.addele(control.panel);
+
+let ele = dv.addele('Placeholder');
+let id = ele.dataset.id;
+
+const createView = (slice) => {
+    const data = slice.map(item => {
+        return {
+            name: item,
+            img: `![](/assets/${item})`
+        }
     });
+    return dv.table(data, {
+        fullwidth: true,
+        cols: null,
+    });
+}
 
-    let control = useControl(files);
-
-    dv.addele(control.panel);
-
-    let ele = dv.addele('Placeholder');
-    let id = ele.dataset.id;
-
-    const createView = (slice) => {
-        const data = slice.map(item => {
-            return {
-                name: item,
-                img: `![](/assets/${item})`
-            }
-        });
-        return dv.table(data, {
-            fullwidth: true,
-            cols: null,
-        });
-    }
-
-    control.leftBtn.onclick = () => {
-        control.left();
-        const slice = control.slice();
-        dv.replaceView(id, createView(slice))
-    };
-    control.rightBtn.onclick = () => {
-        control.right();
-        const slice = control.slice();
-        dv.replaceView(id, createView(slice))
-    };
-
-    dv.replaceView(id, createView(control.slice()))
-
-    dv.render();
+control.leftBtn.onclick = () => {
+    control.left();
+    const slice = control.slice();
+    dv.replaceView(id, createView(slice))
+};
+control.rightBtn.onclick = () => {
+    control.right();
+    const slice = control.slice();
+    dv.replaceView(id, createView(slice))
 };
 
-return query();
+dv.replaceView(id, createView(control.slice()))
+
+dv.render();
