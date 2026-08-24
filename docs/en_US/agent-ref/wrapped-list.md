@@ -1,6 +1,6 @@
-# WrappedList 工具参考（自动生成，来源：src/core/proxy.ts）
+# WrappedList Reference (auto-generated from src/core/proxy.ts)
 
-> 查询/组件 API 返回的包裹列表与包裹块，提供数据处理方法。请勿手改。
+> Wrapped lists and wrapped blocks returned by the query/component APIs, plus their data-processing methods. Do not edit by hand.
 
 ## IWrappedList<T> (extends extends Array<T>)
 
@@ -18,7 +18,7 @@ unwrap(): T[];
 
 Method to return the original array
 
-**来源** `src/core/proxy.ts:57`
+**Source** `src/core/proxy.ts:57`
 
 ---
 
@@ -30,13 +30,13 @@ pick(...attrs: (keyof T)[]): IWrappedList<Partial<T>>;
 
 Returns a new array containing only specified properties
 
-**参数**
+**Params**
 
 - `attrs` — Property names to keep
 
-> ⚠ **单/多属性返回不同**（声明未体现）：`pick('id')` 返回标量数组；`pick('id','content')` 返回对象数组
+> ⚠ **Return type differs for single vs multiple attrs** (not reflected in the declaration): `pick('id')` returns a scalar array; `pick('id','content')` returns an object array
 
-**来源** `src/core/proxy.ts:74`
+**Source** `src/core/proxy.ts:74`
 
 ---
 
@@ -48,11 +48,11 @@ omit(...attrs: (keyof T)[]): IWrappedList<T>;
 
 Returns a new array excluding specified properties
 
-**参数**
+**Params**
 
 - `attrs` — Property names to exclude
 
-**来源** `src/core/proxy.ts:80`
+**Source** `src/core/proxy.ts:80`
 
 ---
 
@@ -64,12 +64,12 @@ sorton(attr: keyof T, order?: 'asc' | 'desc'): IWrappedList<T>;
 
 Returns a new array sorted by specified property
 
-**参数**
+**Params**
 
 - `attr` — Property to sort by
 - `order` — Sort direction, defaults to 'asc'
 
-**来源** `src/core/proxy.ts:87`
+**Source** `src/core/proxy.ts:87`
 
 ---
 
@@ -81,12 +81,12 @@ groupby( predicate: keyof T | ((item: T) => any), fnEach?: (groupName: any, list
 
 Returns an object grouped by specified condition
 
-**参数**
+**Params**
 
 - `predicate` — Grouping criteria, can be property name or function
 - `fnEach` — Optional callback function for each group
 
-**来源** `src/core/proxy.ts:94`
+**Source** `src/core/proxy.ts:94`
 
 ---
 
@@ -98,11 +98,11 @@ filter(predicate: (value: T, index: number, array: T[]) => boolean): IWrappedLis
 
 Returns a filtered new array, ensuring it's also an IWrappedList
 
-**参数**
+**Params**
 
 - `predicate` — Filter condition function
 
-**来源** `src/core/proxy.ts:103`
+**Source** `src/core/proxy.ts:103`
 
 ---
 
@@ -114,12 +114,12 @@ slice(start: number, end: number): IWrappedList<T>;
 
 Returns a new array containing elements in the specified range
 
-**参数**
+**Params**
 
 - `start` — Start index
 - `end` — End index
 
-**来源** `src/core/proxy.ts:109`
+**Source** `src/core/proxy.ts:109`
 
 ---
 
@@ -131,18 +131,18 @@ unique(key?: keyof Block | ((b: Block) => string | number)): IWrappedList<IWrapp
 
 Returns a new array with unique elements
 
-**参数**
+**Params**
 
 - `key` — Unique criteria, can be property name or function
 
-**示例**
+**Example**
 
 ```ts
 list.unique('id')
 list.unique(b => b.updated.slice(0, 4))
 ```
 
-**来源** `src/core/proxy.ts:117`
+**Source** `src/core/proxy.ts:117`
 
 ---
 
@@ -154,9 +154,9 @@ addrow(newItems: T[]): IWrappedList<T>;
 
 Returns a new array with added rows
 
-**全部可用名**（3，register/别名规则展开）：`addrow` · `addrows` · `concat: modify the default method of Array`
+**Available names** (3, expanded from register()/addAlias() call sites): `addrow` · `addrows` · `concat: modify the default method of Array`
 
-**来源** `src/core/proxy.ts:123`
+**Source** `src/core/proxy.ts:123`
 
 ---
 
@@ -168,11 +168,11 @@ addcol(newItems: Record<string, ScalarValue | ScalarValue[]> | Record<string, Sc
 
 Returns a new array with added columns
 
-**参数**
+**Params**
 
 - `newItems` — New columns to add
 
-**示例**
+**Example**
 
 ```ts
 list.addcol({ col1: 1, col2: 2 }) // Add two columns, each with repeated elements
@@ -181,9 +181,9 @@ list.addcol([{ col1: 1, col2: 2 }, { col1: 3, col2: 4 }]) // Add two columns, ea
 list.addcol((b, i) => ({ col1: i, col2: i * i })) // Add two columns, each with elements generated based on index
 ```
 
-**全部可用名**（3，register/别名规则展开）：`addcol` · `addcols` · `stack`
+**Available names** (3, expanded from register()/addAlias() call sites): `addcol` · `addcols` · `stack`
 
-**来源** `src/core/proxy.ts:136`
+**Source** `src/core/proxy.ts:136`
 
 ---
 
@@ -195,7 +195,7 @@ unwrapped: T[];
 
 Original array
 
-**来源** `src/core/proxy.ts:60`
+**Source** `src/core/proxy.ts:60`
 
 ---
 
@@ -208,13 +208,13 @@ asMap: (key: string) => Record<string, Block>;
 Converts the array to a map object, where the key is specified by the key parameter.
 Equivalent to calling `array.reduce((acc, cur) => ({...acc, [cur[key]]: cur }), {})`
 
-**参数**
+**Params**
 
 - `key` — 
 
-**返回**：
+**Returns**: 
 
-**来源** `src/core/proxy.ts:68`
+**Source** `src/core/proxy.ts:68`
 
 ---
 
@@ -234,7 +234,7 @@ unwrap(): Block;
 
 Method to return the original Block object
 
-**来源** `src/core/proxy.ts:6`
+**Source** `src/core/proxy.ts:6`
 
 ---
 
@@ -246,21 +246,21 @@ attr(attr: keyof Block, renderer?: (block: Block, attr: keyof Block) => string |
 
 Returns a rendered SiYuan attribute
 
-**参数**
+**Params**
 
 - `attr` — Attribute name
 - `renderer` — Custom render function, uses default rendering when returns null
 
-**返回**：Rendered attribute value
+**Returns**: Rendered attribute value
 
-**示例**
+**Example**
 
 ```ts
 block.attr('box') // Returns the name of the notebook
 block.attr('root_id') // Returns the block link of the document
 ```
 
-**来源** `src/core/proxy.ts:35`
+**Source** `src/core/proxy.ts:35`
 
 ---
 
@@ -272,7 +272,7 @@ unwrapped: Block;
 
 Original Block object
 
-**来源** `src/core/proxy.ts:9`
+**Source** `src/core/proxy.ts:9`
 
 ---
 
@@ -284,7 +284,7 @@ asurl: string;
 
 Block's URI link in format: siyuan://blocks/xxx
 
-**来源** `src/core/proxy.ts:12`
+**Source** `src/core/proxy.ts:12`
 
 ---
 
@@ -296,7 +296,7 @@ aslink: string;
 
 Block's Markdown format link [content](siyuan://blocks/xxx)
 
-**来源** `src/core/proxy.ts:15`
+**Source** `src/core/proxy.ts:15`
 
 ---
 
@@ -308,7 +308,7 @@ asref: string;
 
 Block's SiYuan reference format text
 
-**来源** `src/core/proxy.ts:18`
+**Source** `src/core/proxy.ts:18`
 
 ---
 
@@ -320,13 +320,13 @@ asial: Record<string, string>;
 
 Blocks's ial list, as object
 
-**示例**
+**Example**
 
 ```ts
 let icon = block.asial['icon'];
 ```
 
-**来源** `src/core/proxy.ts:24`
+**Source** `src/core/proxy.ts:24`
 
 ---
 
@@ -338,7 +338,7 @@ updatedDate: string;
 
 Update date in YYYY-MM-DD format
 
-**来源** `src/core/proxy.ts:38`
+**Source** `src/core/proxy.ts:38`
 
 ---
 
@@ -350,7 +350,7 @@ createdDate: string;
 
 Creation date in YYYY-MM-DD format
 
-**来源** `src/core/proxy.ts:40`
+**Source** `src/core/proxy.ts:40`
 
 ---
 
@@ -362,7 +362,7 @@ updatedTime: string;
 
 Update time in HH:mm:ss format
 
-**来源** `src/core/proxy.ts:42`
+**Source** `src/core/proxy.ts:42`
 
 ---
 
@@ -374,7 +374,7 @@ createdTime: string;
 
 Creation time in HH:mm:ss format
 
-**来源** `src/core/proxy.ts:44`
+**Source** `src/core/proxy.ts:44`
 
 ---
 
@@ -386,7 +386,7 @@ updatedDatetime: string;
 
 Update datetime in YYYY-MM-DD HH:mm:ss format
 
-**来源** `src/core/proxy.ts:46`
+**Source** `src/core/proxy.ts:46`
 
 ---
 
@@ -398,7 +398,7 @@ createdDatetime: string;
 
 Creation datetime in YYYY-MM-DD HH:mm:ss format
 
-**来源** `src/core/proxy.ts:48`
+**Source** `src/core/proxy.ts:48`
 
 ---
 

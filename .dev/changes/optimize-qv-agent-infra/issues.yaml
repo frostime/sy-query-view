@@ -94,13 +94,13 @@ domains:
   - id: I-20
     title: 嵌套对象字面量展示策略
     prio: P1
-    status: open
-    note: Query.Utils 类型整段展开超长；摘要 or 递归
+    status: done
+    note: 已实现：Query.Utils 独立子模块节（类型检查器递归成员），commit 4f6d29a
   - id: I-21
     title: 每节模板固化
     prio: P1
-    status: open
-    note: 签名→说明→行为要点→示例→来源；grep 定位性（用户偏好）
+    status: done
+    note: 已实现：短签名标题 + ts block 完整签名 + Params/Returns/Example/Source + ⚠ 注入；多行参数续行缩进 2 空格；commit 4f6d29a
   - id: I-22
     title: 行为要点 = 源码注释（生成器纯搬运）
     prio: P0
@@ -113,13 +113,13 @@ domains:
   - id: I-30
     title: register/addAlias 调用点生成别名
     prio: P1
-    status: open
-    note: demo 已验证（19 处 register→171 名、8 组 Query 别名）；正式化已完成（gen-agent-ref.mjs），条目待验收关闭
+    status: done
+    note: 已实现于 gen-agent-ref.mjs（commit 4f6d29a）：19 处 register→171 名、8 组 Query 别名
   - id: I-31
     title: 面向 agent 注释约定定稿
     prio: P0
     status: hang
-    note: '[agent] 占位的具体 tag/结构（默认值/副作用/陷阱怎么标注）；设计归 N3，落实到源码注释的动作归 N6'
+    note: 草案机制已运行：生成器 KNOWN_NOTES 注入口 + 源码 JSDoc 纯搬运（I-22）；正式 [agent] tag 结构待 N6 落地时定稿（details 为样板，I-78）
 - key: n4
   title: N4 — 对齐验证（后置预订，不纳入前期处理）
   issues:
@@ -321,6 +321,13 @@ domains:
     ev: scan
     disposition: 待定
     note: 'query.ts:474 `request: request`（initializer 是 Identifier）；途径：改代码形态（内联箭头函数）or 生成器增强（解析引用目标参数）'
+  - id: I-82
+    title: 源码 JSDoc 偶见中文（query.ts:290 now 的 days 参数），en_US 文档原样带出
+    prio: info
+    status: open
+    ev: scan
+    disposition: 补注释
+    note: 纯搬运原则下生成器不改内容；是否英文化源码注释待 N6 处置（可与 I-78 注释优化一并考虑）
 - key: layer2
   title: 第 2 层 — 长期对齐规范（独立问题，只预订入口）
   issues:

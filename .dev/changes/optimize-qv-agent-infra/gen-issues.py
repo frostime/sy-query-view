@@ -28,13 +28,13 @@ data = {
       {"id": "I-17", "title": "源码类型声明的诚实度是文档准确度天花板", "prio": "P0", "status": "open", "note": "用户拍板（2026-08-24）：后置——等整个生成框架跑通后再回头修源码类型（先跑通，再保证内容正确）。生成器对已知不对齐点先用标注/待核实呈现"},
     ]},
     {"key": "n2", "title": "N2 — 生成格式与文档结构", "issues": [
-      {"id": "I-20", "title": "嵌套对象字面量展示策略", "prio": "P1", "status": "open", "note": "Query.Utils 类型整段展开超长；摘要 or 递归"},
-      {"id": "I-21", "title": "每节模板固化", "prio": "P1", "status": "open", "note": "签名→说明→行为要点→示例→来源；grep 定位性（用户偏好）"},
+      {"id": "I-20", "title": "嵌套对象字面量展示策略", "prio": "P1", "status": "done", "note": "已实现：Query.Utils 独立子模块节（类型检查器递归成员），commit 4f6d29a"},
+      {"id": "I-21", "title": "每节模板固化", "prio": "P1", "status": "done", "note": "已实现：短签名标题 + ts block 完整签名 + Params/Returns/Example/Source + ⚠ 注入；多行参数续行缩进 2 空格；commit 4f6d29a"},
       {"id": "I-22", "title": "行为要点 = 源码注释（生成器纯搬运）", "prio": "P0", "status": "active", "ev": "user", "note": "用户已确认：任何人写的信息都进 JSDoc，生成器一个字不编（语义对齐的文档侧来源）"},
     ]},
     {"key": "n3", "title": "N3 — 生成器机制：动态 API 与注释提取规则", "issues": [
-      {"id": "I-30", "title": "register/addAlias 调用点生成别名", "prio": "P1", "status": "open", "note": "demo 已验证（19 处 register→171 名、8 组 Query 别名）；正式化已完成（gen-agent-ref.mjs），条目待验收关闭"},
-      {"id": "I-31", "title": "面向 agent 注释约定定稿", "prio": "P0", "status": "hang", "note": "[agent] 占位的具体 tag/结构（默认值/副作用/陷阱怎么标注）；设计归 N3，落实到源码注释的动作归 N6"},
+      {"id": "I-30", "title": "register/addAlias 调用点生成别名", "prio": "P1", "status": "done", "note": "已实现于 gen-agent-ref.mjs（commit 4f6d29a）：19 处 register→171 名、8 组 Query 别名"},
+      {"id": "I-31", "title": "面向 agent 注释约定定稿", "prio": "P0", "status": "hang", "note": "草案机制已运行：生成器 KNOWN_NOTES 注入口 + 源码 JSDoc 纯搬运（I-22）；正式 [agent] tag 结构待 N6 落地时定稿（details 为样板，I-78）"},
     ]},
     {"key": "n4", "title": "N4 — 对齐验证（后置预订，不纳入前期处理）", "issues": [
       {"id": "I-40", "title": "结项复核对象清单（预备清单）", "prio": "P1", "status": "open", "note": "预订到 N6 阶段要验证的已知不对齐点（childDoc wrapped、today hms、pick 标量、details innerHTML、columns flex、render 副作用、alias 存在性）。细节待结项时定"},
@@ -70,6 +70,7 @@ data = {
       {"id": "I-78", "title": "details 无 JSDoc（register 组件中唯一无注释）", "prio": "P1", "status": "open", "ev": "scan", "disposition": "补注释", "note": "data-view.ts:515-527；补注释样本（含 innerHTML 直拼/open=true 行为真相），生成器对无注释输出占位行；附初稿见本会话讨论"},
       {"id": "I-79", "title": "deprecated 参数名暴露内部实现（optionDeprecatedAsValMatch 等）", "prio": "P3", "status": "open", "ev": "scan", "disposition": "文档化", "note": "query.ts handleOptions 模式；这些参数名会进 agent 参考；改名需 breaking change"},
       {"id": "I-81", "title": "request/renderAttr 属性=函数引用形态：短签名取不到参数名", "prio": "P3", "status": "open", "ev": "scan", "disposition": "待定", "note": "query.ts:474 `request: request`（initializer 是 Identifier）；途径：改代码形态（内联箭头函数）or 生成器增强（解析引用目标参数）"},
+      {"id": "I-82", "title": "源码 JSDoc 偶见中文（query.ts:290 now 的 days 参数），en_US 文档原样带出", "prio": "info", "status": "open", "ev": "scan", "disposition": "补注释", "note": "纯搬运原则下生成器不改内容；是否英文化源码注释待 N6 处置（可与 I-78 注释优化一并考虑）"},
     ]},
     {"key": "layer2", "title": "第 2 层 — 长期对齐规范（独立问题，只预订入口）", "issues": [
       {"id": "I-80", "title": "长期对齐规范机制（AGENTS.md / SKILL 形式）", "prio": "P2", "status": "open", "note": "用户定义：让后续协作持续保持『语义对齐』的规范，属长期 infrastructure 问题，独立于本轮 graph 任务；此处只订入口，条件：第 1 层结项后评估。规范内容不得在本任务中提前定死"},

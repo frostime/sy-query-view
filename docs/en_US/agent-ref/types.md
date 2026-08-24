@@ -1,6 +1,6 @@
-# 类型参考（自动生成，来源：src/types/data-view.d.ts）
+# Types Reference (auto-generated from src/types/data-view.d.ts)
 
-> 构造 DataView 组件 options 时需要的接口定义。请勿手改。
+> Interface definitions needed when constructing DataView component options. Do not edit by hand.
 
 ## IListOptions
 
