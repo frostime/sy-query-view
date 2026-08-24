@@ -2,7 +2,7 @@
  * @name sy-query-view
  * @author frostime
  * @version 1.3.0
- * @updated 2026-08-24T12:27:24.553Z
+ * @updated 2026-08-24T18:01:42.608Z
  */
 
 declare module 'siyuan' {
