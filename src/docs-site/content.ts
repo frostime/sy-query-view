@@ -19,7 +19,7 @@ export interface ContentApi {
     pageUrl(lang: Lang, id: PageId): string;
     /** 状态化加载；成功（ok/fallback）内容入 Map 缓存 (lang,id)，失败不缓存 */
     loadPage(lang: Lang, id: PageId): Promise<PageLoadResult>;
-    /** 仅删 docs-only 标记行、保留内容（与 README 生成器相反） */
+    /** 仅删除 docs-only 标记行、保留内容，供文档站只读渲染 */
     stripDocsOnlyMarkers(md: string): string;
     /** {{example:<file>}} → ```js 围栏；文件从 /plugins/{pluginName}/example/<file> 读取并缓存 */
     expandExamples(md: string): Promise<string>;
@@ -32,7 +32,7 @@ export interface ContentApi {
 const SKILL_PLACEHOLDER = /\{\{skill:([a-zA-Z0-9_-]+)\}\}/g;
 
 /**
- * Skill 展示转换（与 scripts/build-docs.js 的 skillToDisplay 逻辑必须逐字节一致）：
+ * Skill 展示转换（文档站运行时唯一实现，随包发布时经 {{skill:…}} 展开）：
  * YAML frontmatter（开头的 --- 块）作为 yaml fenced code block 显示，frontmatter 后的正文继续按
  * Markdown 渲染；输入按 LF 归一化；无 frontmatter 时完整正文直接显示。不解析或改写 Skill 规则内容。
  */
