@@ -2,7 +2,7 @@
  * @name sy-query-view
  * @author frostime
  * @version 1.3.0
- * @updated 2026-08-24T19:14:47.402Z
+ * @updated 2026-08-24T19:36:41.787Z
  */
 
 declare module 'siyuan' {
@@ -360,7 +360,10 @@ declare const Query: {
     keyword: (keywords: string | string[], options?: {
         relation?: "any" | "all";
         limit?: number;
-    } | DeprecatedParam<"any" | "all">, limit?: DeprecatedParam<number>) => Promise<IWrappedList<IWrappedBlock>>;
+    } | DeprecatedParam<"any" | "all"> | {
+        join?: "or" | "and";
+        limit?: number;
+    } | DeprecatedParam<"or" | "and">, limit?: DeprecatedParam<number>) => Promise<IWrappedList<IWrappedBlock>>;
     /**
      * Search the document that contains all the keywords.
      * @param keywords {string | string[]} keywords to search for; can provide multiple keywords
@@ -379,7 +382,10 @@ declare const Query: {
     keywordDoc: (keywords: string | string[], options?: {
         relation?: "any" | "all";
         limit?: number;
-    } | DeprecatedParam<"any" | "all">, limit?: DeprecatedParam<number>) => Promise<Block[]>;
+    } | DeprecatedParam<"any" | "all"> | {
+        join?: "or" | "and";
+        limit?: number;
+    } | DeprecatedParam<"or" | "and">, limit?: DeprecatedParam<number>) => Promise<Block[]>;
     /**
      * Randomly roam blocks
      * @param limit - Maximum number of results
