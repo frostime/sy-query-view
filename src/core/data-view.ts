@@ -417,7 +417,8 @@ export class DataView extends UseStateMixin implements IDataView {
     /** @internal */
     addele = this.addElement;
 
-    isValidViewContainer(container: HTMLElement) {
+    /** @internal */
+    private isValidViewContainer(container: HTMLElement) {
         if (!container.classList.contains(styles["data-view-component"])) {
             return false;
         }
@@ -512,6 +513,14 @@ export class DataView extends UseStateMixin implements IDataView {
         return elem;
     }
 
+    /**
+     * Renders a collapsible details/summary element
+     * @param summary - Text placed in the <summary> tag; inserted as raw HTML, not markdown — do not pass untrusted content
+     * @param content - Detail body; a string is inserted as raw HTML (not markdown); an HTMLElement is appended directly
+     * @returns An HTMLDetailsElement, expanded by default (open=true)
+     * @example
+     * dv.adddetails('Summary text', '<p>Body content</p>');
+     */
     details(summary: string, content: string | HTMLElement) {
         const details: HTMLDetailsElement = newViewWrapper('details') as HTMLDetailsElement;
         details.innerHTML = `<summary>${summary}</summary>${typeof content === 'string' ? content : ''}`;

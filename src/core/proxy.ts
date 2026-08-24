@@ -251,9 +251,9 @@ export const wrapBlock = (block: Block): IWrappedBlock => {
  * @param list 
  * @returns 
  */
-export const wrapList = (list: Block[], useWrapBlock: boolean = true) => {
+export const wrapList = (list: Block[], useWrapBlock: boolean = true): IWrappedList<Block> => {
     if (list?.['unwrapped']) {
-        return list
+        return list as IWrappedList<Block>
     }
 
     // let wrappedBlocks = list.map(block => wrapBlock(block as Block));
@@ -517,5 +517,5 @@ export const wrapList = (list: Block[], useWrapBlock: boolean = true) => {
         }
     });
     //@ts-ignore
-    return proxy;
+    return proxy as IWrappedList<Block>;
 }

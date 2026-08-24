@@ -106,7 +106,6 @@ function renderSection({ heading, fullSig, doc, aliases, source, notes, noDoc, l
 // ============ 已知不对齐清单（Worker-B 校验 + N1 原型确认的坑；N6 处置前先诚实标注） ============
 // 注意：内容与本 session 讨论同步，N6 处置后应迁移至源码 JSDoc（I-31 约定落地）
 const KNOWN_NOTES = {
-  "Query.childDoc": ["Actually returns a **wrapped list** (supports `.pick()`/`.groupby()`/`.addcols()`); the tsc declaration says `Block[]`, which does not match the runtime"],
   "Query.keywordDoc": ["`join:'or'` is not a true OR: the SQL stage uses OR, but the post-filter still requires every keyword to match — effectively AND"],
   "Query.Utils.today": ["Default `hms=true` returns a 14-digit full timestamp (yyyyMMddHHmmss); pass `false` for 8-digit; thisWeek starts on Sunday"],
   "Query.Utils.thisWeek": ["Default `hms=true` returns a 14-digit full timestamp (yyyyMMddHHmmss); pass `false` for 8-digit; the week starts on Sunday"],

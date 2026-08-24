@@ -27,7 +27,7 @@ Creates a new DataView instance for rendering data visualizations
 ## Query.wrapBlocks(blocks, useWrapBlock)
 
 ```ts
-wrapBlocks: (blocks: Block[] | Block, useWrapBlock?: boolean) => Block[] | IWrappedBlock
+wrapBlocks: (blocks: Block[] | Block, useWrapBlock?: boolean) => IWrappedBlock | IWrappedList<Block>
 ```
 
 Wraps blocks with additional functionality
@@ -297,7 +297,7 @@ Query.dailynote({ limit: 32 })
 ## Query.childDoc(b)
 
 ```ts
-childDoc: (b: BlockId | Block) => Promise<Block[]>
+childDoc: (b: BlockId | Block) => Promise<IWrappedList<Block>>
 ```
 
 Gets child documents of a block
@@ -307,8 +307,6 @@ Gets child documents of a block
 - `b` — Parent block or block ID
 
 **Returns**: Array of child document blocks
-
-> ⚠ Actually returns a **wrapped list** (supports `.pick()`/`.groupby()`/`.addcols()`); the tsc declaration says `Block[]`, which does not match the runtime
 
 **Source** `src/core/query.ts:729`
 
@@ -466,7 +464,7 @@ Return the statistics of the document with given document ID
 ## Query.fb2p(inputs, enable?)
 
 ```ts
-fb2p: (inputs: Block[], enable?: { heading?: boolean; doc?: boolean; }) => Promise<Block[]>
+fb2p: (inputs: Block[], enable?: { heading?: boolean; doc?: boolean; }) => Promise<IWrappedList<Block>>
 ```
 
 Redirects first block IDs to their parent containers
@@ -489,7 +487,7 @@ Redirects first block IDs to their parent containers
 ## Query.pruneBlocks(blocks, keep, advanced)
 
 ```ts
-pruneBlocks: (blocks: Block[], keep?: "leaf" | "root", advanced?: boolean) => Promise<Block[]>
+pruneBlocks: (blocks: Block[], keep?: "leaf" | "root", advanced?: boolean) => Promise<IWrappedList<Block>>
 ```
 
 Prune/Merge blocks from SQL search results to eliminate duplicates.
