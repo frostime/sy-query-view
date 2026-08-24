@@ -1,5 +1,23 @@
 思源的嵌入块功能，支持使用 Javascript 语法进行查询。本插件调整了 API 结构、增加了若干功能，让在思源中使用 JS 查询变得更加简单方便，并优化了 DataView 接口，支持更加丰富、自定义化更强的数据展示功能。
 
+## 最小示例
+
+把下面的代码放进一个嵌入块，就能在文档中渲染出一个「最近更新的文档」表格：
+
+```js
+//!js
+let dv = Query.DataView(protyle, item, top);
+let docs = await Query.sql(`select * from blocks where type = 'd' order by updated desc limit 5`);
+dv.addtable(docs, { cols: ['content', 'updated'], fullwidth: true });
+dv.render();
+```
+
+![image](docs/assets/image-query-view-minimal-example.png "渲染效果")
+
+> 💡 上面的代码只是一个最小演示；完整的基础模板与逐步说明见「从模板开始」，更多可复制的效果见「案例总览」。
+>
+> 💡 示例默认使用顶层 await，这需要思源 3.8.0 及以上版本；在更早的版本中，需要把 await 相关的代码包进一个 async 函数，并以 `return query();` 结尾调用（例如 `const query = async () => { … }; return query();`）。
+
 ⚠️ 注意，本文档默认读者了解基础的 Javascript 语法概念（至少需要理解基础的变量、流程控制、函数调用、async/await）。
 
 > 🔀 **[更新日志](CHANGELOG.md)**

@@ -1,5 +1,23 @@
 The embedded block feature of SiYuan supports querying using JavaScript syntax. This plugin adjusts the API structure, adds new features, and optimizes the DataView interface, making JS queries in SiYuan simpler and more convenient, with richer and more customizable data visualization.
 
+## Minimal Example
+
+Drop the following code into an embedded block, and your document renders a "recently updated documents" table:
+
+```js
+//!js
+let dv = Query.DataView(protyle, item, top);
+let docs = await Query.sql(`select * from blocks where type = 'd' order by updated desc limit 5`);
+dv.addtable(docs, { cols: ['content', 'updated'], fullwidth: true });
+dv.render();
+```
+
+![image](docs/assets/image-query-view-minimal-example.png "Rendered effect")
+
+> 💡 The code above is only a minimal demo; the complete basic template and the step-by-step guide live in "Start from the Template", and more copyable effects are in the "Example Overview".
+>
+> 💡 This example uses top-level await, which requires SiYuan 3.8.0 or newer. On older versions, the await-related code must be wrapped in an async function invoked at the end, e.g. `const query = async () => { … }; return query();`.
+
 > ⚠️ This document assumes that you have a basic understanding of JavaScript syntax concepts (at minimum, basic variables, control flow, function calls, and async/await).
 
 > 🔀 **[Changelog](CHANGELOG.md)**
