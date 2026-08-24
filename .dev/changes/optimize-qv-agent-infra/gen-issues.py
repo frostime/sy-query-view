@@ -32,10 +32,9 @@ data = {
       {"id": "I-21", "title": "每节模板固化", "prio": "P1", "status": "open", "note": "签名→说明→行为要点→示例→来源；grep 定位性（用户偏好）"},
       {"id": "I-22", "title": "行为要点 = 源码注释（生成器纯搬运）", "prio": "P0", "status": "active", "ev": "user", "note": "用户已确认：任何人写的信息都进 JSDoc，生成器一个字不编（语义对齐的文档侧来源）"},
     ]},
-    {"key": "n3", "title": "N3 — 动态 API 与注释约定", "issues": [
-      {"id": "I-30", "title": "register/addAlias 调用点生成别名", "prio": "P1", "status": "open", "note": "demo 已验证（19 处 register→171 名、8 组 Query 别名）；正式化"},
-      {"id": "I-31", "title": "面向 agent 注释约定定稿", "prio": "P0", "status": "hang", "note": "[agent] 占位的具体 tag/结构（默认值/副作用/陷阱怎么标注）"},
-      {"id": "I-32", "title": "覆盖率补注释", "prio": "P2", "status": "open", "note": "现有 JSDoc 覆盖率参差；面向 agent 增量的主战场"},
+    {"key": "n3", "title": "N3 — 生成器机制：动态 API 与注释提取规则", "issues": [
+      {"id": "I-30", "title": "register/addAlias 调用点生成别名", "prio": "P1", "status": "open", "note": "demo 已验证（19 处 register→171 名、8 组 Query 别名）；正式化已完成（gen-agent-ref.mjs），条目待验收关闭"},
+      {"id": "I-31", "title": "面向 agent 注释约定定稿", "prio": "P0", "status": "hang", "note": "[agent] 占位的具体 tag/结构（默认值/副作用/陷阱怎么标注）；设计归 N3，落实到源码注释的动作归 N6"},
     ]},
     {"key": "n4", "title": "N4 — 对齐验证（后置预订，不纳入前期处理）", "issues": [
       {"id": "I-40", "title": "结项复核对象清单（预备清单）", "prio": "P1", "status": "open", "note": "预订到 N6 阶段要验证的已知不对齐点（childDoc wrapped、today hms、pick 标量、details innerHTML、columns flex、render 副作用、alias 存在性）。细节待结项时定"},
@@ -49,8 +48,8 @@ data = {
       {"id": "I-53", "title": "SKILL 触发面验证", "prio": "P3", "status": "open", "ev": "HO", "note": "若未来接思源 Agent 自动触发需另验证"},
       {"id": "I-54", "title": "README 提及 Agent 入口", "prio": "info", "status": "wontfix", "ev": "HO", "note": "用户明确：README 是纯用户门面，勿擅自加"},
     ]},
-    {"key": "n6", "title": "N6 — API 诚实化修补（坑清单）", "issues": [
-      {"id": "I-60", "title": "childDoc/keywordDoc/fb2p/pruneBlocks 声明 Block[] 实为 wrapped", "prio": "P0", "status": "open", "ev": "WB", "disposition": "修类型", "note": "query.ts:729/881/956/1077；d.ts 同错；含 I-17 类型诚实前置"},
+    {"key": "n6", "title": "N6 — 代码扫清（扫描/类型/注释）+ API 诚实化", "issues": [
+      {"id": "I-60", "title": "childDoc/keywordDoc/fb2p/pruneBlocks 声明 Block[] 实为 wrapped", "prio": "P0", "status": "open", "ev": "WB", "disposition": "修类型", "note": "query.ts:729/881/956/1077；d.ts 同错；含 I-17 类型诚实前置。根因：wrapList 无返回标注（proxy.ts:254），new Proxy 推断为 Block[]；修法：wrapList 加 `: IWrappedList<Block>` 返回标注，下游声明自动修正"},
       {"id": "I-61", "title": "pick('id') 单属性返回标量，多属性返回对象；声明统一 Partial<T>", "prio": "P0", "status": "open", "ev": "WB", "disposition": "修类型", "note": "proxy.ts:283-310；双 overload 或文档化"},
       {"id": "I-62", "title": "map 声称保留 wrapper 实为普通数组（override 被注释）", "prio": "P2", "status": "open", "ev": "WB", "disposition": "修实现/文档化/抛弃", "note": "proxy.ts:404-424"},
       {"id": "I-63", "title": "keywordDoc({join:'or'}) SQL OR 但后续仍要求全匹配", "prio": "P1", "status": "open", "ev": "WB", "disposition": "修实现/文档化", "note": "query.ts:843-886"},
@@ -66,6 +65,11 @@ data = {
       {"id": "I-73", "title": "minAppVersion 3.1.14 vs SKILL 称 3.8.0；顶层 await 需 3.8.0", "prio": "P1", "status": "open", "ev": "WB", "disposition": "修文档", "note": "plugin.json:5；index.ts:100；分层事实"},
       {"id": "I-74", "title": "Query.request 是内核请求非任意 HTTP；Query.gpt 才是外部 fetch", "prio": "P0", "status": "open", "ev": "WB", "disposition": "修文档", "note": "api.ts:12；query.ts:1108；安全边界说明"},
       {"id": "I-75", "title": "IDataView 手写桩只有 render()，与真实 class 脱节", "prio": "P1", "status": "open", "ev": "WB", "disposition": "规范/废弃", "note": "src/types/data-view.d.ts"},
+      {"id": "I-76", "title": "IWrappedList 假泛型：interface <T> 但实现硬编码 Block", "prio": "P2", "status": "open", "ev": "scan", "disposition": "修类型", "note": "proxy.ts:74 附近 interface 写泛型，pick/omit 等 case 实现全是 (keyof Block)[]；建议定死 IWrappedList<Block> 或真泛型"},
+      {"id": "I-77", "title": "内部方法未标 private：isValidViewContainer 确定标；view 待拍板", "prio": "P2", "status": "open", "ev": "scan", "disposition": "修类型", "note": "标 private + @internal 后从 d.ts 消失（stripInternal），生成器无需过滤；view 无文档引用但为 addElement 基础，保守保留待用户拍板"},
+      {"id": "I-78", "title": "details 无 JSDoc（register 组件中唯一无注释）", "prio": "P1", "status": "open", "ev": "scan", "disposition": "补注释", "note": "data-view.ts:515-527；补注释样本（含 innerHTML 直拼/open=true 行为真相），生成器对无注释输出占位行；附初稿见本会话讨论"},
+      {"id": "I-79", "title": "deprecated 参数名暴露内部实现（optionDeprecatedAsValMatch 等）", "prio": "P3", "status": "open", "ev": "scan", "disposition": "文档化", "note": "query.ts handleOptions 模式；这些参数名会进 agent 参考；改名需 breaking change"},
+      {"id": "I-81", "title": "request/renderAttr 属性=函数引用形态：短签名取不到参数名", "prio": "P3", "status": "open", "ev": "scan", "disposition": "待定", "note": "query.ts:474 `request: request`（initializer 是 Identifier）；途径：改代码形态（内联箭头函数）or 生成器增强（解析引用目标参数）"},
     ]},
     {"key": "layer2", "title": "第 2 层 — 长期对齐规范（独立问题，只预订入口）", "issues": [
       {"id": "I-80", "title": "长期对齐规范机制（AGENTS.md / SKILL 形式）", "prio": "P2", "status": "open", "note": "用户定义：让后续协作持续保持『语义对齐』的规范，属长期 infrastructure 问题，独立于本轮 graph 任务；此处只订入口，条件：第 1 层结项后评估。规范内容不得在本任务中提前定死"},
