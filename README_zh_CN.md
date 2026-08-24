@@ -12,9 +12,9 @@
 >
 > 如果无法打开插件内文档站，也可以通过下方链接直接浏览本仓库 `docs/` 目录中的同一份内容。
 
-## 0. 功能速览
+## 功能速览
 
-💡 本插件大致可以提供以下功能（这里提供一个概览印象，详细用法见文档站对应页面）。
+💡 插件提供丰富的查询、展示功能（这里提供一个概览印象，详细用法见文档站对应页面）。
 
 1️⃣ 使用 Query API 进行嵌入块/SQL 查询。
 
@@ -42,34 +42,34 @@
 >
 > 学习本插件最好的方式，是从一些案例出发，快速了解插件的基本用法。安装插件后，在文档站的「案例」页即可查看、复制并改造这些案例；也可以直接浏览仓库中的[案例总览](docs/zh_CN/examples/index.md)。
 
-## 1. 文档大纲
+## 内置使用文档
 
 完整的说明文档分为「快速开始、主题、案例、API 参考、智能体技能」等部分，提供中英双语。以下页面即为插件内文档站的源内容（文档站直接渲染这些页面），可在 GitHub 上直接浏览：
 
-### 快速开始
+**快速开始**
 
 - [基本概念：什么是 JS 嵌入块](docs/zh_CN/quickstart/concepts.md) —— 嵌入块、执行环境，以及 `protyle`/`item`/`top` 变量。
 - [从模板开始](docs/zh_CN/quickstart/template.md) —— 复制模板、插入嵌入块、运行并改造，快速跑起第一个 Query View。
 
-### 主题
+**主题**
 
 - [Query 查询](docs/zh_CN/topics/query.md) —— Query API、SQL 查询、WrappedList/WrappedBlock、Query.Utils、fb2p、pruneBlocks。
 - [DataView 视图](docs/zh_CN/topics/dataview.md) —— list/table/md 及全部视图组件。
 - [DataView 高级特性](docs/zh_CN/topics/dataview-advanced.md) —— 自定义视图组件、useState、生命周期与只读建议。
 - [外部编辑器与调试](docs/zh_CN/topics/editor-tips.md) —— 外部编辑器、调试方法、配合思源模板。
 
-### 案例
+**案例**
 
 - [案例总览](docs/zh_CN/examples/index.md) —— 按用途/标签检索案例，复制并改造。
 
-### API 参考
+**API 参考**
 
 - [API 参考](docs/zh_CN/api/reference.md) —— 接口导览；也可以在文档站「API 参考」页打开或下载当前版本的 `types.d.ts` 类型声明。
 
-### 智能体技能
+**智能体技能**
 
 - [智能体技能](docs/zh_CN/skill/index.md) —— 指导 AI 代理（Agent）使用本插件进行查询与渲染的 `SKILL.md`，随插件版本一起发布。
 
-## 2. 感谢
+## 感谢
 
 感谢 Zxhd 开发的[基础数据查询](https://github.com/zxhd863943427/siyuan-plugin-data-query)插件——它较早地为思源的 JS 查询能力提供了扩展。本插件正是在其基础上调整了 API 结构、增加了若干功能，深受启发。
