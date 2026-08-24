@@ -18,13 +18,10 @@
 
 ```js
 //!js
-const query = async () => {
-  let dv = Query.DataView(protyle, item, top); //1. 在开头加上这么一行，注意 protyle, item, top 三个参数是永远固定不动的
-  let blocks = await Query.random(5);
-  dv.addlist(blocks); //2. 调用 dv.addlist 添加一个列表视图
-  dv.render(); //3. 去掉 return, 以 dv.render() 结尾
-}
-return query();
+let dv = Query.DataView(protyle, item, top); //1. 在开头加上这么一行，注意 protyle, item, top 三个参数是永远固定不动的
+let blocks = await Query.random(5);
+dv.addlist(blocks); //2. 调用 dv.addlist 添加一个列表视图
+dv.render(); //3. 去掉 return, 以 dv.render() 结尾
 ```
 
 通过以上的代码，我们就可以将 SQL 语句查询到几个块，以列表的形式在嵌入块中展示，效果如下：
@@ -49,17 +46,14 @@ return query();
 
 ```js
 //!js
-const query = async () => {
-  let dv = Query.DataView(protyle, item, top);
-  const blocks = await Query.random(5);
-  dv.addlist(blocks, {
-    type: 'o',
-    columns: 2,
-    renderer: (b) => b.hpath
-  });
-  dv.render();
-}
-return query();
+let dv = Query.DataView(protyle, item, top);
+const blocks = await Query.random(5);
+dv.addlist(blocks, {
+  type: 'o',
+  columns: 2,
+  renderer: (b) => b.hpath
+});
+dv.render();
 ```
 
 ![image](../../assets/image-20241207210617-i5tmd5l.png)
@@ -70,13 +64,10 @@ return query();
 
 ```js
 //!js
-const query = async () => {
-  let dv = Query.DataView(protyle, item, top); //永远是这个开头不动
-  const blocks = await Query.random(5);
-  dv.addtable(blocks);
-  dv.render(); //永远是这个结尾不动
-}
-return query();
+let dv = Query.DataView(protyle, item, top); //永远是这个开头不动
+const blocks = await Query.random(5);
+dv.addtable(blocks);
+dv.render(); //永远是这个结尾不动
 ```
 
 效果如下：
@@ -112,14 +103,11 @@ table 组件会自动以合适的方式渲染不同的列：比如 type 被渲�
 
 ```js
 //!js
-const query = async () => {
-  let dv = Query.DataView(protyle, item, top);
-  const blocks = await Query.backlink(dv.root_id);  //dv.root_id 等价于 protyle.block.rootID，算是能少写一点字
-  dv.addtable(blocks, { fullwidth: false, cols: null}); //全部显示
-  dv.addtable(blocks, { fullwidth: true, cols: ['root_id', 'box', 'updated']});
-  dv.render();
-}
-return query();
+let dv = Query.DataView(protyle, item, top);
+const blocks = await Query.backlink(dv.root_id);  //dv.root_id 等价于 protyle.block.rootID，算是能少写一点字
+dv.addtable(blocks, { fullwidth: false, cols: null}); //全部显示
+dv.addtable(blocks, { fullwidth: true, cols: ['root_id', 'box', 'updated']});
+dv.render();
 ```
 
 ![image](../../assets/image-20241204003849-8l19z7b.png)
@@ -132,22 +120,19 @@ return query();
 
 ```js
 //!js
-const query = async () => {
-  let dv = Query.DataView(protyle, item, top);
-  const blocks = await Query.random(3);
-  dv.addtable(blocks, {
-    cols: ['id', 'hpath', 'root_id', 'box']
-  });
-  dv.addtable(blocks, {
-    cols: ['id', 'hpath', 'root_id', 'box'],
-    renderer: (block, key) => {
-        if (key == 'id') return block[key]; // key 列直接显示原始文本
-        if (key == 'box') return 'Hahaha';
-    }
-  });
-  dv.render();
-}
-return query();
+let dv = Query.DataView(protyle, item, top);
+const blocks = await Query.random(3);
+dv.addtable(blocks, {
+  cols: ['id', 'hpath', 'root_id', 'box']
+});
+dv.addtable(blocks, {
+  cols: ['id', 'hpath', 'root_id', 'box'],
+  renderer: (block, key) => {
+      if (key == 'id') return block[key]; // key 列直接显示原始文本
+      if (key == 'box') return 'Hahaha';
+  }
+});
+dv.render();
 ```
 
 ![image](../../assets/image-20241208234136-s06cygn.png)
@@ -158,7 +143,6 @@ return query();
 
 ```js
 //!js
-//这里由于没有 await 的需要，所以可以把外层的 async 函数去掉
 let dv = Query.DataView(protyle, item, top);
 dv.addmd('## 这是一个二级标题')
 dv.addmd(`当前文档的 id 是: ${protyle.block.rootID}`)
@@ -268,18 +252,15 @@ interface IBlockWithChilds extends Block, IHasChildren<Block>, ITreeNode {
 
 ```js
 //!js
-const query = async () => {
-    let dv = Query.DataView(protyle, item, top);
-    let childs = await Query.childdoc(dv.root_id);
-    for (let child of childs) {
-        //获取子文档的子文档
-        const subchilds = await Query.childdoc(child.root_id);
-        child.children = subchilds;
-    }
-    dv.addlist(childs);
-    dv.render();
+let dv = Query.DataView(protyle, item, top);
+let childs = await Query.childdoc(dv.root_id);
+for (let child of childs) {
+    //获取子文档的子文档
+    const subchilds = await Query.childdoc(child.root_id);
+    child.children = subchilds;
 }
-return query();
+dv.addlist(childs);
+dv.render();
 ```
 
 ![image](../../assets/image-20241206184455-4in6gct.png)
@@ -304,13 +285,10 @@ Card 组件以卡片的形式显示块的内容。参数如下:
 
 ```js
 //!js
-const query = async () => {
-  let dv = Query.Dataview(protyle, item, top);
-  let blocks = await Query.random(8);
-  dv.addCard(blocks);
-  dv.render();
-}
-return query();
+let dv = Query.Dataview(protyle, item, top);
+let blocks = await Query.random(8);
+dv.addCard(blocks);
+dv.render();
 ```
 
 ![image](../../assets/image-20250316162044-1l2i63f.png)
@@ -332,14 +310,10 @@ Embed 组件用于显示块的内容（相当于在嵌入块里面塞入一个�
 
 ```js
 //!js
-const query = async () => {
-    let dv = Query.DataView(protyle, item, top);
-    let blocks = await Query.random(2);
-    dv.addembed(blocks)
-    dv.render();
-}
-
-return query();
+let dv = Query.DataView(protyle, item, top);
+let blocks = await Query.random(2);
+dv.addembed(blocks)
+dv.render();
 ```
 
 ![image](../../assets/image-20241206182941-yzctkxu.png)
@@ -355,16 +329,12 @@ return query();
 
 ```js
 //!js
-const query = async () => {
-    let dv = Query.DataView(protyle, item, top);
-    let blocks = await Query.random(5, 'd');
-    dv.addembed(blocks, {
-      limit: 3, zoom: 0.75, columns: 2
-    });
-    dv.render();
-}
-
-return query();
+let dv = Query.DataView(protyle, item, top);
+let blocks = await Query.random(5, 'd');
+dv.addembed(blocks, {
+  limit: 3, zoom: 0.75, columns: 2
+});
+dv.render();
 ```
 
 ![image](../../assets/image-20241206183442-ra4h7xl.png)
@@ -418,21 +388,17 @@ mermaidRelation 主要用于可视化块之间的关联关系。他传入的参�
 
 ```js
 //!js
-const query = async () => {
-    let dv = Query.DataView(protyle, item, top);
-    let thisdoc = await Query.thisdoc(protyle);
-    let childs = await Query.childdoc(dv.root_id);
-    for (let child of childs) {
-        //获取子文档的子文档
-        const subchilds = await Query.childdoc(child.root_id);
-        child.children = subchilds;
-    }
-    thisdoc.children = childs; //构建 tree 结构的根结点
-    dv.addmermaidRelation(thisdoc, { type: 'flowchart', flowchart: 'LR' } );
-    dv.render();
+let dv = Query.DataView(protyle, item, top);
+let thisdoc = await Query.thisdoc(protyle);
+let childs = await Query.childdoc(dv.root_id);
+for (let child of childs) {
+    //获取子文档的子文档
+    const subchilds = await Query.childdoc(child.root_id);
+    child.children = subchilds;
 }
-
-return query();
+thisdoc.children = childs; //构建 tree 结构的根结点
+dv.addmermaidRelation(thisdoc, { type: 'flowchart', flowchart: 'LR' } );
+dv.render();
 ```
 
 ![image](../../assets/image-20241206190453-o0u8eb8.png)
@@ -477,22 +443,19 @@ mermaidKanban 主要用于用于将块以 kanban 的形式展示出来，它有�
 
 ```js
 //!js
-const query = async () => {
-    let dv = Query.Dataview(protyle, item, top);
-    // null: no `after` filter, query all task block
-    // 128: max number of result
-    let blocks = await Query.task(null, 128);
-    let grouped = blocks.groupby((b) => {
-        return b.createdDate.slice(0, -3)
-    });
-    let N = Object.keys(grouped).length;
-    // each group with a fixed witdh 200px
-    dv.addmkanban(grouped, {
-        width: `${N * 200}px`
-    });
-    dv.render();
-}
-return query();
+let dv = Query.Dataview(protyle, item, top);
+// null: no `after` filter, query all task block
+// 128: max number of result
+let blocks = await Query.task(null, 128);
+let grouped = blocks.groupby((b) => {
+    return b.createdDate.slice(0, -3)
+});
+let N = Object.keys(grouped).length;
+// each group with a fixed witdh 200px
+dv.addmkanban(grouped, {
+    width: `${N * 200}px`
+});
+dv.render();
 ```
 
 大致效果如下：
@@ -586,34 +549,30 @@ echarts line 主要用于绘制折线图。他有一个 `eLine`​ 的别名。�
 
 ```js
 //!js
-const query = async () => {
-    let dv = Query.DataView(protyle, item, top);
-    const SQL = `
-    SELECT
-        SUBSTR(created, 1, 6) AS month,
-        COUNT(*) AS count
-    FROM
-        blocks
-    WHERE
-        type = 'd'
-    GROUP BY
-        SUBSTR(created, 1, 6)
-    ORDER BY
-        month;
-    `;
+let dv = Query.DataView(protyle, item, top);
+const SQL = `
+SELECT
+    SUBSTR(created, 1, 6) AS month,
+    COUNT(*) AS count
+FROM
+    blocks
+WHERE
+    type = 'd'
+GROUP BY
+    SUBSTR(created, 1, 6)
+ORDER BY
+    month;
+`;
 
-    let blocks = await Query.sql(SQL);
+let blocks = await Query.sql(SQL);
 
-    dv.addeline(blocks.pick('month'), blocks.pick('count'), {
-        title: '每月创建的文档数量',
-        xlabel: '月份',
-        ylabel: '创建文档数'
-    });
+dv.addeline(blocks.pick('month'), blocks.pick('count'), {
+    title: '每月创建的文档数量',
+    xlabel: '月份',
+    ylabel: '创建文档数'
+});
 
-    dv.render();
-}
-
-return query();
+dv.render();
 ```
 
 ![image](../../assets/image-20241207010811-8lh25x5.png)
@@ -715,23 +674,19 @@ echarts tree 主要用于绘制树形关系图，他有一个 `eTree`​ 的别�
 
 ```js
 //!js
-const query = async () => {
-    let dv = Query.DataView(protyle, item, top);
-    let thisdoc = await Query.thisdoc(protyle);
-    let childs = await Query.childdoc(dv.root_id);
-    for (let child of childs) {
-        //获取子文档的子文档
-        const subchilds = await Query.childdoc(child.root_id);
-        child.children = subchilds;
-    }
-    thisdoc.children = childs; //构建 tree 结构的根结点
-    dv.addetree(thisdoc, {
-        orient: 'LR', height: '600px',
-    });
-    dv.render();
+let dv = Query.DataView(protyle, item, top);
+let thisdoc = await Query.thisdoc(protyle);
+let childs = await Query.childdoc(dv.root_id);
+for (let child of childs) {
+    //获取子文档的子文档
+    const subchilds = await Query.childdoc(child.root_id);
+    child.children = subchilds;
 }
-
-return query();
+thisdoc.children = childs; //构建 tree 结构的根结点
+dv.addetree(thisdoc, {
+    orient: 'LR', height: '600px',
+});
+dv.render();
 ```
 
 😃 只要绑定了思源的内容块，节点都是可交互的：
@@ -823,58 +778,53 @@ options 参数如下：
 
 ```js
 //!js
-const query = async () => {
-    let dv = Query.DataView(protyle, item, top);
-    let thisdoc = await Query.thisdoc(protyle);
-    let childs = await Query.childdoc(dv.root_id);
-    let backlinks = await Query.backlink(dv.root_id);
-    childs = childs.addcols({category: 0});  //添加类别编号，指定为类别 0
-    backlinks = backlinks.addcols({category: 1});  //指定为类别 1
-    let nodes = [thisdoc, ...childs, ...backlinks];  //合并为节点列表
-    let links = [
-      { source: thisdoc.id, target: childs.pick('id') },  // 子文档的关联关系
-      { source: thisdoc.id, target: backlinks.pick('id') },  //反链的关联关系
-    ];
-    if (childs.length > 0 && backlinks.length > 0) {
-      //随便选两个节点，建立关联关系
-      links.push({ source: childs[0].id, target: backlinks[0].id })
-    }
-
-    dv.addegraph(nodes, links, {
-        height: '500px',
-        roam: true,
-        seriesOption: {
-            categories: [
-                {
-                    name: '子文裆',
-		            symbolSize: 14,
-                    itemStyle: {
-                        color: 'var(--b3-theme-primary)'
-                    },
-                    label: {
-                        fontSize: 14, // 设置标签字体大小
-                        color: 'var(--b3-theme-primary)' // 设置标签颜色
-                    }
-                },
-                {
-                    name: '反向链接',
-		            symbolSize: 20,
-                    itemStyle: {
-                        color: 'var(--b3-theme-secondary)'
-                    },
-                    label: {
-                        fontSize: 20
-                    }
-                },
-            ],
-        }
-    });
-
-    dv.render();
+let dv = Query.DataView(protyle, item, top);
+let thisdoc = await Query.thisdoc(protyle);
+let childs = await Query.childdoc(dv.root_id);
+let backlinks = await Query.backlink(dv.root_id);
+childs = childs.addcols({category: 0});  //添加类别编号，指定为类别 0
+backlinks = backlinks.addcols({category: 1});  //指定为类别 1
+let nodes = [thisdoc, ...childs, ...backlinks];  //合并为节点列表
+let links = [
+  { source: thisdoc.id, target: childs.pick('id') },  // 子文档的关联关系
+  { source: thisdoc.id, target: backlinks.pick('id') },  //反链的关联关系
+];
+if (childs.length > 0 && backlinks.length > 0) {
+  //随便选两个节点，建立关联关系
+  links.push({ source: childs[0].id, target: backlinks[0].id })
 }
 
-return query();
+dv.addegraph(nodes, links, {
+    height: '500px',
+    roam: true,
+    seriesOption: {
+        categories: [
+            {
+                name: '子文裆',
+          symbolSize: 14,
+                itemStyle: {
+                    color: 'var(--b3-theme-primary)'
+                },
+                label: {
+                    fontSize: 14, // 设置标签字体大小
+                    color: 'var(--b3-theme-primary)' // 设置标签颜色
+                }
+            },
+            {
+                name: '反向链接',
+          symbolSize: 20,
+                itemStyle: {
+                    color: 'var(--b3-theme-secondary)'
+                },
+                label: {
+                    fontSize: 20
+                }
+            },
+        ],
+    }
+});
 
+dv.render();
 ```
 
 效果如下，同 tree 图一样，graph 图中每个节点也可以通过 **Ctrl + 点击**的方式跳转，以及**悬浮**显示节点细节等。
@@ -935,19 +885,15 @@ details 用于创建一个折叠列表，第一个参数为列表的标题，后
 
 ```js
 //!js
-const query = async () => {
-    let dv = Query.DataView(protyle, item, top);
-    let blocks = await Query.random(10);
-    //使用 groupby 函数分组
-    blocks.groupby('box', (boxid, group) => {
-        const boxname = Query.utils.boxname(boxid);
-        const ele = dv.list(group);
-        dv.adddetails(boxname, ele);
-    });
-    dv.render();
-}
-
-return query();
+let dv = Query.DataView(protyle, item, top);
+let blocks = await Query.random(10);
+//使用 groupby 函数分组
+blocks.groupby('box', (boxid, group) => {
+    const boxname = Query.utils.boxname(boxid);
+    const ele = dv.list(group);
+    dv.adddetails(boxname, ele);
+});
+dv.render();
 ```
 
 ![image](../../assets/image-20241206193640-g5h5jp9.png)
@@ -978,27 +924,23 @@ addDisposer 接受一个回调函数作为参数，该函数将自动在 DataVie
 
 ```js
 //!js
-const query = async () => {
-  let dv = Query.DataView(protyle, item, top);
-  const span = document.createElement('span');
-  span.innerText = 0;
+let dv = Query.DataView(protyle, item, top);
+const span = document.createElement('span');
+span.innerText = 0;
 
-  dv.addele(span);
+dv.addele(span);
 
-  let timer = setInterval(() => {
-      console.log(span.innerText);
-      span.innerText = parseInt(span.innerText) + 1;
-  }, 1000);
+let timer = setInterval(() => {
+    console.log(span.innerText);
+    span.innerText = parseInt(span.innerText) + 1;
+}, 1000);
 
-  dv.addDisposer(() => {
-      console.log('dispose timer!');
-      clearInterval(timer);
-  });
+dv.addDisposer(() => {
+    console.log('dispose timer!');
+    clearInterval(timer);
+});
 
-  dv.render();
-}
-
-return query();
+dv.render();
 ```
 
 ![image](../../assets/image-20241206194739-md7he6w.png)
@@ -1015,32 +957,28 @@ removeView(id: string)
 
 ```js
 //!js
-const query = async () => {
-    let dv = Query.DataView(protyle, item, top);
-    const span = document.createElement('span');
-    span.innerText = 0;
+let dv = Query.DataView(protyle, item, top);
+const span = document.createElement('span');
+span.innerText = 0;
 
-    //等价于上面的 addele + addDisposer 两步合在一起
-    const eleId = (dv.addele(span, () => {
-        console.log('dispose timer!');
-        clearInterval(timer);
-    })).dataset.id; //addElement 的别名
+//等价于上面的 addele + addDisposer 两步合在一起
+const eleId = (dv.addele(span, () => {
+    console.log('dispose timer!');
+    clearInterval(timer);
+})).dataset.id; //addElement 的别名
 
-    let timer = setInterval(() => {
-        console.log(span.innerText);
-        span.innerText = parseInt(span.innerText) + 1;
-    }, 1000);
+let timer = setInterval(() => {
+    console.log(span.innerText);
+    span.innerText = parseInt(span.innerText) + 1;
+}, 1000);
 
-    //删除组件的按钮
-    const button = document.createElement('button');
-    button.innerText = 'Remove';
-    button.onclick = () => { dv.removeView(eleId); }
-    dv.addele(button);
+//删除组件的按钮
+const button = document.createElement('button');
+button.innerText = 'Remove';
+button.onclick = () => { dv.removeView(eleId); }
+dv.addele(button);
 
-    dv.render();
-}
-
-return query();
+dv.render();
 ```
 
 ![image](../../assets/image-20241209212929-dlfxtip.png)
@@ -1065,40 +1003,36 @@ replaceView(id: string, viewContainer: HTMLElement, disposer?: () => void)
 
 ```js
 //!js
-const query = async () => {
-    let dv = Query.DataView(protyle, item, top);
-    const span = document.createElement('span');
-    span.innerText = 0;
-    const eleId = (dv.addele(span)).dataset.id; //addElement 的别名
+let dv = Query.DataView(protyle, item, top);
+const span = document.createElement('span');
+span.innerText = 0;
+const eleId = (dv.addele(span)).dataset.id; //addElement 的别名
 
-    let timer = setInterval(() => {
-        console.log(span.innerText);
-        span.innerText = parseInt(span.innerText) + 1;
-    }, 1000);
+let timer = setInterval(() => {
+    console.log(span.innerText);
+    span.innerText = parseInt(span.innerText) + 1;
+}, 1000);
 
-    dv.addDisposer(() => {
-        console.log('dispose timer!');
-        clearInterval(timer);
-    }, eleId);
+dv.addDisposer(() => {
+    console.log('dispose timer!');
+    clearInterval(timer);
+}, eleId);
 
-    const button = document.createElement('button');
-    button.innerText = 'Replace';
-    button.onclick = () => {
-      let time = Query.utils.now();
-      dv.replaceView(
-        eleId,
-        dv.md(`> ${time}: Old View Replaced`),
-        () => {
-          console.log('Dispose:', time);
-        }
-      );
+const button = document.createElement('button');
+button.innerText = 'Replace';
+button.onclick = () => {
+  let time = Query.utils.now();
+  dv.replaceView(
+    eleId,
+    dv.md(`> ${time}: Old View Replaced`),
+    () => {
+      console.log('Dispose:', time);
     }
-    dv.addele(button);
-
-    dv.render();
+  );
 }
+dv.addele(button);
 
-return query();
+dv.render();
 ```
 
 ![image](../../assets/image-20241209220101-oypr89p.png)

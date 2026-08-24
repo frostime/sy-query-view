@@ -81,7 +81,6 @@ export default defineConfig({
                             }
                         }
                     },
-                    replaceMDVars(outputDir),
                     replaceMDImgUrl(outputDir)
                 ] : [
                     // Clean up unnecessary files under dist dir
@@ -89,7 +88,6 @@ export default defineConfig({
                         patterns: ['i18n/*.yaml', 'i18n/*.md'],
                         distDir: outputDir
                     }),
-                    replaceMDVars(outputDir),
                     replaceMDImgUrl(outputDir),
                     zipPack({
                         inDir: './dist',
@@ -168,49 +166,6 @@ function cleanupDistFiles(options: { patterns: string[], distDir: string }) {
             }
         }
     };
-}
-
-
-function replaceMDVars(dirname: string) {
-
-    return {
-        name: 'rollup-plugin-replace-md-vars',
-        enforce: 'post',
-        writeBundle: {
-            sequential: true,
-            order: 'post' as 'post',
-            async handler() {
-                const path = await import('path');
-                const fs = await import('fs');
-
-                const readFile = (filepath: string) => {
-                    return fs.readFileSync(filepath, 'utf8');
-                }
-
-                const replaceMDFileVar = (dirname: string, varVal: Record<string, string>) => {
-                    const replace = (filepath: string) => {
-                        let md = readFile(filepath);
-                        for (const [key, value] of Object.entries(varVal)) {
-                            //@ts-ignore
-                            md = md.replaceAll(key, value);
-                        }
-                        fs.writeFileSync(filepath, md);
-                    }
-
-                    // 遍历所有 README*.md 文件
-                    const files = fs.readdirSync(dirname).filter(file => file.startsWith('README') && file.endsWith('.md'));
-                    for (const file of files) {
-                        replace(path.join(dirname, file));
-                    }
-                }
-                console.log('Replace MD vars under:', dirname);
-                const jsonfile = './types/types.d.ts.json';
-                const cache = JSON.parse(fs.readFileSync(jsonfile, 'utf8'));
-                replaceMDFileVar(dirname, cache);
-            }
-        }
-    };
-
 }
 
 

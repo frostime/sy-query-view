@@ -14,14 +14,11 @@ So this code's function is: <u>Query all backlinks of the current document.</u>
 
 ```js
 //!js
-const query = async () => {
-  let blocks = await Query.backlink(protyle.block.rootID);
-  return blocks.pick('id'); // Special utility function, will be introduced later; equivalent to blocks.map(b => b.id);
-}
-return query();
+let blocks = await Query.backlink(protyle.block.rootID);
+return blocks.pick('id'); // Special utility function, will be introduced later; equivalent to blocks.map(b => b.id);
 ```
 
-> Note: Since this code uses async/await statements, the await-related code must be wrapped in an async function and cannot be placed directly outside.
+> Note: The example uses top-level await, which requires SiYuan 3.8.0 or newer. On earlier versions, the await-related code must be wrapped in an async function, invoked at the end with `return query();`.
 
 It's easy to see that since the code can automatically obtain the ID of the document where it is located via `protyle.block.rootID`​, it eliminates the need to manually modify the `root_id`​ field every time you write an embedded block. This allows you to write the code once and run it anywhere—a small advantage of JS queries.
 
@@ -212,7 +209,6 @@ You can try the following code, and get to know there differences.
 
 ```js
 //!js
-const query = async () => {
     let dv = Query.DataView(protyle, item, top);
 
     let blocks = await Query.random(1);
@@ -230,10 +226,6 @@ const query = async () => {
     `)
 
     dv.render();
-
-}
-
-return query();
 ```
 
 ![image](../../assets/image-20241213184747-0ma9dj4.png)
@@ -479,15 +471,12 @@ Using these functions, you can quickly insert the time components you want into 
 
 ```js
 //!js
-const query = async () => {
-  const sql = `select * from blocks
-  where updated >= '${Query.Utils.thisWeek()}'
-  limit 5
-  `;
-  const blocks = await Query.sql(sql);
-  return blocks.map(b => b.id);
-}
-return query();
+const sql = `select * from blocks
+where updated >= '${Query.Utils.thisWeek()}'
+limit 5
+`;
+const blocks = await Query.sql(sql);
+return blocks.map(b => b.id);
 ```
 
 ### Other Utility Functions
@@ -626,11 +615,8 @@ Without pruning:
 
 ```js
 //!js
-const query = async () => {
-    let blocks = await Query.keyword('重要内容')
-    return blocks.pick('id');
-}
-return query();
+let blocks = await Query.keyword('重要内容')
+return blocks.pick('id');
 ```
 
 ![image](../../assets/image-20250308171816-crrru54.png)
@@ -639,12 +625,9 @@ Using `pruneBlocks`​ (default leaf strategy):
 
 ```js
 //!js
-const query = async () => {
-    let blocks = await Query.keyword('重要内容');
-    blocks = await Query.pruneBlocks(blocks);
-    return blocks.pick('id');
-}
-return query();
+let blocks = await Query.keyword('重要内容');
+blocks = await Query.pruneBlocks(blocks);
+return blocks.pick('id');
 ```
 
 Result: Only leaf paragraph blocks remain.

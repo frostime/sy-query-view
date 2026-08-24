@@ -18,13 +18,10 @@ First, here is a basic example. Compared to the JS query above, three changes ha
 
 ```js
 //!js
-const query = async () => {
-  let dv = Query.DataView(protyle, item, top); // 1. Add this line at the beginning, note that protyle, item, top are fixed parameters
-  let blocks = await Query.random(5);
-  dv.addlist(blocks); // 2. Call dv.addlist to add a list view
-  dv.render(); // 3. Remove return, end with dv.render()
-}
-return query();
+let dv = Query.DataView(protyle, item, top); // 1. Add this line at the beginning, note that protyle, item, top are fixed parameters
+let blocks = await Query.random(5);
+dv.addlist(blocks); // 2. Call dv.addlist to add a list view
+dv.render(); // 3. Remove return, end with dv.render()
 ```
 
 With the above code, we can display the blocks obtained from the SQL query as a list in the embedded block, as shown below:
@@ -49,17 +46,14 @@ For example, let's display the list as a double-column, ordered list; and we pro
 
 ```js
 //!js
-const query = async () => {
-  let dv = Query.DataView(protyle, item, top);
-  const blocks = await Query.random(5);
-  dv.addlist(blocks, {
-    type: 'o',
-    columns: 2,
-    renderer: (b) => b.hpath
-  });
-  dv.render();
-}
-return query();
+let dv = Query.DataView(protyle, item, top);
+const blocks = await Query.random(5);
+dv.addlist(blocks, {
+  type: 'o',
+  columns: 2,
+  renderer: (b) => b.hpath
+});
+dv.render();
 ```
 
 ![image](../../assets/image-20241207210617-i5tmd5l.png)
@@ -70,13 +64,10 @@ In addition to lists, another commonly used view is the table. We repeat the abo
 
 ```js
 //!js
-const query = async () => {
-  let dv = Query.DataView(protyle, item, top); // Always start with this
-  const blocks = await Query.random(5);
-  dv.addtable(blocks);
-  dv.render(); // Always end with this
-}
-return query();
+let dv = Query.DataView(protyle, item, top); // Always start with this
+const blocks = await Query.random(5);
+dv.addtable(blocks);
+dv.render(); // Always end with this
 ```
 
 The effect is as follows:
@@ -112,14 +103,11 @@ The more important attribute is `cols`​—it allows you to bypass the default 
 
 ```js
 //!js
-const query = async () => {
-  let dv = Query.DataView(protyle, item, top);
-  const blocks = await Query.backlink(dv.root_id);  // dv.root_id is equivalent to protyle.block.rootID, just less typing
-  dv.addtable(blocks, { fullwidth: false, cols: null}); // Display all
-  dv.addtable(blocks, { fullwidth: true, cols: ['root_id', 'box', 'updated']});
-  dv.render();
-}
-return query();
+let dv = Query.DataView(protyle, item, top);
+const blocks = await Query.backlink(dv.root_id);  // dv.root_id is equivalent to protyle.block.rootID, just less typing
+dv.addtable(blocks, { fullwidth: false, cols: null}); // Display all
+dv.addtable(blocks, { fullwidth: true, cols: ['root_id', 'box', 'updated']});
+dv.render();
 ```
 
 ![image](../../assets/image-20241204003849-8l19z7b.png)
@@ -132,22 +120,19 @@ Comparing the following examples, it's clear that one uses the default scheme fo
 
 ```js
 //!js
-const query = async () => {
-  let dv = Query.DataView(protyle, item, top);
-  const blocks = await Query.random(3);
-  dv.addtable(blocks, {
-    cols: ['id', 'hpath', 'root_id', 'box']
-  });
-  dv.addtable(blocks, {
-    cols: ['id', 'hpath', 'root_id', 'box'],
-    renderer: (block, key) => {
-        if (key == 'id') return block[key]; // Directly display the original text for the id column
-        if (key == 'box') return 'Hahaha';
-    }
-  });
-  dv.render();
-}
-return query();
+let dv = Query.DataView(protyle, item, top);
+const blocks = await Query.random(3);
+dv.addtable(blocks, {
+  cols: ['id', 'hpath', 'root_id', 'box']
+});
+dv.addtable(blocks, {
+  cols: ['id', 'hpath', 'root_id', 'box'],
+  renderer: (block, key) => {
+      if (key == 'id') return block[key]; // Directly display the original text for the id column
+      if (key == 'box') return 'Hahaha';
+  }
+});
+dv.render();
 ```
 
 ![image](../../assets/image-20241208234136-s06cygn.png)
@@ -158,7 +143,6 @@ Did you notice that in the screenshots showing the table parameters, there are s
 
 ```js
 //!js
-// Since there's no need for await here, we can remove the outer async function
 let dv = Query.DataView(protyle, item, top);
 dv.addmd('## This is a secondary title')
 dv.addmd(`The id of the current document is: ${protyle.block.rootID}`)
@@ -268,18 +252,15 @@ interface IBlockWithChilds extends Block, IHasChildren<Block>, ITreeNode {
 
 ```js
 //!js
-const query = async () => {
-    let dv = Query.DataView(protyle, item, top);
-    let childs = await Query.childdoc(dv.root_id);
-    for (let child of childs) {
-        // Get the sub-documents of the sub-document
-        const subchilds = await Query.childdoc(child.root_id);
-        child.children = subchilds;
-    }
-    dv.addlist(childs);
-    dv.render();
+let dv = Query.DataView(protyle, item, top);
+let childs = await Query.childdoc(dv.root_id);
+for (let child of childs) {
+    // Get the sub-documents of the sub-document
+    const subchilds = await Query.childdoc(child.root_id);
+    child.children = subchilds;
 }
-return query();
+dv.addlist(childs);
+dv.render();
 ```
 
 ![image](../../assets/image-20241206184455-4in6gct.png)
@@ -304,13 +285,10 @@ The Card component displays the content of blocks in a card format. Parameters a
 
 ```js
 //!js
-const query = async () => {
-  let dv = Query.Dataview(protyle, item, top);
-  let blocks = await Query.random(8);
-  dv.addCard(blocks);
-  dv.render();
-}
-return query();
+let dv = Query.Dataview(protyle, item, top);
+let blocks = await Query.random(8);
+dv.addCard(blocks);
+dv.render();
 ```
 
 ![image](../../assets/image-20250316162044-1l2i63f.png)
@@ -332,14 +310,10 @@ The Embed component is used to display the content of blocks (equivalent to embe
 
 ```js
 //!js
-const query = async () => {
-    let dv = Query.DataView(protyle, item, top);
-    let blocks = await Query.random(2);
-    dv.addembed(blocks)
-    dv.render();
-}
-
-return query();
+let dv = Query.DataView(protyle, item, top);
+let blocks = await Query.random(2);
+dv.addembed(blocks)
+dv.render();
 ```
 
 ![image](../../assets/image-20241206182941-yzctkxu.png)
@@ -355,16 +329,12 @@ When the content displayed in the embedded block is relatively compact, these pa
 
 ```js
 //!js
-const query = async () => {
-    let dv = Query.DataView(protyle, item, top);
-    let blocks = await Query.random(5, 'd');
-    dv.addembed(blocks, {
-      limit: 3, zoom: 0.75, columns: 2
-    });
-    dv.render();
-}
-
-return query();
+let dv = Query.DataView(protyle, item, top);
+let blocks = await Query.random(5, 'd');
+dv.addembed(blocks, {
+  limit: 3, zoom: 0.75, columns: 2
+});
+dv.render();
 ```
 
 ![image](../../assets/image-20241206183442-ra4h7xl.png)
@@ -418,21 +388,17 @@ The following example shows the two-layer document tree relationship of the curr
 
 ```js
 //!js
-const query = async () => {
-    let dv = Query.DataView(protyle, item, top);
-    let thisdoc = await Query.thisdoc(protyle);
-    let childs = await Query.childdoc(dv.root_id);
-    for (let child of childs) {
-        // Get the sub-documents of the sub-document
-        const subchilds = await Query.childdoc(child.root_id);
-        child.children = subchilds;
-    }
-    thisdoc.children = childs; // Build the root node of the tree structure
-    dv.addmermaidRelation(thisdoc, { type: 'flowchart', flowchart: 'LR' } );
-    dv.render();
+let dv = Query.DataView(protyle, item, top);
+let thisdoc = await Query.thisdoc(protyle);
+let childs = await Query.childdoc(dv.root_id);
+for (let child of childs) {
+    // Get the sub-documents of the sub-document
+    const subchilds = await Query.childdoc(child.root_id);
+    child.children = subchilds;
 }
-
-return query();
+thisdoc.children = childs; // Build the root node of the tree structure
+dv.addmermaidRelation(thisdoc, { type: 'flowchart', flowchart: 'LR' } );
+dv.render();
 ```
 
 ![image](../../assets/image-20241206190453-o0u8eb8.png)
@@ -477,22 +443,19 @@ The following case will retrieve the unfinished Todos of each month and display 
 
 ```js
 //!js
-const query = async () => {
-    let dv = Query.Dataview(protyle, item, top);
-    // null: no `after` filter, query all task block
-    // 128: max number of result
-    let blocks = await Query.task(null, 128);
-    let grouped = blocks.groupby((b) => {
-        return b.createdDate.slice(0, -3)
-    });
-    let N = Object.keys(grouped).length;
-    // each group with a fixed witdh 200px
-    dv.addmkanban(grouped, {
-        width: `${N * 200}px`
-    });
-    dv.render();
-}
-return query();
+let dv = Query.Dataview(protyle, item, top);
+// null: no `after` filter, query all task block
+// 128: max number of result
+let blocks = await Query.task(null, 128);
+let grouped = blocks.groupby((b) => {
+    return b.createdDate.slice(0, -3)
+});
+let N = Object.keys(grouped).length;
+// each group with a fixed witdh 200px
+dv.addmkanban(grouped, {
+    width: `${N * 200}px`
+});
+dv.render();
 ```
 
 ![image](../../assets/image-20241213214406-rfj8yqh.png)
@@ -584,34 +547,30 @@ Input data parameters:
 
 ```js
 //!js
-const query = async () => {
-    let dv = Query.DataView(protyle, item, top);
-    const SQL = `
-    SELECT
-        SUBSTR(created, 1, 6) AS month,
-        COUNT(*) AS count
-    FROM
-        blocks
-    WHERE
-        type = 'd'
-    GROUP BY
-        SUBSTR(created, 1, 6)
-    ORDER BY
-        month;
-    `;
+let dv = Query.DataView(protyle, item, top);
+const SQL = `
+SELECT
+    SUBSTR(created, 1, 6) AS month,
+    COUNT(*) AS count
+FROM
+    blocks
+WHERE
+    type = 'd'
+GROUP BY
+    SUBSTR(created, 1, 6)
+ORDER BY
+    month;
+`;
 
-    let blocks = await Query.sql(SQL);
+let blocks = await Query.sql(SQL);
 
-    dv.addeline(blocks.pick('month'), blocks.pick('count'), {
-        title: 'Number of documents created each month',
-        xlabel: 'Month',
-        ylabel: 'Number of documents created'
-    });
+dv.addeline(blocks.pick('month'), blocks.pick('count'), {
+    title: 'Number of documents created each month',
+    xlabel: 'Month',
+    ylabel: 'Number of documents created'
+});
 
-    dv.render();
-}
-
-return query();
+dv.render();
 ```
 
 ![image](../../assets/image-20241207010811-8lh25x5.png)
@@ -711,23 +670,19 @@ Input data parameters:
 
 ```js
 //!js
-const query = async () => {
-    let dv = Query.DataView(protyle, item, top);
-    let thisdoc = await Query.thisdoc(protyle);
-    let childs = await Query.childdoc(dv.root_id);
-    for (let child of childs) {
-        // Get the sub-documents of the sub-document
-        const subchilds = await Query.childdoc(child.root_id);
-        child.children = subchilds;
-    }
-    thisdoc.children = childs; // Build the root node of the tree structure
-    dv.addetree(thisdoc, {
-        orient: 'LR', height: '600px',
-    });
-    dv.render();
+let dv = Query.DataView(protyle, item, top);
+let thisdoc = await Query.thisdoc(protyle);
+let childs = await Query.childdoc(dv.root_id);
+for (let child of childs) {
+    // Get the sub-documents of the sub-document
+    const subchilds = await Query.childdoc(child.root_id);
+    child.children = subchilds;
 }
-
-return query();
+thisdoc.children = childs; // Build the root node of the tree structure
+dv.addetree(thisdoc, {
+    orient: 'LR', height: '600px',
+});
+dv.render();
 ```
 
 😃 As long as the content block of SiYuan is bound, the nodes are interactive:
@@ -819,58 +774,53 @@ Options parameters:
 
 ```js
 //!js
-const query = async () => {
-    let dv = Query.DataView(protyle, item, top);
-    let thisdoc = await Query.thisdoc(protyle);
-    let childs = await Query.childdoc(dv.root_id);
-    let backlinks = await Query.backlink(dv.root_id);
-    childs = childs.addcols({category: 0});  // Add category number, specify as category 0
-    backlinks = backlinks.addcols({category: 1});  // Specify as category 1
-    let nodes = [thisdoc, ...childs, ...backlinks];  // Merge into the node list
-    let links = [
-      { source: thisdoc.id, target: childs.pick('id') },  // Sub-document association relationship
-      { source: thisdoc.id, target: backlinks.pick('id') },  // Backlink association relationship
-    ];
-    if (childs.length > 0 && backlinks.length > 0) {
-      // Randomly select two nodes to establish an association relationship
-      links.push({ source: childs[0].id, target: backlinks[0].id })
-    }
-
-    dv.addegraph(nodes, links, {
-        height: '500px',
-        roam: true,
-        seriesOption: {
-            categories: [
-                {
-                    name: 'Sub-documents',
-		            symbolSize: 14,
-                    itemStyle: {
-                        color: 'var(--b3-theme-primary)'
-                    },
-                    label: {
-                        fontSize: 14, // Set label font size
-                        color: 'var(--b3-theme-primary)' // Set label color
-                    }
-                },
-                {
-                    name: 'Backlinks',
-		            symbolSize: 20,
-                    itemStyle: {
-                        color: 'var(--b3-theme-secondary)'
-                    },
-                    label: {
-                        fontSize: 20
-                    }
-                },
-            ],
-        }
-    });
-
-    dv.render();
+let dv = Query.DataView(protyle, item, top);
+let thisdoc = await Query.thisdoc(protyle);
+let childs = await Query.childdoc(dv.root_id);
+let backlinks = await Query.backlink(dv.root_id);
+childs = childs.addcols({category: 0});  // Add category number, specify as category 0
+backlinks = backlinks.addcols({category: 1});  // Specify as category 1
+let nodes = [thisdoc, ...childs, ...backlinks];  // Merge into the node list
+let links = [
+  { source: thisdoc.id, target: childs.pick('id') },  // Sub-document association relationship
+  { source: thisdoc.id, target: backlinks.pick('id') },  // Backlink association relationship
+];
+if (childs.length > 0 && backlinks.length > 0) {
+  // Randomly select two nodes to establish an association relationship
+  links.push({ source: childs[0].id, target: backlinks[0].id })
 }
 
-return query();
+dv.addegraph(nodes, links, {
+    height: '500px',
+    roam: true,
+    seriesOption: {
+        categories: [
+            {
+                name: 'Sub-documents',
+          symbolSize: 14,
+                itemStyle: {
+                    color: 'var(--b3-theme-primary)'
+                },
+                label: {
+                    fontSize: 14, // Set label font size
+                    color: 'var(--b3-theme-primary)' // Set label color
+                }
+            },
+            {
+                name: 'Backlinks',
+          symbolSize: 20,
+                itemStyle: {
+                    color: 'var(--b3-theme-secondary)'
+                },
+                label: {
+                    fontSize: 20
+                }
+            },
+        ],
+    }
+});
 
+dv.render();
 ```
 
 The effect is as follows. Like the tree diagram, each node in the graph can be **Ctrl + Clicked to jump**, and **hovering** will display node details.
@@ -931,19 +881,15 @@ The following example shows a case where several blocks are randomly queried and
 
 ```js
 //!js
-const query = async () => {
-    let dv = Query.DataView(protyle, item, top);
-    let blocks = await Query.random(10);
-    // Use the groupby function to group
-    blocks.groupby('box', (boxid, group) => {
-        const boxname = Query.utils.boxname(boxid);
-        const ele = dv.list(group);
-        dv.adddetails(boxname, ele);
-    });
-    dv.render();
-}
-
-return query();
+let dv = Query.DataView(protyle, item, top);
+let blocks = await Query.random(10);
+// Use the groupby function to group
+blocks.groupby('box', (boxid, group) => {
+    const boxname = Query.utils.boxname(boxid);
+    const ele = dv.list(group);
+    dv.adddetails(boxname, ele);
+});
+dv.render();
 ```
 
 ![image](../../assets/image-20241206193640-g5h5jp9.png)
@@ -974,27 +920,23 @@ The following is an example: create a timer and destroy the timer when refreshin
 
 ```js
 //!js
-const query = async () => {
-  let dv = Query.DataView(protyle, item, top);
-  const span = document.createElement('span');
-  span.innerText = 0;
+let dv = Query.DataView(protyle, item, top);
+const span = document.createElement('span');
+span.innerText = 0;
 
-  dv.addele(span);
+dv.addele(span);
 
-  let timer = setInterval(() => {
-      console.log(span.innerText);
-      span.innerText = parseInt(span.innerText) + 1;
-  }, 1000);
+let timer = setInterval(() => {
+    console.log(span.innerText);
+    span.innerText = parseInt(span.innerText) + 1;
+}, 1000);
 
-  dv.addDisposer(() => {
-      console.log('dispose timer!');
-      clearInterval(timer);
-  });
+dv.addDisposer(() => {
+    console.log('dispose timer!');
+    clearInterval(timer);
+});
 
-  dv.render();
-}
-
-return query();
+dv.render();
 ```
 
 ![image](../../assets/image-20241206194739-md7he6w.png)
@@ -1011,32 +953,28 @@ Given a view component's id (`container.dataset.id`​), you can call the `remov
 
 ```js
 //!js
-const query = async () => {
-    let dv = Query.DataView(protyle, item, top);
-    const span = document.createElement('span');
-    span.innerText = 0;
+let dv = Query.DataView(protyle, item, top);
+const span = document.createElement('span');
+span.innerText = 0;
 
-    // Equivalent to the above addele + addDisposer steps combined
-    const eleId = (dv.addele(span, () => {
-        console.log('dispose timer!');
-        clearInterval(timer);
-    })).dataset.id; // Alias of addElement
+// Equivalent to the above addele + addDisposer steps combined
+const eleId = (dv.addele(span, () => {
+    console.log('dispose timer!');
+    clearInterval(timer);
+})).dataset.id; // Alias of addElement
 
-    let timer = setInterval(() => {
-        console.log(span.innerText);
-        span.innerText = parseInt(span.innerText) + 1;
-    }, 1000);
+let timer = setInterval(() => {
+    console.log(span.innerText);
+    span.innerText = parseInt(span.innerText) + 1;
+}, 1000);
 
-    // Delete component button
-    const button = document.createElement('button');
-    button.innerText = 'Remove';
-    button.onclick = () => { dv.removeView(eleId); }
-    dv.addele(button);
+// Delete component button
+const button = document.createElement('button');
+button.innerText = 'Remove';
+button.onclick = () => { dv.removeView(eleId); }
+dv.addele(button);
 
-    dv.render();
-}
-
-return query();
+dv.render();
 ```
 
 ![image](../../assets/image-20241209212929-dlfxtip.png)
@@ -1059,40 +997,36 @@ We modify the above example: after clicking the button, display the deletion pro
 
 ```js
 //!js
-const query = async () => {
-    let dv = Query.DataView(protyle, item, top);
-    const span = document.createElement('span');
-    span.innerText = 0;
-    const eleId = (dv.addele(span)).dataset.id; // Alias of addElement
+let dv = Query.DataView(protyle, item, top);
+const span = document.createElement('span');
+span.innerText = 0;
+const eleId = (dv.addele(span)).dataset.id; // Alias of addElement
 
-    let timer = setInterval(() => {
-        console.log(span.innerText);
-        span.innerText = parseInt(span.innerText) + 1;
-    }, 1000);
+let timer = setInterval(() => {
+    console.log(span.innerText);
+    span.innerText = parseInt(span.innerText) + 1;
+}, 1000);
 
-    dv.addDisposer(() => {
-        console.log('dispose timer!');
-        clearInterval(timer);
-    }, eleId);
+dv.addDisposer(() => {
+    console.log('dispose timer!');
+    clearInterval(timer);
+}, eleId);
 
-    const button = document.createElement('button');
-    button.innerText = 'Replace';
-    button.onclick = () => {
-      let time = Query.utils.now();
-      dv.replaceView(
-        eleId,
-        dv.md(`> ${time}: Old View Replaced`),
-        () => {
-          console.log('Dispose:', time);
-        }
-      );
+const button = document.createElement('button');
+button.innerText = 'Replace';
+button.onclick = () => {
+  let time = Query.utils.now();
+  dv.replaceView(
+    eleId,
+    dv.md(`> ${time}: Old View Replaced`),
+    () => {
+      console.log('Dispose:', time);
     }
-    dv.addele(button);
-
-    dv.render();
+  );
 }
+dv.addele(button);
 
-return query();
+dv.render();
 ```
 
 ![image](../../assets/image-20241209220101-oypr89p.png)
