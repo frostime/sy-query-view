@@ -1,0 +1,138 @@
+# Long Task Orchestration graph — optimize-qv-agent-infra
+# 唯一写入者：supervisor（当前 pi session 主 agent）。本文件是当前控制状态，不是日记。
+
+backlog: .dev/changes/optimize-qv-agent-infra/issues.yaml
+terms: .dev/changes/optimize-qv-agent-infra/TERM.md
+# issues/TERM 均为活文档；issues 由 gen-issues.py 生成。
+
+target:
+  statement: >
+    达成「语义对齐」：函数实际行为 / 类型标注 / 文档标注三者一致。
+    第 1 层（本 graph）：本轮结束时消除已知不对齐——N1-N5 建立从源码
+    自动生成参考文档的机制（消除"文档与源码脱节"），N6 修补源码内部
+    的类型与行为不一致（消除"声明与运行时背离"），结项时经复核验证。
+    第 2 层（预订入口，不在本任务做细节）：长期协作规范（AGENTS.md/SKILL
+    形式，I-80）。
+  authority: user
+  success_criteria: >
+    待定稿（里程碑处用户拍板推进深度）。草案：第 1 层结项时无已知不对齐，
+    产出参考文档生成机制 + 坑清单处置 + breaking change 文档。
+
+supervisor: pi main agent（本 session）
+target_authority: user
+
+accepted_state:
+  - v1.3 已交付：SKILL 227 行自包含（references/ 随构建复制）、手工 agent-ref 两份
+    （query-api.md / dataview.md）、dev 强制同步、导航重构。
+  - Worker-B 校验结论（entry-handoff/chat-export…Worker-B.xml）：手工文档与运行时
+    多处不一致——wrapList 返回类型（childDoc/keywordDoc/fb2p/pruneBlocks 实为 wrapped）、
+    pick('id') 返回标量、map 不保留 wrapper、echartsTree.layout 被忽略、
+    addcolumns flex 无效、keywordDoc join:'or' 语义陷阱、时间函数默认 hms=true、
+    addmd 实支持 KaTeX、minAppVersion 与顶层 await 版本混淆、Query.request 是内核
+    请求而非任意 HTTP。
+  - 用户决策：d.ts vs Markdown 本质无区别，关键是「高保真」——解析 TS 拿到接口+
+    注释后按自定义格式拼接，能做到则形式自由选择。
+  - 用户决策：JSDoc/自定义 tag 都只是注释内容，机制无本质区别；现有注释结构不大改，
+    内容面向 agent 使用场景增量写。
+  - 用户决策：API 修补以兼容性为前提（老用户脚本不炸），行为变化必须记录进
+    面向用户的 breaking change 文档。
+  - 用户决策：API 重设计（2.0 全新 API 骨架）不作为本任务内容；本任务只做「填坑」。
+  - N1 调研（本 session）：
+    - 高保真成立：ts-morph round-trip + TS `getJSDocCommentsAndTags` 对 interface/
+      对象字面量成员统一有效；泛型/索引签名/多行示例保真。
+    - 动态成员可在构建期从 register()/addAlias() 调用点精确生成
+      （DataView 19 处 register→171 名；Query 8 组别名）——N3 方案成立。
+    - 升级依赖不解决问题：TS 5.7.2/ts-morph 24 已够（I-16）。动态别名进静态类型是语言语义限制。
+    - 对象字面量 Query 导出为匿名类型（I-12）；DataView 的 addxxx 动态方法在声明全缺（I-30）。
+    - 类型诚实前置：生成器只能印"源码当前声明"，childDoc 等 Wrapped 声明错误须先修（I-17）。
+    - 原型 v0 已产出：.dev/changes/optimize-qv-agent-infra/prototypes/agent-ref-v0.md，
+      含附录 A（源码→桥接→文档三对应 + A.4 诚实性前置）。待用户审阅定消费形式（I-01）。
+  - 用户确认：行为要点必须作为源码注释存在，生成器纯搬运（I-22）；人写信息一律进 JSDoc。
+  - N1 收尾完成（2026-08-24）：真实产物样本验证 18 组件/171 别名全自动提取；
+    签名取 tsc 声明 AST（正则文本提取不可靠，曾截断）；唯一无 JSDoc 组件为
+    details（N3 补注释起点）；长签名/无注释占位等格式问题留给 N2/N3。
+    产物临时存 tmp/，结论全文见 HANDOVER-rollback-branch.md。
+  - 用户拍板（2026-08-24，回退到「方向确认」节点后重新确认）：
+    - 方向通过：tsc 核心导出 + register/addAlias 调用点生成动态成员集合 + 结项复核；
+      N1 收尾交付「真实产物样本」（带完整别名的 DataView 方法声明 md），连上 N2/N3 格式讨论。
+    - 消费形式 = markdown 主格式（I-01 done）；d.ts 保留为签名核对层定位。
+    - 类型诚实后置（I-17 open）：先跑通整个生成框架，再回头修源码类型问题；
+      生成器对已知不对齐点先用「待核实」标注呈现。
+
+current_route:
+  nodes:
+    N1:
+      title: 高保真提取/导出机制验证（已完成）
+      desc: >
+        高保真提取与导出机制均已验证成立（结论见 accepted_state 与
+        HANDOVER-rollback-branch.md「N1 收尾结论」）。生成器正式化留待 I-11。
+      state: done
+      deps: []
+
+    N2:
+      title: 生成格式与文档结构设计
+      desc: 每节结构（签名+要点+最小示例）、分模块划分、grep 定位性、与 SKILL
+        渐进披露配合。受 N1 提取能力边界约束。
+      state: waiting
+      deps: [N1]
+
+    N3:
+      title: 动态 API 与行为真相机制
+      desc: DataView.register 的 addxxx 别名/动态成员如何进入参考；注释中表达
+        默认值/副作用/陷阱的约定（面向 agent 写注释的具体标准）。
+      state: waiting
+      deps: [N1]
+
+    N4:
+      title: 对齐验证（结项复核，后置预订）
+      desc: 用户定义：第 1 层结尾（如 N6 阶段）派 subagent 复核，或写可长期复用的
+        检测脚本；原则已定，细节（对象清单/脚本形态）后置，不纳入前期处理。
+      state: waiting
+      deps: [N2, N3, N6]
+
+    N5:
+      title: 与 SKILL/发布体系集成
+      desc: 2.0 以新机制替换 v1.3 手工 agent-ref 的落地方案（打包/分发/文档站配合）。
+      state: waiting
+      deps: [N4]
+
+    N6:
+      title: API 诚实化修补（孤立分支）
+      desc: >
+        收集现有 API 行为的刺和坑完整清单（含 Worker-B 已发现的）→ 逐项给出
+        兼容性修补方案（修复 or 文档化二选一）→ breaking change 文档。
+        目标：当前 QV 稳定可用，Agent 不易误解出错。
+      state: frontier
+      deps: []
+      note: 与其他节点无硬依赖；其坑清单/修补结果在 N4（结项复核）与 N2/N3
+        （文档内容吸收修补后行为）处合流。
+
+  conditional_candidates:
+    - id: C-2
+      title: 第 2 层 — 长期对齐规范（AGENTS.md / SKILL）
+      condition: 第 1 层结项后，由用户评估是否启动（对应 I-80）
+      state: candidate
+  unresolved_areas:
+    - 2.0 全新 API 骨架/新增 API 设计 —— 用户明确排除，若日后提出草图再激活候选节点
+    - 消费形式最终选择 —— N1 样本出来后由用户拍板
+    - 与文档站教程/参考分层的配合细节 —— v1.3 已建立渐进披露结构，N2/N5 吸收
+
+risks:
+  - 现有注释覆盖率参差：很多 API 无 JSDoc 或仅一句 → 决定产物质量上限，N3 需给增量注释约定
+  - ts-morph 对泛型/重载/交叉类型的保真度未知 → N1 回答
+  - 动态成员（运行时拼接的 API）静态声明拿不到 → N3 回答
+  - N6 修补与老用户脚本的兼容性冲突 → 每项修补须评估兼容性，行为变化必须记录 breaking change
+
+pending_decisions:
+  - 成功标准/推进深度定稿 —— 里程碑处用户拍板（I-00）
+  - 结项复核原则正式确认 —— 用户已给定义，待节点推进后正式固化（I-02）
+  - 类型诚实后置的衔接 —— 框架跑通后按 I-17 回头修源码类型
+
+runtime_rules:
+  - graph.yaml 唯一写入者：supervisor；用户（target authority）只改目标与成功标准
+  - 节点结果须经 supervisor 验收后进入 accepted_state；验收不授权、授权靠证据
+  - 只读探索可 out-of-graph；写入共享状态/不可逆动作须先入图
+  - 用户偏好：参考（签名+要点，grep 定位）→ 教程 → 源码/GitHub 后备
+  - 环境陷阱（继承自 handover）：NODE_ENV=development vite build 会被 livereload 挂起；
+    tsconfig strict:false 下判别联合窄化失效，用 in 操作符；types.d.ts 是构建产物，
+    提交时单独 chore commit
