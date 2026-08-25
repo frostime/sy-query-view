@@ -112,19 +112,10 @@ export interface IWrappedList<T = Block> extends Array<T> {
      */
     filter(predicate: (value: T, index: number, array: T[]) => boolean): IWrappedList<T>;
     /**
-     * Returns a new array with mapped elements; the wrapper is preserved
-     * @param fn - Map function
-     * @param useWrapBlock - Whether to wrap the mapped elements (default: false, matching native map semantics — elements are passed through as-is)
+     * Returns a new array with filtered elements; the wrapper is preserved
+     * @param predicate - Filter function
      */
-    map<U>(fn: (value: T, index: number, array: T[]) => U, useWrapBlock?: boolean): IWrappedList<U>;
-    /**
-     * Returns a new array with elements appended; the wrapper is preserved (modifies the default Array.concat)
-     */
-    concat(...items: any[]): IWrappedList<T>;
-    /**
-     * Returns a new array sorted by the given comparator; the wrapper is preserved (modifies the default Array.toSorted)
-     */
-    toSorted(compareFn?: (a: any, b: any) => number): IWrappedList<T>;
+    filter(predicate: (value: T, index: number, array: T[]) => boolean): IWrappedList<T>;
     /**
      * Returns a new array containing elements in the specified range
      * @param start - Start index
@@ -142,7 +133,6 @@ export interface IWrappedList<T = Block> extends Array<T> {
     /**
      * Returns a new array with added rows
      * @alias addrows
-     * @alias concat
      */
     addrow(newItems: T[]): IWrappedList<T>;
 
@@ -289,7 +279,8 @@ export function wrapList(list: Block[], useWrapBlock: boolean = true): IWrappedL
     let proxy = new Proxy(list, {
         get(target: Block[], prop: any) {
             // 数组原生方法若在 switch 中有覆盖意图，必须在此排除，否则前置分支直接命中导致 case 不可达
-            if (prop in target && !['filter', 'slice', 'map', 'concat', 'toSorted'].includes(prop)) {
+            if (typeof prop === 'symbol') return Reflect.get(target, prop);
+            if (prop in target && !['filter', 'slice'].includes(prop)) {
                 return Reflect.get(target, prop);
             }
             switch (prop) {
@@ -445,16 +436,11 @@ export function wrapList(list: Block[], useWrapBlock: boolean = true): IWrappedL
                         const results = Array.prototype.slice.call(target, start, end);
                         return wrapList(results);
                     }
-                case 'map':
-                    /**
-                     * Returns a new array with mapped elements; the wrapper is preserved
-                     * @param fn - Map function
-                     * @param useWrapBlock - Whether to wrap the mapped elements (default: false, matching native map semantics — elements are passed through as-is)
-                     */
-                    return (fn: (b: Block, index: number) => any, useWrapBlock: boolean = false) => {
-                        const map = Reflect.get(target, prop);
-                        return wrapList(map.call(target, fn), useWrapBlock);
-                    }
+                // case 'map':
+                //     return (fn: (b: Block, index: number) => any, useWrapBlock: boolean = true) => {
+                //         const map = Reflect.get(target, prop);
+                //         return wrapList(map(fn), useWrapBlock);
+                //     }
                 case 'unique':
                     /**
                      * 返回一个去重后的新数组
@@ -479,7 +465,6 @@ export function wrapList(list: Block[], useWrapBlock: boolean = true): IWrappedL
                     }
                 case 'addrow':
                 case 'addrows':
-                case 'concat':
                     /**
                      * 返回连接多个数组的新数组
                      */

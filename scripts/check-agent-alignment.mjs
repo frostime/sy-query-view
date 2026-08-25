@@ -76,11 +76,23 @@ requireWrappedList(sliced, "slice result");
 assert.deepEqual(Array.from(sliced, block => block.id), ["b2", "b3"]);
 
 const concatenated = list.concat([{ id: "b4", content: "Four", root_id: "doc-b", type: "p", ial: "{: id=\"b4\"}" }]);
-requireWrappedList(concatenated, "concat result");
+// concat/toSorted 是原生透传（用户拍板 2026-08-25）：返回普通数组，无 wrapper 方法；
+// symbol 属性原生透传（2026-08-25）保证 isConcatSpreadable 语义，concat 可展开
+const requirePlainArray = (value, label) => {
+  assert.equal(Array.isArray(value), true, `${label} must be an array`);
+  assert.equal(typeof value.unwrap, "undefined", `${label} must NOT expose unwrap()`);
+  assert.equal(typeof value.groupby, "undefined", `${label} must NOT expose groupby()`);
+};
+requirePlainArray(concatenated, "concat result");
 assert.deepEqual(Array.from(concatenated, block => block.id), ["b1", "b2", "b3", "b4"]);
 
+// 包装数组作为参数传给原生 concat 时也必须展开（v1.3 陷阱：兜底 null 会吞掉展开语义）
+const fromNativeConcat = [].concat(list);
+requirePlainArray(fromNativeConcat, "native concat of wrapped list");
+assert.equal(fromNativeConcat.length, 3, "wrapped list must spread into native concat");
+
 const sorted = list.toSorted((left, right) => right.id.localeCompare(left.id));
-requireWrappedList(sorted, "toSorted result");
+requirePlainArray(sorted, "toSorted result");
 assert.deepEqual(Array.from(sorted, block => block.id), ["b3", "b2", "b1"]);
 
 const groups = list.groupby("root_id");
@@ -94,18 +106,20 @@ const mappedDefault = list.map(block => {
   if (block.id === "b1") firstMappedValue = value;
   return value;
 });
-requireWrappedList(mappedDefault, "map result");
+// map 是原生透传（用户拍板 2026-08-25）：返回普通数组，元素为回调原始返回值
+requirePlainArray(mappedDefault, "map result");
 assert.equal(mappedDefault[0], firstMappedValue, "map() must preserve the callback's raw element by default");
 
-const mapped = list.map(block => block, false);
-requireWrappedList(mapped, "map result with useWrapBlock=false");
+const mapped = list.map(block => block);
+requirePlainArray(mapped, "map result");
 assert.deepEqual(Array.from(mapped, block => block.id), ["b1", "b2", "b3"]);
 
-const chained = mapped
+// filter/slice 仍是包装方法（v1.3 行为保留），链式在原生 map 处断为普通数组
+const chained = list
   .filter(block => block.id !== "b2")
   .slice(0, 1)
-  .map(block => block.id, false);
-requireWrappedList(chained, "map/filter/slice chain result");
+  .map(block => block.id);
+requirePlainArray(chained, "map/filter/slice chain result");
 assert.deepEqual(Array.from(chained), ["b1"]);
 
 console.log("[check-agent-alignment] wrapList assertions passed");
