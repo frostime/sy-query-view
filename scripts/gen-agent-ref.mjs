@@ -22,6 +22,7 @@ import path from "path";
 
 const root = path.resolve(import.meta.dirname, "..");
 const OUT_DIR = path.join(root, "docs/en_US/agent-ref");
+const checkOnly = process.argv.includes("--check");
 const project = new Project({ tsConfigFilePath: path.join(root, "tsconfig.json") });
 
 // ============ 工具 ============
@@ -108,14 +109,13 @@ function renderSection({ heading, fullSig, doc, aliases, source, notes, noDoc, l
 // ============ 已知不对齐清单（Worker-B 校验 + N1 原型确认的坑；N6 处置前先诚实标注） ============
 // 注意：内容与本 session 讨论同步，N6 处置后应迁移至源码 JSDoc（I-31 约定落地）
 const KNOWN_NOTES = {
-  "Query.keywordDoc": ["`join:'or'` is not a true OR: the SQL stage uses OR, but the post-filter still requires every keyword to match — effectively AND"],
+  // ⚠ 只保留"仍为真"的行为警示；N6 已修复的条目（keywordDoc 假 OR、columns flex、
+  // echartsTree layout、pick 类型）已移除——否则生成文档会反向误导。此类条目随代码
+  // 修复须同步删除（对齐维护规则：KNOWN_NOTES 是注入口，内容必须与源码现状一致）。
   "Query.Utils.today": ["Default `hms=true` returns a 14-digit full timestamp (yyyyMMddHHmmss); pass `false` for 8-digit; thisWeek starts on Sunday"],
   "Query.Utils.thisWeek": ["Default `hms=true` returns a 14-digit full timestamp (yyyyMMddHHmmss); pass `false` for 8-digit; the week starts on Sunday"],
-  "dv.columns": ["`flex:[1,1,2]` does not actually apply per column: the implementation overwrites a single parent-container `--flex-grow` variable (known limitation, do not rely on it)"],
-  "dv.echartsTree": ["The top-level `layout:'radial'` option is ignored; the implementation hard-codes `'orthogonal'`"],
   "dv.render": ["**Not a pure render**: it persists the embed block (POST /api/search/updateEmbedBlock, content from the block's innerText). Call once at the end of a static view; do not call in loops/hot paths"],
   "dv.details": ["String content is inserted directly into `innerHTML` — raw HTML, not markdown; defaults to `open=true` (expanded)"],
-  "list.pick": ["**Return type differs for single vs multiple attrs** (not reflected in the declaration): `pick('id')` returns a scalar array; `pick('id','content')` returns an object array"],
 };
 
 // ============ 1. Query 模块 ============
@@ -328,7 +328,7 @@ if (!fs.existsSync(path.join(root, "types/core/query.d.ts"))) {
   process.exit(1);
 }
 
-fs.mkdirSync(OUT_DIR, { recursive: true });
+if (!checkOnly) fs.mkdirSync(OUT_DIR, { recursive: true });
 const outputs = [
   ["query-api.md", genQuery()],
   ["dataview.md", genDataView()],
@@ -340,9 +340,18 @@ const changed = [];
 for (const [file, content] of outputs) {
   const target = path.join(OUT_DIR, file);
   const old = fs.existsSync(target) ? fs.readFileSync(target, "utf8") : null;
-  fs.writeFileSync(target, content);
-  if (old !== content) changed.push(file);
+  if (!checkOnly) fs.writeFileSync(target, content);
+  if (old !== content) changed.push(old === null ? `${file}（缺失）` : file);
 }
-console.log(`[gen-agent-ref] 已生成 ${outputs.length} 份参考文档 → ${OUT_DIR}`);
-if (changed.length) console.log(`[gen-agent-ref] 变更：${changed.join(", ")}`);
-else console.log("[gen-agent-ref] 无变更（与上次生成一致）");
+if (checkOnly) {
+  if (changed.length) {
+    console.error(`[gen-agent-ref] --check 失败：生成内容与产物不一致：${changed.join(", ")}`);
+    process.exitCode = 1;
+  } else {
+    console.log(`[gen-agent-ref] --check 通过：${outputs.length} 份参考文档与生成结果一致`);
+  }
+} else {
+  console.log(`[gen-agent-ref] 已生成 ${outputs.length} 份参考文档 → ${OUT_DIR}`);
+  if (changed.length) console.log(`[gen-agent-ref] 变更：${changed.join(", ")}`);
+  else console.log("[gen-agent-ref] 无变更（与上次生成一致）");
+}

@@ -27,7 +27,7 @@ Creates a new DataView instance for rendering data visualizations
 ## Query.wrapBlocks(blocks, useWrapBlock)
 
 ```ts
-wrapBlocks: (blocks: Block[] | Block, useWrapBlock?: boolean) => IWrappedBlock | IWrappedList<Block>
+wrapBlocks: (blocks: Block[] | Block, useWrapBlock?: boolean) => IWrappedBlock | IWrappedList<IWrappedBlock>
 ```
 
 Wraps blocks with additional functionality
@@ -41,7 +41,7 @@ Wraps blocks with additional functionality
 
 **Available names** (2, expanded from register()/addAlias() call sites): `wrapBlocks` · `wrapit`
 
-**Source** `src/core/query.ts:460`
+**Source** `src/core/query.ts:468`
 
 ---
 
@@ -63,7 +63,7 @@ await Query.request('/api/outline/getDocOutline', {
 });
 ```
 
-**Source** `src/core/query.ts:475`
+**Source** `src/core/query.ts:483`
 
 ---
 
@@ -81,11 +81,11 @@ Gets blocks by their IDs
 
 **Returns**: Array of wrapped blocks
 
-**Notes**: This API recieve sequence of block IDs, and always return an array of Block.
+**Notes**: This API receives a sequence of block IDs and always returns an array of wrapped blocks.
 
 **Available names** (3, expanded from register()/addAlias() call sites): `getBlocksByIds` · `getBlockById` · `getBlocksById`
 
-**Source** `src/core/query.ts:484`
+**Source** `src/core/query.ts:492`
 
 ---
 
@@ -105,7 +105,7 @@ Similar to `getBlocksByIds`, but :
 
 **Returns**: Single block or array of blocks
 
-**Source** `src/core/query.ts:497`
+**Source** `src/core/query.ts:505`
 
 ---
 
@@ -125,7 +125,7 @@ Gets the current document's ID
 
 **Available names** (2, expanded from register()/addAlias() call sites): `root_id` · `docId`
 
-**Source** `src/core/query.ts:510`
+**Source** `src/core/query.ts:518`
 
 ---
 
@@ -143,14 +143,14 @@ Gets the current document as a block
 
 **Returns**: Wrapped document block
 
-**Source** `src/core/query.ts:517`
+**Source** `src/core/query.ts:525`
 
 ---
 
-## Query.sql(fmt, wrap)
+## Query.sql(fmt, wrap?)
 
 ```ts
-sql: (fmt: string, wrap?: boolean) => Promise<IWrappedList<IWrappedBlock>>
+sql: <W extends boolean = true>(fmt: string, wrap?: W) => Promise<W extends false ? Block[] : IWrappedList<IWrappedBlock>>
 ```
 
 Executes SQL query and optionally wraps results
@@ -162,7 +162,7 @@ Executes SQL query and optionally wraps results
 
 **Returns**: Query results
 
-**Source** `src/core/query.ts:529`
+**Source** `src/core/query.ts:537`
 
 ---
 
@@ -183,7 +183,7 @@ Finds backlinks to a specific block
 
 **Available names** (2, expanded from register()/addAlias() call sites): `backlink` · `backlinks`
 
-**Source** `src/core/query.ts:544`
+**Source** `src/core/query.ts:552`
 
 ---
 
@@ -206,7 +206,7 @@ Finds blocks with specific attributes
 
 **Returns**: Array of matching blocks
 
-**Source** `src/core/query.ts:562`
+**Source** `src/core/query.ts:570`
 
 ---
 
@@ -237,7 +237,7 @@ Query.tag(['tag1', 'tag2'], { join: 'or' }) // Search for blocks with 'tag1' or 
 Query.tag(['tag1', 'tag2'], { join: 'and' }) // Search for blocks with 'tag1' and 'tag2'
 ```
 
-**Source** `src/core/query.ts:605`
+**Source** `src/core/query.ts:613`
 
 ---
 
@@ -266,7 +266,7 @@ Query.task({ after: '2024101000' })
 Query.task({ limit: 32 })
 ```
 
-**Source** `src/core/query.ts:659`
+**Source** `src/core/query.ts:667`
 
 ---
 
@@ -294,14 +294,14 @@ Query.dailynote({ notebook: '20231224140619-bpyuay4' })
 Query.dailynote({ limit: 32 })
 ```
 
-**Source** `src/core/query.ts:694`
+**Source** `src/core/query.ts:702`
 
 ---
 
 ## Query.childDoc(b)
 
 ```ts
-childDoc: (b: BlockId | Block) => Promise<IWrappedList<Block>>
+childDoc: (b: BlockId | Block) => Promise<IWrappedList<IWrappedBlock>>
 ```
 
 Gets child documents of a block
@@ -312,14 +312,14 @@ Gets child documents of a block
 
 **Returns**: Array of child document blocks
 
-**Source** `src/core/query.ts:730`
+**Source** `src/core/query.ts:738`
 
 ---
 
 ## Query.nearby(id, options?)
 
 ```ts
-nearby: (id: BlockId, options?: { direction?: "previous" | "next" | "both"; number?: number; }) => Promise<{ previous?: { id: Block; markdown: string; }[]; next?: { id: Block; markdown: string; }[]; }>
+nearby: (id: BlockId, options?: { direction?: "previous" | "next" | "both"; number?: number; }) => Promise<{ previous?: { id: BlockId; markdown: string; }[]; next?: { id: BlockId; markdown: string; }[]; }>
 ```
 
 Get nearby blocks relative to the specified block within the same container.
@@ -359,7 +359,7 @@ await query.nearby('block123');
 await query.nearby('block123', { direction: 'previous', number: 3 });
 ```
 
-**Source** `src/core/query.ts:779`
+**Source** `src/core/query.ts:787`
 
 ---
 
@@ -381,14 +381,14 @@ Search blocks that contain the given keywords
 
 **Returns**: Array of blocks that contain the given keywords
 
-**Source** `src/core/query.ts:818`
+**Source** `src/core/query.ts:826`
 
 ---
 
 ## Query.keywordDoc(keywords, options?, limit?)
 
 ```ts
-keywordDoc: (keywords: string | string[], options?: { relation?: "any" | "all"; limit?: number; } | DeprecatedParam<"any" | "all"> | { join?: "or" | "and"; limit?: number; } | DeprecatedParam<"or" | "and">, limit?: DeprecatedParam<number>) => Promise<Block[]>
+keywordDoc: (keywords: string | string[], options?: { relation?: "any" | "all"; limit?: number; } | DeprecatedParam<"any" | "all"> | { join?: "or" | "and"; limit?: number; } | DeprecatedParam<"or" | "and">, limit?: DeprecatedParam<number>) => Promise<any[] | IWrappedList<IWrappedBlock>>
 ```
 
 Search the document that contains all the keywords.
@@ -411,9 +411,7 @@ let docs = await Query.keywordDoc(['Keywords A', 'Keywords B']);
 docs[0].keywords['Keywords A'] // get the matched keyword block by using `keywords` property
 ```
 
-> ⚠ `join:'or'` is not a true OR: the SQL stage uses OR, but the post-filter still requires every keyword to match — effectively AND
-
-**Source** `src/core/query.ts:864`
+**Source** `src/core/query.ts:872`
 
 ---
 
@@ -432,7 +430,7 @@ Randomly roam blocks
 
 **Returns**: Array of randomly roamed blocks
 
-**Source** `src/core/query.ts:923`
+**Source** `src/core/query.ts:931`
 
 ---
 
@@ -442,9 +440,16 @@ Randomly roam blocks
 markdown: (input: BlockId | Block) => Promise<any>
 ```
 
-> ⚠ No JSDoc documentation (behavior unverified) — check the source code or official tutorial
+Returns the markdown content represented by a block or block ID.
+Document and heading blocks include their child blocks; other block types return their own markdown.
 
-**Source** `src/core/query.ts:931`
+**Params**
+
+- `input` — Block ID or block object
+
+**Returns**: Markdown text
+
+**Source** `src/core/query.ts:945`
 
 ---
 
@@ -462,14 +467,14 @@ Return the statistics of the document with given document ID
 
 **Returns**: The statistics of the document; .runeCount - The number of characters in the document; .wordCount - The number of words (Chinese characters are counted as one word) in the document; .linkCount - The number of links in the document; .imageCount - The number of images in the document; .refCount - The number of references in the document; .blockCount - The number of blocks in the document
 
-**Source** `src/core/query.ts:961`
+**Source** `src/core/query.ts:975`
 
 ---
 
 ## Query.fb2p(inputs, enable?)
 
 ```ts
-fb2p: (inputs: Block[], enable?: { heading?: boolean; doc?: boolean; }) => Promise<IWrappedList<Block>>
+fb2p: (inputs: Block[] | BlockId[], enable?: { heading?: boolean; doc?: boolean; }) => Promise<IWrappedList<IWrappedBlock>>
 ```
 
 Redirects first block IDs to their parent containers
@@ -485,14 +490,14 @@ Redirects first block IDs to their parent containers
 
 **Available names** (2, expanded from register()/addAlias() call sites): `fb2p` · `redirect`
 
-**Source** `src/core/query.ts:984`
+**Source** `src/core/query.ts:998`
 
 ---
 
 ## Query.pruneBlocks(blocks, keep, advanced)
 
 ```ts
-pruneBlocks: (blocks: Block[], keep?: "leaf" | "root", advanced?: boolean) => Promise<IWrappedList<Block>>
+pruneBlocks: (blocks: Block[], keep?: "leaf" | "root", advanced?: boolean) => Promise<IWrappedList<IWrappedBlock>>
 ```
 
 Prune/Merge blocks from SQL search results to eliminate duplicates.
@@ -522,7 +527,7 @@ This function resolves this duplication issue by merging related blocks based on
 
 **Available names** (4, expanded from register()/addAlias() call sites): `pruneBlocks` · `prune` · `mergeBlocks` · `merge`
 
-**Source** `src/core/query.ts:1105`
+**Source** `src/core/query.ts:1119`
 
 ---
 
@@ -536,7 +541,7 @@ Send GPT request, use AI configuration in `siyuan.config.ai.openAI` by default
 
 **Params**
 
-- `prompt` — Prompt
+- `input` — Prompt text or a user/assistant message history
 - `options` — Options
 - `options.url` — Custom API URL
 - `options.model` — Custom API model
@@ -551,7 +556,7 @@ Send GPT request, use AI configuration in `siyuan.config.ai.openAI` by default
 
 **Notes**: The only API that sends external HTTP(S) requests via fetch; every other Query API is a SiYuan kernel request.
 
-**Source** `src/core/query.ts:1127`
+**Source** `src/core/query.ts:1141`
 
 ---
 
@@ -567,9 +572,9 @@ Send GPT request, use AI configuration in `siyuan.config.ai.openAI` by default
 Date: (value: string | number | Date) => SiYuanDate
 ```
 
-> ⚠ No JSDoc documentation (behavior unverified) — check the source code or official tutorial
+Creates a SiYuanDate using the native Date constructor arguments.
 
-**Source** `src/core/query.ts:285`
+**Source** `src/core/query.ts:286`
 
 ---
 
@@ -590,7 +595,7 @@ Gets timestamp for current time with optional day offset
 
 **Returns**: Timestamp string in yyyyMMddHHmmss format
 
-**Source** `src/core/query.ts:294`
+**Source** `src/core/query.ts:295`
 
 ---
 
@@ -610,7 +615,7 @@ Gets the timestamp for the start of today
 
 > ⚠ Default `hms=true` returns a 14-digit full timestamp (yyyyMMddHHmmss); pass `false` for 8-digit; thisWeek starts on Sunday
 
-**Source** `src/core/query.ts:305`
+**Source** `src/core/query.ts:306`
 
 ---
 
@@ -630,7 +635,7 @@ Gets the timestamp for the start of current week
 
 > ⚠ Default `hms=true` returns a 14-digit full timestamp (yyyyMMddHHmmss); pass `false` for 8-digit; the week starts on Sunday
 
-**Source** `src/core/query.ts:312`
+**Source** `src/core/query.ts:313`
 
 ---
 
@@ -640,11 +645,11 @@ Gets the timestamp for the start of current week
 lastWeek: (hms?: boolean) => any
 ```
 
-Gets the timestamp for the start of next week
+Gets the timestamp for the start of last week
 
 **Returns**: Timestamp string in yyyyMMddHHmmss format
 
-**Source** `src/core/query.ts:322`
+**Source** `src/core/query.ts:323`
 
 ---
 
@@ -658,7 +663,7 @@ Gets the timestamp for the start of current month
 
 **Returns**: Timestamp string in yyyyMMddHHmmss format
 
-**Source** `src/core/query.ts:332`
+**Source** `src/core/query.ts:333`
 
 ---
 
@@ -672,7 +677,7 @@ Gets the timestamp for the start of last month
 
 **Returns**: Timestamp string in yyyyMMddHHmmss format
 
-**Source** `src/core/query.ts:343`
+**Source** `src/core/query.ts:344`
 
 ---
 
@@ -686,7 +691,7 @@ Gets the timestamp for the start of current year
 
 **Returns**: Timestamp string in yyyyMMddHHmmss format
 
-**Source** `src/core/query.ts:354`
+**Source** `src/core/query.ts:355`
 
 ---
 
@@ -705,7 +710,7 @@ asDate: (timestr: string) => SiYuanDate
 
 **Returns**: Date object
 
-**Source** `src/core/query.ts:367`
+**Source** `src/core/query.ts:368`
 
 ---
 
@@ -723,7 +728,7 @@ Converts Date object to SiYuan timestamp format
 
 **Returns**: Timestamp string in yyyyMMddHHmmss format
 
-**Source** `src/core/query.ts:376`
+**Source** `src/core/query.ts:377`
 
 ---
 
@@ -741,7 +746,7 @@ Converts a block to a SiYuan link format
 
 **Returns**: String in markdown link format
 
-**Source** `src/core/query.ts:383`
+**Source** `src/core/query.ts:384`
 
 ---
 
@@ -759,7 +764,7 @@ Converts a block to a SiYuan reference format
 
 **Returns**: String in reference format ((id 'content'))
 
-**Source** `src/core/query.ts:390`
+**Source** `src/core/query.ts:391`
 
 ---
 
@@ -769,9 +774,16 @@ Converts a block to a SiYuan reference format
 asMap: (blocks: Block[], key?: string) => { [key: string]: Block; [key: number]: Block; }
 ```
 
-> ⚠ No JSDoc documentation (behavior unverified) — check the source code or official tutorial
+Converts blocks into an object keyed by a block property.
 
-**Source** `src/core/query.ts:392`
+**Params**
+
+- `blocks` — Blocks to index
+- `key` — Property used as the key; defaults to `id`
+
+**Returns**: Object whose keys are the selected property values
+
+**Source** `src/core/query.ts:399`
 
 ---
 
@@ -789,7 +801,7 @@ Gets notebook information from block or notebook ID
 
 **Returns**: Notebook information
 
-**Source** `src/core/query.ts:402`
+**Source** `src/core/query.ts:409`
 
 ---
 
@@ -813,7 +825,7 @@ Gets the name of a notebook by its ID; equivalent to `notebook(boxid).name`
 Query.Utils.boxName(block['box']) // 'Notebook 123'
 ```
 
-**Source** `src/core/query.ts:413`
+**Source** `src/core/query.ts:420`
 
 ---
 
@@ -837,7 +849,7 @@ Gets the readable name of the type of a block
 Query.Utils.typename(block['type']) // 'Heading'
 ```
 
-**Source** `src/core/query.ts:423`
+**Source** `src/core/query.ts:430`
 
 ---
 
@@ -855,7 +867,7 @@ Given a document block (type='d'), return its emoji icon
 
 **Returns**: emoji icon; if block is not with type='d', return null
 
-**Source** `src/core/query.ts:430`
+**Source** `src/core/query.ts:437`
 
 ---
 
@@ -873,7 +885,7 @@ Given emoji code, returl emoji icon
 
 **Returns**: 
 
-**Source** `src/core/query.ts:441`
+**Source** `src/core/query.ts:448`
 
 ---
 
@@ -885,7 +897,7 @@ renderAttr: (b: Block & { [key: string | number]: string | number; }, attr: (key
 
 Renders the value of a block attribute as markdown format
 
-**Source** `src/core/query.ts:450`
+**Source** `src/core/query.ts:457`
 
 ---
 
@@ -895,9 +907,9 @@ Renders the value of a block attribute as markdown format
 openBlock: (id: BlockId, options?: { zoomIn?: boolean; action?: import("siyuan").TProtyleAction[]; position?: Parameters<typeof import("siyuan").openTab>[0]["position"]; keepCursor?: boolean; }) => void
 ```
 
-> ⚠ No JSDoc documentation (behavior unverified) — check the source code or official tutorial
+Opens a block in the current SiYuan UI.
 
-**Source** `src/core/query.ts:451`
+**Source** `src/core/query.ts:459`
 
 ---
 

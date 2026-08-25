@@ -105,7 +105,7 @@ Remove the view element (by given the id of the container) from dataview
 ## dv.replaceView(id, viewContainer, disposer?)
 
 ```ts
-replaceView(id: string, viewContainer: HTMLElement, disposer?: () => void): HTMLElement;
+replaceView(id: string, viewContainer: HTMLElement, disposer?: () => void): HTMLElement | null;
 ```
 
 Replace the view element (by given the id of the container) with another given element
@@ -305,8 +305,6 @@ Arranges elements in columns
 ```ts
 dv.addcolumns([dv.md('# Hello'), dv.md('# World')], { gap: '10px', flex: [1, 2] });
 ```
-
-> ⚠ `flex:[1,1,2]` does not actually apply per column: the implementation overwrites a single parent-container `--flex-grow` variable (known limitation, do not rely on it)
 
 **Available names** (8, expanded from register()/addAlias() call sites): `Cols` · `Columns` · `addCols` · `addColumns` · `addcols` · `addcolumns` · `cols` · `columns`
 
@@ -586,8 +584,6 @@ Creates a tree visualization
 - `options.echartsOption` — Additional ECharts configuration, see https://echarts.apache.org/zh/option.html#title for more details
 
 **Returns**: HTMLElement containing the tree visualization
-
-> ⚠ The top-level `layout:'radial'` option is ignored; the implementation hard-codes `'orthogonal'`
 
 **Available names** (14, expanded from register()/addAlias() call sites): `ETree` · `EchartsTree` · `addETree` · `addEchartsTree` · `addEchartstree` · `addEtree` · `addeTree` · `addechartsTree` · `addechartstree` · `addetree` · `eTree` · `echartsTree` · `echartstree` · `etree`
 
