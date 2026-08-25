@@ -10,12 +10,18 @@ export interface IWrappedBlock extends Block {
 
     /** Block's URI link in format: siyuan://blocks/xxx */
     asurl: string;
+    /** Runtime-compatible alias of asurl */
+    tourl: string;
 
     /** Block's Markdown format link [content](siyuan://blocks/xxx) */
     aslink: string;
+    /** Runtime-compatible alias of aslink */
+    tolink: string;
 
     /** Block's SiYuan reference format text */
     asref: string;
+    /** Runtime-compatible alias of asref */
+    toref: string;
 
     /** Blocks's ial list, as object
      * @example
@@ -62,10 +68,10 @@ export interface IWrappedList<T = Block> extends Array<T> {
     /**
      * Converts the array to a map object, where the key is specified by the key parameter.
      * Equivalent to calling `array.reduce((acc, cur) => ({...acc, [cur[key]]: cur }), {})`
-     * @param key 
+     * @param key - Key attribute, defaults to 'id'
      * @returns 
      */
-    asMap: (key: string) => Record<string, Block>;
+    asMap: (key?: string) => Record<string, Block>;
 
     /**
      * Returns a new array containing only specified properties
@@ -74,6 +80,7 @@ export interface IWrappedList<T = Block> extends Array<T> {
      * @param attrs - Property names to keep
      */
     pick<A extends keyof T>(attr: A): IWrappedList<T[A]>;
+    /** Selects multiple properties and returns wrapped objects containing only those properties. */
     pick<A extends keyof T>(...attrs: A[]): IWrappedList<Pick<T, A>>;
 
     /**
@@ -85,7 +92,7 @@ export interface IWrappedList<T = Block> extends Array<T> {
     /**
      * Returns a new array sorted by specified property
      * @param attr - Property to sort by
-     * @param order - Sort direction, defaults to 'asc'
+     * @param order - Sort direction, defaults to 'desc'
      */
     sorton(attr: keyof T, order?: 'asc' | 'desc'): IWrappedList<T>;
 
@@ -107,9 +114,17 @@ export interface IWrappedList<T = Block> extends Array<T> {
     /**
      * Returns a new array with mapped elements; the wrapper is preserved
      * @param fn - Map function
-     * @param useWrapBlock - Whether to wrap the mapped elements (default: true)
+     * @param useWrapBlock - Whether to wrap the mapped elements (default: false, matching native map semantics — elements are passed through as-is)
      */
     map<U>(fn: (value: T, index: number, array: T[]) => U, useWrapBlock?: boolean): IWrappedList<U>;
+    /**
+     * Returns a new array with elements appended; the wrapper is preserved (modifies the default Array.concat)
+     */
+    concat(...items: any[]): IWrappedList<T>;
+    /**
+     * Returns a new array sorted by the given comparator; the wrapper is preserved (modifies the default Array.toSorted)
+     */
+    toSorted(compareFn?: (a: any, b: any) => number): IWrappedList<T>;
     /**
      * Returns a new array containing elements in the specified range
      * @param start - Start index
@@ -127,7 +142,7 @@ export interface IWrappedList<T = Block> extends Array<T> {
     /**
      * Returns a new array with added rows
      * @alias addrows
-     * @alias concat: modify the default method of Array
+     * @alias concat
      */
     addrow(newItems: T[]): IWrappedList<T>;
 
@@ -260,9 +275,12 @@ export const wrapBlock = (block: Block): IWrappedBlock => {
  * @param list 
  * @returns 
  */
-export const wrapList = (list: Block[], useWrapBlock: boolean = true): IWrappedList<Block> => {
+// overload：默认（useWrapBlock=true）元素为 IWrappedBlock；显式 false 时元素为裸 Block
+export function wrapList(list: Block[], useWrapBlock?: boolean): IWrappedList<IWrappedBlock>;
+export function wrapList(list: Block[], useWrapBlock: false): IWrappedList<Block>;
+export function wrapList(list: Block[], useWrapBlock: boolean = true): IWrappedList<Block> | IWrappedList<IWrappedBlock> {
     if (list?.['unwrapped']) {
-        return list as IWrappedList<Block>
+        return list as IWrappedList<Block> | IWrappedList<IWrappedBlock>
     }
 
     // let wrappedBlocks = list.map(block => wrapBlock(block as Block));
@@ -270,7 +288,8 @@ export const wrapList = (list: Block[], useWrapBlock: boolean = true): IWrappedL
 
     let proxy = new Proxy(list, {
         get(target: Block[], prop: any) {
-            if (prop in target && !['filter', 'slice'].includes(prop)) {
+            // 数组原生方法若在 switch 中有覆盖意图，必须在此排除，否则前置分支直接命中导致 case 不可达
+            if (prop in target && !['filter', 'slice', 'map', 'concat', 'toSorted'].includes(prop)) {
                 return Reflect.get(target, prop);
             }
             switch (prop) {
@@ -359,7 +378,7 @@ export const wrapList = (list: Block[], useWrapBlock: boolean = true): IWrappedL
                     /**
                      * 返回按指定属性排序的新数组
                      * @param {keyof Block} attr - 排序依据的属性
-                     * @param {'asc'|'desc'} [order='asc'] - 排序方向
+                     * @param {'asc'|'desc'} [order='desc'] - 排序方向（默认降序，与实现一致）
                      * @returns {ProxyList} 排序后的新代理数组
                      * @example list.sorton('updated', 'desc')
                      */
@@ -430,9 +449,9 @@ export const wrapList = (list: Block[], useWrapBlock: boolean = true): IWrappedL
                     /**
                      * Returns a new array with mapped elements; the wrapper is preserved
                      * @param fn - Map function
-                     * @param useWrapBlock - Whether to wrap the mapped elements (default: true)
+                     * @param useWrapBlock - Whether to wrap the mapped elements (default: false, matching native map semantics — elements are passed through as-is)
                      */
-                    return (fn: (b: Block, index: number) => any, useWrapBlock: boolean = true) => {
+                    return (fn: (b: Block, index: number) => any, useWrapBlock: boolean = false) => {
                         const map = Reflect.get(target, prop);
                         return wrapList(map.call(target, fn), useWrapBlock);
                     }
@@ -531,5 +550,5 @@ export const wrapList = (list: Block[], useWrapBlock: boolean = true): IWrappedL
         }
     });
     //@ts-ignore
-    return proxy as IWrappedList<Block>;
+    return proxy as IWrappedList<Block> | IWrappedList<IWrappedBlock>;
 }

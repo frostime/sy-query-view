@@ -464,7 +464,7 @@ export class DataView extends UseStateMixin {
      * @warn Don not duplicately specify dispose function for new view!
      * @returns
      */
-    replaceView(id: string, viewContainer: HTMLElement, disposer?: () => void) {
+    replaceView(id: string, viewContainer: HTMLElement, disposer?: () => void): HTMLElement | null {
         if (!id) return null;
         viewContainer = this.view(viewContainer);
 

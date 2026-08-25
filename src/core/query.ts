@@ -282,6 +282,7 @@ const Query = {
      * Every function here is sync function, no need to await
      */
     Utils: {
+        /** Creates a SiYuanDate using the native Date constructor arguments. */
         Date: (...args: ConstructorParameters<typeof SiYuanDate>) => new SiYuanDate(...args),
         /**
          * Gets timestamp for current time with optional day offset
@@ -316,7 +317,7 @@ const Query = {
         },
 
         /**
-         * Gets the timestamp for the start of next week
+         * Gets the timestamp for the start of last week
          * @returns Timestamp string in yyyyMMddHHmmss format
          */
         lastWeek: (hms: boolean = true) => {
@@ -389,6 +390,12 @@ const Query = {
          */
         asRef: (b: Block) => `((${b.id} '${b.fcontent || b.content}'))`,
 
+        /**
+         * Converts blocks into an object keyed by a block property.
+         * @param blocks - Blocks to index
+         * @param key - Property used as the key; defaults to `id`
+         * @returns Object whose keys are the selected property values
+         */
         asMap: (blocks: Block[], key: string = 'id') => blocks.reduce((map, block) => {
             map[block[key]] = block;
             return map;
@@ -448,6 +455,7 @@ const Query = {
          * Renders the value of a block attribute as markdown format
          */
         renderAttr: renderAttr,
+        /** Opens a block in the current SiYuan UI. */
         openBlock: openBlock
     },
 
@@ -476,7 +484,7 @@ const Query = {
 
     /**
      * Gets blocks by their IDs
-     * @note This API recieve sequence of block IDs, and always return an array of Block.
+     * @note This API receives a sequence of block IDs and always returns an array of wrapped blocks.
      * @param ids - Block IDs to retrieve
      * @returns Array of wrapped blocks
      * @alias `getBlocksById`
@@ -526,13 +534,13 @@ const Query = {
      * @param wrap - Whether to wrap results
      * @returns Query results
      */
-    sql: async (fmt: string, wrap: boolean = true): Promise<IWrappedList<IWrappedBlock>> => {
+    sql: async <W extends boolean = true>(fmt: string, wrap?: W): Promise<W extends false ? Block[] : IWrappedList<IWrappedBlock>> => {
         fmt = fmt.trim();
         let data = await sql(fmt);
-        if (data === null || data === undefined) return [] as IWrappedList<IWrappedBlock>;
+        if (data === null || data === undefined) return [] as any;
         // return wrap ? data.map(wrapBlock) : data;
         //@ts-ignore
-        return wrap ? wrapList(data) : data;
+        return wrap ? wrapList(data) : data as any;
     },
 
     /**
@@ -780,8 +788,8 @@ const Query = {
         direction?: 'previous' | 'next' | 'both',
         number?: number
     }): Promise<{ 
-        previous?: { id: Block, markdown: string }[],
-        next?: { id: Block, markdown: string }[]
+        previous?: { id: BlockId, markdown: string }[],
+        next?: { id: BlockId, markdown: string }[]
     }> => {
         options = options ?? {};
         const { direction = 'both', number = 3 } = options;
@@ -906,7 +914,7 @@ const Query = {
             matchedDocs[root_id] = contains;
         });
 
-        let documents: Block[] = await Query.getBlocksByIds(...Object.keys(matchedDocs));
+        let documents = await Query.getBlocksByIds(...Object.keys(matchedDocs));
         for (let i = 0; i < documents.length; i++) {
             const doc = documents[i];
             doc['keywords'] = matchedDocs[doc.root_id];
@@ -928,6 +936,12 @@ const Query = {
         return Query.sql(sql);
     },
 
+    /**
+     * Returns the markdown content represented by a block or block ID.
+     * Document and heading blocks include their child blocks; other block types return their own markdown.
+     * @param input - Block ID or block object
+     * @returns Markdown text
+     */
     markdown: async (input: BlockId | Block) => {
         let block: Block = null;
         if (typeof input === 'string') {
@@ -981,15 +995,15 @@ const Query = {
      * @returns Processed blocks or block IDs
      * @alias `redirect`
      */
-    fb2p: async (inputs: Block[], enable?: { heading?: boolean, doc?: boolean }) => {
+    fb2p: async (inputs: Block[] | BlockId[], enable?: { heading?: boolean, doc?: boolean }) => {
         // 深度拷贝，防止修改原始输入
         // inputs = structuredClone(inputs);
-        inputs = [...inputs];
+        inputs = [...inputs] as Block[] | BlockId[];
         /**
          * 处理输入参数
          */
         let types = typeof inputs[0] === 'string' ? 'id' : 'block';
-        let ids = types === 'id' ? inputs : (inputs as Block[]).map(b => b.id);
+        let ids = types === 'id' ? (inputs as BlockId[]) : (inputs as Block[]).map(b => b.id);
         let blocks: Block[] = inputs as Block[];
         enable = { heading: true, doc: true, ...(enable ?? {}) };
 
@@ -1111,7 +1125,7 @@ const Query = {
 
     /**
      * Send GPT request, use AI configuration in `siyuan.config.ai.openAI` by default
-     * @param prompt - Prompt
+     * @param input - Prompt text or a user/assistant message history
      * @param options - Options
      * @param options.url - Custom API URL
      * @param options.model - Custom API model
