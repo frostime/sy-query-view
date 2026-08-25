@@ -47,19 +47,21 @@ src_userhelp_indexts:
   basic_template_load_failed: 基础模板加载失败，请查看控制台
 src_docsite_indexts:
   tab_title: Query&View 文档站
-  nav_index: 首页
-  nav_group_quickstart: 快速开始
-  nav_group_examples: 案例
-  nav_group_topics: Query / DataView 主题
+  nav_index: 首頁
+  nav_group_tutorials: 教程
+  nav_group_reference: 參考
   nav_quickstart_concepts: 基本概念
-  nav_quickstart_template: 从模板开始
-  nav_examples: 案例总览
-  nav_topic_query: Query 查询
-  nav_topic_dataview: DataView 视图
-  nav_topic_dataview_advanced: DataView 高级特性
-  nav_topic_editor_tips: 外部编辑器与调试
-  nav_api_reference: API 参考
-  nav_skill: 智能体技能
+  nav_quickstart_template: 從模板開始
+  nav_topic_query: Query 查詢
+  nav_topic_dataview: DataView 視圖
+  nav_topic_dataview_advanced: DataView 高級特性
+  nav_topic_editor_tips: 外部編輯器與調試
+  nav_examples: 案例總覽
+  nav_agent_ref_query_api: Query API
+  nav_agent_ref_dataview: DataView
+  nav_agent_ref_wrapped: 包裝列表
+  nav_agent_ref_types: 類型
+  nav_skill: 智能體技能
   copy: 复制
   copied: 已复制
   outline: 大綱
