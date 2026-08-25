@@ -57,6 +57,15 @@ accepted_state:
   - N1 收尾完成（2026-08-24）：真实产物样本验证 18 组件/171 别名全自动提取；
     签名取 tsc 声明 AST（正则文本提取不可靠，曾截断）；结论全文见
     HANDOVER-rollback-branch.md「N1 收尾结论」。
+  - 用户拍板（2026-08-25）：wrapList 的 map/concat/toSorted 不做包装——本轮加入的
+    同名包装（返回 wrapper）与原生数组方法语义重叠，会对 Agent 造成歧义；恢复原生
+    透传（接口声明/排除列表/case 一并撤回），filter/slice 保留 v1.3 包装不动；
+    addrow 的 @alias concat 随之移除（concat 现为原生方法）。
+  - 配套修复（2026-08-25）：wrapList get 陷阱对 symbol 属性原生透传——修复 v1.3 遗留
+    陷阱：兜底 return null 使原生 concat 的 isConcatSpreadable 判定失效，v1.3 的
+    list.concat(x) 实际返回 [list整体, x]（错误行为）；修复后 concat/toSorted 恢复
+    真正的原生语义。A2 断言同步（map/concat/toSorted 断言普通数组 + 原生 concat
+    展开测试）；BREAKCHANGE §3 map 条目删除（恢复原生后无行为变化）。
   - 用户拍板（2026-08-24，回退到「方向确认」节点后重新确认）：
     - 方向通过：tsc 核心导出 + register/addAlias 调用点生成动态成员集合 + 结项复核；
       N1 收尾交付「真实产物样本」（带完整别名的 DataView 方法声明 md），连上 N2/N3 格式讨论。
@@ -123,11 +132,12 @@ current_route:
       title: 代码扫清（扫描/类型/注释）+ API 诚实化（孤立分支）
       desc: >
         源码侧一切「让源码成为可靠真相源」的工作，与生成器主线分开推进。
-        进展：三批实现已提交（75c8bba 第一批 / 2f374d3 第二批 / 1b48a8c 第三批）；
-        S689 结项复核产出 R-01~13 处置——修复批次（proxy/data-view/query + types.d.ts
-        + BREAKCHANGE 移位仓库根）在暂存区**待用户审查**，审查结论（放行提交 or
-        修改 or 回退）后关闭本节点。池内余项：I-79（C-3 单独节点，用户决策）、
-        I-81（request/renderAttr 短签名，P3 待定）、I-82（中文 JSDoc，info 补注释）。
+        进展：三批实现已提交（75c8bba/2f374d3/1b48a8c）+ 结项复核修复批次已提交
+        （755efe5，R-01~13 处置）。2026-08-25 用户拍板：map/concat/toSorted 回退
+        原生透传（删除本轮加入的同名包装，避免 Agent 歧义），配套修复 v1.3 的
+        isConcatSpreadable 陷阱（symbol 原生透传）——本轮回退改动在工作区待提交。
+        池内余项：I-79（C-3 单独节点，用户决策）、I-81（request/renderAttr 短签名，
+        P3 待定）、I-82（中文 JSDoc，info 补注释）。
       state: active
       deps: []
       note: >

@@ -20,8 +20,8 @@ A1 和 A2 已建立并通过：生成物检查能在漂移时非零退出，Node
 
 | 编号 | 发现与证据 | 处置/验证 |
 | --- | --- | --- |
-| R-01 | `src/core/proxy.ts` 的 `wrapList` 快速路径原先会先命中数组原生 `map`，使 `case 'map'` 不可达；修复点现为 :282，显式排除 `map`。 | supervisor 修复实现；A2 现断言 `map()` 返回 wrapper 且默认保留回调原始元素。BREAKCHANGE §3 已记录。 |
-| R-02 | 同样的可达性问题存在于 `concat`、`toSorted`；修复点现为 `src/core/proxy.ts:282`，接口声明现为 :114-120。 | supervisor 修复实现并同步 d.ts；A2 断言两者返回 wrapper。 |
+| R-01 | `src/core/proxy.ts` 的 `wrapList` 快速路径原先会先命中数组原生 `map`，使 `case 'map'` 不可达；修复点现为 :282，显式排除 `map`。 | ~~supervisor 修复实现；A2 现断言 `map()` 返回 wrapper 且默认保留回调原始元素。~~ **2026-08-25 用户拍板回退**：map/concat/toSorted 不做包装（恢复原生透传），本项修复撤回；`map` 恢复为原生方法（返回普通数组），A2 改断言原生行为。 |
+| R-02 | 同样的可达性问题存在于 `concat`、`toSorted`；修复点现为 `src/core/proxy.ts:282`，接口声明现为 :114-120。 | ~~supervisor 修复实现并同步 d.ts；A2 断言两者返回 wrapper。~~ **2026-08-25 用户拍板回退**：同 R-01 撤回；另修复 v1.3 遗留陷阱——get 陷阱对 symbol 属性原生透传，使原生 `concat` 对包装数组的展开语义恢复（v1.3 时 `list.concat(x)` 返回 `[list整体, x]` 属于错误行为）。 |
 | R-03 | `scripts/gen-agent-ref.mjs` 的旧 `KNOWN_NOTES` 曾继续警告已修复的 keywordDoc、columns flex、echartsTree layout、pick 类型。 | 已清理并在 :111-118 写维护规则；重新生成的文档只保留仍成立的 hms、render 副作用、details raw HTML 警示。 |
 | R-04 | `DataView.replaceView` 失败分支返回 `null` 或裸 `return`，原声明固定 `HTMLElement`。 | supervisor 将源码和导出声明改为 `HTMLElement | null`（`src/core/data-view.ts:467`、`types/core/data-view.d.ts:67`），行为未变，文档同步。 |
 | R-05 | `nearby` 运行时字段 `id` 是 `BlockId`，旧返回类型写成 `Block`（`src/core/query.ts:779-791`）。 | supervisor 将源码返回类型改为 `BlockId`，并重新导出声明和文档。 |
