@@ -46,12 +46,12 @@ updated: 2026-08-25
 
 - `src/core/query.ts:475`：`Query.request` 是思源 Kernel 请求，不是任意 HTTP。
 - `src/core/query.ts:484-488`：`getBlocksByIds` 的返回 wrapper 和元素包装状态。
-- `src/core/query.ts:529-535`：`Query.sql(fmt, wrap=false)` 的 raw 数组与 `wrap=true` 的 wrapper 分支；当前声明仍需决定是否精确表达条件返回值。
-- `src/core/query.ts:730-745`：`childDoc` 的 Kernel 路径、文档排序和 wrapper 元素。
+- `src/core/query.ts:537-543`：`Query.sql(fmt, wrap=false)` 的 raw 数组与 `wrap=true` 的 wrapper 分支；条件返回类型已同步到声明，仍可在真实 Kernel 环境复测。
+- `src/core/query.ts:738-753`：`childDoc` 的 Kernel 路径、文档排序和 wrapper 元素；声明现已为 `IWrappedList<IWrappedBlock>`。
 - `src/core/query.ts:779-803`：`nearby` 的层级筛选、方向/数量边界和 Kernel 返回字段。
 - `src/core/query.ts:864-914`：`keywordDoc` 的 `relation`、旧 `join` 映射、空输入、SQL 文档级聚合、`keywords` 附加字段和返回顺序。
-- `src/core/query.ts:984-1078`：`fb2p` 的 Block/BlockId 输入、Kernel 树信息和返回 wrapper。
-- `src/core/query.ts:84-181`、`:1105-1107`：`pruneBlocks` 的 root/leaf、advanced 面包屑路径和返回 wrapper。
+- `src/core/query.ts:998-1092`：`fb2p` 的 Block/BlockId 输入、Kernel 树信息和返回 wrapper；声明现已同步。
+- `src/core/query.ts:84-181`、`:1119-1121`：`pruneBlocks` 的 root/leaf、advanced 面包屑路径和返回 wrapper；声明现已同步。
 
 ### DataView / DOM / 生命周期
 
@@ -69,11 +69,11 @@ updated: 2026-08-25
 ### 公共语义 / 类型
 
 - `src/core/proxy.ts:86-90` 与 `:367-387`：`sorton` 实现默认 `desc`，接口/JSDoc 曾写默认 `asc`；用户已拍板以实现为准，注释和生成文档现已统一为 `desc`。
-- `src/core/query.ts:529-535` 与 `types/core/query.d.ts:208`：`Query.sql` 的 `wrap=false` 返回 raw 数组，声明固定为 wrapper；待后续类型决策。
-- `src/core/query.ts:730-745`、`:1078`、`:1105-1107` 与 `types/core/query.d.ts:285,405,433`：多个 API 返回带 `IWrappedBlock` 元素的列表，但声明仍宽化为 `IWrappedList<Block>`；是否公开 wrapper 能力需统一决定。
+- `src/core/query.ts:537-543` 与 `types/core/query.d.ts:216`：`Query.sql` 已用条件返回类型表达 `wrap=false` 的 raw 数组与默认 wrapper 分支；仍需真实 Kernel 复测。
+- `src/core/query.ts:738-753`、`:1092`、`:1119-1121` 与 `types/core/query.d.ts:293,419,447`：childDoc、fb2p、pruneBlocks 的 wrapper 元素声明已同步；运行时仍需 I-50 复测。
 - `src/core/query.ts:864-914` 与 `types/core/query.d.ts:362`：`keywordDoc` 已保留 wrapper 联合返回类型，但空数组分支造成 `any[]`，且动态 `keywords` 字段的结构仍未表达。
-- `src/core/proxy.ts:292-299` 与 `types/core/proxy.d.ts:55`：`asMap` 运行时默认 key 为 `id`，声明要求必传。
-- `src/core/proxy.ts:187-199` 与 `types/core/proxy.d.ts:12-18`：`tourl`、`tolink`、`toref` 是运行时兼容别名，是否属于公共 API 待判断。
+- `src/core/proxy.ts:302-309` 与 `types/core/proxy.d.ts:61`：`asMap` 默认 key 为 `id`，声明现已改为可选并写明默认值。
+- `src/core/proxy.ts:194-206` 与 `types/core/proxy.d.ts:10-22`：`tourl`、`tolink`、`toref` 已作为运行时兼容别名进入声明和生成文档。
 
 ### 生成器覆盖边界
 

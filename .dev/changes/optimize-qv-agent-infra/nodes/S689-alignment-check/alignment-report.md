@@ -39,11 +39,11 @@ A1 和 A2 已建立并通过：生成物检查能在漂移时非零退出，Node
 | 编号 | 不一致与证据 | 建议归宿/状态 |
 | --- | --- | --- |
 | O-01 | `sorton` 接口/JSDoc 曾写默认 `asc`，实现参数默认 `desc`（`src/core/proxy.ts:86-90,367-387`）。 | 用户已拍板以实现为准；JSDoc 已统一为 `desc`，文档已重生成，零行为变化。 |
-| O-02 | `Query.sql(fmt, false)` 直接返回 raw `data`（`src/core/query.ts:529-535`），声明和文档仍固定 `Promise<IWrappedList<IWrappedBlock>>`（`types/core/query.d.ts:208`、`query-api.md:153`）。 | 保留运行时兼容；后续以条件返回类型或明确 raw 分支修声明，需运行时复测。 |
-| O-03 | `childDoc`、`fb2p`、`pruneBlocks` 默认调用 `wrapList`，元素是 `IWrappedBlock`，声明仍宽化为 `IWrappedList<Block>`（`src/core/query.ts:730-745,1078,1105-1107`；`types/core/query.d.ts:285,405,433`）。 | 统一返回类型或明确类型定位上的有意宽化；不改实现。 |
-| O-04 | `keywordDoc` 当前返回类型已保留 wrapper 联合，但 `any[]` 来自空数组分支，`keywords` 动态字段也未在返回元素类型中表达（`src/core/query.ts:888-914`、`types/core/query.d.ts:362`）。 | 低优先级类型精化；按 I-83 只在能减少 Agent 误导/负担时处理。 |
-| O-05 | `asMap` 运行时默认 `key='id'`（`src/core/proxy.ts:292-299`），接口和 d.ts 要求 `key` 必传（`:68`、`types/core/proxy.d.ts:55`）。 | 声明/JSDoc 可改为可选并写明默认值；不改运行时。 |
-| O-06 | `IWrappedBlock` 运行时兼容 `tourl`、`tolink`、`toref`（`src/core/proxy.ts:187-199`），声明/参考只列 `asurl`、`aslink`、`asref`。 | 先判断旧别名是否是公共 API；若是，补 JSDoc、声明和文档，否则仅记录。 |
+| O-02 | `Query.sql(fmt, false)` 直接返回 raw `data`（`src/core/query.ts:537-543`），曾被声明固定为 wrapper。 | 已改为条件返回类型 `<W extends boolean = true>`；`types/core/query.d.ts:216` 与文档同步，运行时行为未变。 |
+| O-03 | `childDoc`、`fb2p`、`pruneBlocks` 默认调用 `wrapList`，元素是 `IWrappedBlock`，曾宽化为 `IWrappedList<Block>`。 | 已通过 `wrapList` overload 和 Query 声明同步为 `IWrappedList<IWrappedBlock>`；当前 d.ts 为 `types/core/query.d.ts:293,419,447`。 |
+| O-04 | `keywordDoc` 当前返回类型已保留 wrapper 联合，但 `any[]` 来自空数组分支，`keywords` 动态字段也未在返回元素类型中表达（`src/core/query.ts:872-917`、`types/core/query.d.ts:370`）。 | 低优先级类型精化；按 I-83 只在能减少 Agent 误导/负担时处理。 |
+| O-05 | `asMap` 运行时默认 `key='id'`（`src/core/proxy.ts:302-309`），曾在接口和 d.ts 中要求 `key` 必传。 | 已改为 `key?: string` 并在 JSDoc 注明默认 `id`；文档同步。 |
+| O-06 | `IWrappedBlock` 运行时兼容 `tourl`、`tolink`、`toref`（`src/core/proxy.ts:194-206`），曾未出现在声明/参考。 | 已作为 runtime-compatible alias 补进接口、d.ts 和生成文档。 |
 | O-07 | Query 的小写 alias 由变量循环生成（`src/core/query.ts:1259-1264`），生成器只解析字面量正则（`scripts/gen-agent-ref.mjs:162-170`），因此如 `childdoc`、`boxname` 不会列入参考。 | 已确认的生成器限制；后续决定增强静态提取或明确参考只列静态 alias。 |
 | O-08 | DataView 直接赋值 alias 与 getter 不在生成器 `getMethods()` 范围：运行时 `adddisposer/addView/addelement/addele/removeview/replaceview`（`src/core/data-view.ts:371,416-420,457,503`），getter `root_id/embed_id`（`:191-200`）；生成器只取 `types/core/data-view.d.ts` 的 methods（`scripts/gen-agent-ref.mjs:238-239`）。 | 确定公共范围后再扩展生成器；自定义视图 alias 还需运行时复测。 |
 | O-09 | 自定义视图名称/alias 来自运行时配置（`src/core/data-view.ts:143-187`），构建期不可能列出完整集合。 | 文档说明构建时只覆盖内建注册点，完整集合归运行时复测/人工判断。 |

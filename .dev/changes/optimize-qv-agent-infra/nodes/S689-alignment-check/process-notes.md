@@ -59,4 +59,4 @@ src/core 实现
 
 ## 边界与未决项
 
-公共行为或签名问题均通过 mail 报告后等待决定；没有自行改实现。当前仍需后续决定的重点是 `Query.sql(wrap=false)` 的条件返回类型、childDoc/fb2p/pruneBlocks 的 wrapper 元素声明、asMap 默认参数、运行时兼容 alias 是否纳入公共参考，以及动态 alias 和 DataView getter/直接 alias 的生成器覆盖范围。详见 `alignment-report.md` 与 `I-40-final-review-checklist.md`。
+公共行为或签名问题均通过 mail 报告后等待决定；没有自行改实现。当前仍需后续决定或处理的重点是 keywordDoc 返回元素的动态 `keywords` 类型、动态 alias 和 DataView getter/直接 alias 的生成器覆盖范围，以及 Wrapped 签名是否统一从 tsc 声明读取。`Query.sql` 条件返回、wrapper 元素声明、asMap 默认参数和运行时兼容 alias 已在本批次同步。详见 `alignment-report.md` 与 `I-40-final-review-checklist.md`。
