@@ -200,3 +200,6 @@ runtime_rules:
   - 环境陷阱（继承自 handover）：NODE_ENV=development vite build 会被 livereload 挂起；
     tsconfig strict:false 下判别联合窄化失效，用 in 操作符；types.d.ts 是构建产物，
     提交时单独 chore commit
+  - 新增陷阱（2026-08-25）：export-types 须经 pnpm/npm run（PATH 含 node_modules/.bin）
+    执行；直接 node scripts/export-types.js 会命中全局 tsc（TS6，报 TS5011 rootDir /
+    TS5107 node10 弃用）；同样原因建议验证时用 pnpm gen-ref:check 而非裸命令
