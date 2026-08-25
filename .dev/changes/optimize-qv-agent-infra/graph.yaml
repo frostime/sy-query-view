@@ -75,11 +75,15 @@ current_route:
       deps: [N2, N3]
 
     N5:
-      title: 与 SKILL/发布体系集成
-      desc: 2.0 以新机制替换 v1.3 手工 agent-ref 的落地方案（打包/分发/文档站配合）。
-        首项 I-73：skills/sy-query-view/SKILL.md:26 仍称 3.8.0 为插件最低版本，
-        plugin.json:6 实为 3.1.14（顶层 await 才需 3.8.0）——修文档，改前与用户确认措辞。
-      state: frontier
+      title: 与 SKILL/发布体系集成（已完成）
+      desc: 已落地（2026-08-25，委托 worker 实现并验收全绿）：minAppVersion→3.8.0（死代码
+        清理+BREAKCHANGE §5）；文档站 Agent Reference 四页（en-only，fallback 生效，
+        api/reference 退役、d.ts 操作移首页）；SKILL 翻新（参考体系换四份新版参考、
+        v2 语义速记嵌入 §6、fallback 链含 references/source 本地源码）；构建时打包
+        src/core/{query,proxy}.ts 进技能包。遗留：zh_CHT.yaml 文档站 nav 键为旧结构
+        （既有历史不一致，未处置）；dist 不修剪已删除 docs 文件的陈旧文件（构建行为
+        未改，重打包时需清理）。
+      state: done
       deps: [N4]
 
     N6:
