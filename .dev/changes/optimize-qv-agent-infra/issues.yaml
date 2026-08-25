@@ -27,11 +27,6 @@ domains:
     prio: P0
     status: hang
     note: 里程碑处拍板走到哪一步（N1 PoC 或 N4 或 N5 集成）
-  - id: I-02
-    title: 结项复核的定位与时机（原则确认）
-    prio: P0
-    status: hang
-    note: 用户定义：本轮结尾（如 N6 阶段）派 subagent 复核，或写可长期复用的检测脚本；原则已定（第 1 层结束时要有验证手段），细节不提前敲死；对应节点可预订、后置。见 TERM.md『结项复核』
   - id: I-03
     title: 2.0 全新 API 骨架
     prio: P0
@@ -65,7 +60,7 @@ domains:
     title: 源码类型声明的诚实度是文档准确度天花板
     prio: P0
     status: open
-    note: 用户拍板（2026-08-24）：后置——等整个生成框架跑通后再回头修源码类型（先跑通，再保证内容正确）。生成器对已知不对齐点先用标注/待核实呈现
+    note: 原则已执行（N6/N4：wrapList 标注/overload、pick 双签名、childDoc 等声明修正、replaceView/nearby/fb2p/sql 等类型诚实化）；剩余具体项见 I-12/13/14
 - key: n3
   title: N3 — 生成器机制：动态 API 与注释提取规则
   issues:
@@ -74,24 +69,6 @@ domains:
     prio: P0
     status: hang
     note: 草案机制已运行：生成器 KNOWN_NOTES 注入口 + 源码 JSDoc 纯搬运；正式 [agent] tag 结构待 N6 落地时定稿（details 为样板，I-78）
-- key: n4
-  title: N4 — 对齐验证（后置预订，不纳入前期处理）
-  issues:
-  - id: I-40
-    title: 结项复核对象清单（预备清单）
-    prio: P1
-    status: open
-    note: 预订到 N6 阶段要验证的已知不对齐点（childDoc wrapped、today hms、pick 标量、details innerHTML、columns flex、render 副作用、alias 存在性）。细节待结项时定
-  - id: I-41
-    title: 生成物一致性检查（生成+diff）
-    prio: P2
-    status: open
-    note: 生成物提交后 git diff --exit-code；是否进 CI 后置评估
-  - id: I-42
-    title: 可复用检测脚本形态
-    prio: P2
-    status: open
-    note: 结项复核落地为可长期复用的脚本/子流程的形态评估；可能过度工程，留到 N6 阶段再决定
 - key: n5
   title: N5 — 与 SKILL/发布体系集成
   issues:
@@ -157,13 +134,13 @@ domains:
     title: 长期对齐规范机制（AGENTS.md / SKILL 形式）
     prio: P2
     status: open
-    note: 用户定义：让后续协作持续保持『语义对齐』的规范，属长期 infrastructure 问题，独立于本轮 graph 任务；此处只订入口，条件：第 1 层结项后评估。规范内容不得在本任务中提前定死
+    note: 机制初版已落地（2026-08-25 N4 交付）：AGENTS.md（仓库根）+ .agents/skills/qv-reference-alignment；内容随实践迭代，用户审查中
   - id: I-83
-    title: QV 类型定义定位规则（内容预订入第 2 层 AGENTS.md）
+    title: QV 类型定义定位规则（已写入 AGENTS.md）
     prio: P2
-    status: open
+    status: done
     ev: user
-    note: 用户 2026-08-24 定：QV 脚本运行时是纯浏览器/Electron JS 环境；类型定义的意义仅在于 agent 参考 + 自身开发便利；只要不造成使用者（agent）认知误导或负担，不过分纠结类型精确度。建议写入 AGENTS.md，内容预订第 2 层基建
+    note: 规则已写入 AGENTS.md（2026-08-25）并进维护 SKILL；I-91 提炼时引用
 - key: research
   title: 悬空研究（不做也 OK）
   issues:

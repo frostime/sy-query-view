@@ -13,7 +13,6 @@ data = {
   "domains": [
     {"key": "milestone", "title": "决策里程碑（悬空优先，需用户拍板）", "issues": [
       {"id": "I-00", "title": "总体成功标准 / 推进深度", "prio": "P0", "status": "hang", "note": "里程碑处拍板走到哪一步（N1 PoC 或 N4 或 N5 集成）"},
-      {"id": "I-02", "title": "结项复核的定位与时机（原则确认）", "prio": "P0", "status": "hang", "note": "用户定义：本轮结尾（如 N6 阶段）派 subagent 复核，或写可长期复用的检测脚本；原则已定（第 1 层结束时要有验证手段），细节不提前敲死；对应节点可预订、后置。见 TERM.md『结项复核』"},
       {"id": "I-03", "title": "2.0 全新 API 骨架", "prio": "P0", "status": "hang", "ev": "user", "note": "明确排除在本任务外，独立 backlog；防止本任务范围蔓延"},
     ]},
     {"key": "n1", "title": "N1 — 高保真提取 / 导出机制", "issues": [
@@ -21,15 +20,10 @@ data = {
       {"id": "I-13", "title": "UseStateMixin 不能干净导出", "prio": "P1", "status": "open", "note": "export-types 靠字符串 hack 抹除 extends UseStateMixin；use-state.d.ts 被注释"},
       {"id": "I-14", "title": "export-types.js 脆弱字符串替换", "prio": "P2", "status": "open", "note": "import(\"./proxy\"). 剥离、default;→Query、mixin 抹除；新管线不复刻"},
       {"id": "I-15", "title": "ts-morph getTags(name) 按名过滤失效", "prio": "info", "status": "open", "note": "遍历 + getTagName() 过滤可绕过；工具降级记录，非阻塞"},
-      {"id": "I-17", "title": "源码类型声明的诚实度是文档准确度天花板", "prio": "P0", "status": "open", "note": "用户拍板（2026-08-24）：后置——等整个生成框架跑通后再回头修源码类型（先跑通，再保证内容正确）。生成器对已知不对齐点先用标注/待核实呈现"},
+      {"id": "I-17", "title": "源码类型声明的诚实度是文档准确度天花板", "prio": "P0", "status": "open", "note": "原则已执行（N6/N4：wrapList 标注/overload、pick 双签名、childDoc 等声明修正、replaceView/nearby/fb2p/sql 等类型诚实化）；剩余具体项见 I-12/13/14"},
     ]},
     {"key": "n3", "title": "N3 — 生成器机制：动态 API 与注释提取规则", "issues": [
       {"id": "I-31", "title": "面向 agent 注释约定定稿", "prio": "P0", "status": "hang", "note": "草案机制已运行：生成器 KNOWN_NOTES 注入口 + 源码 JSDoc 纯搬运；正式 [agent] tag 结构待 N6 落地时定稿（details 为样板，I-78）"},
-    ]},
-    {"key": "n4", "title": "N4 — 对齐验证（后置预订，不纳入前期处理）", "issues": [
-      {"id": "I-40", "title": "结项复核对象清单（预备清单）", "prio": "P1", "status": "open", "note": "预订到 N6 阶段要验证的已知不对齐点（childDoc wrapped、today hms、pick 标量、details innerHTML、columns flex、render 副作用、alias 存在性）。细节待结项时定"},
-      {"id": "I-41", "title": "生成物一致性检查（生成+diff）", "prio": "P2", "status": "open", "note": "生成物提交后 git diff --exit-code；是否进 CI 后置评估"},
-      {"id": "I-42", "title": "可复用检测脚本形态", "prio": "P2", "status": "open", "note": "结项复核落地为可长期复用的脚本/子流程的形态评估；可能过度工程，留到 N6 阶段再决定"},
     ]},
     {"key": "n5", "title": "N5 — 与 SKILL/发布体系集成", "issues": [
       {"id": "I-50", "title": "运行时复测", "prio": "P1", "status": "hang", "ev": "HO", "note": "技能注册无 warn、Agent 读 references/、dev 改 SKILL 即同步"},
@@ -40,8 +34,8 @@ data = {
     ]},
     {"key": "n6", "title": "N6 — 代码扫清（扫描/类型/注释）+ API 诚实化", "issues": [{"id": "I-79", "title": "deprecated 参数名暴露内部实现（optionDeprecatedAsValMatch 等）", "prio": "P3", "status": "hang", "ev": "scan", "disposition": "待用户决策", "note": "独立节点（C-3）：用户决定保留 or 2.0 清理；2026-08-24 用户明确单独处理，不在 N6 本批做；对应 graph.yaml conditional_candidates C-3"},{"id": "I-81", "title": "request/renderAttr 属性=函数引用形态：短签名取不到参数名", "prio": "P3", "status": "open", "ev": "scan", "disposition": "待定", "note": "query.ts:474 `request: request`（initializer 是 Identifier）；途径：改代码形态（内联箭头函数）or 生成器增强（解析引用目标参数）"},{"id": "I-82", "title": "源码 JSDoc 偶见中文（query.ts:290 now 的 days 参数），en_US 文档原样带出", "prio": "info", "status": "open", "ev": "scan", "disposition": "补注释", "note": "纯搬运原则下生成器不改内容；是否英文化源码注释待 N6 处置（可与 I-78 注释优化一并考虑）"}]},
     {"key": "layer2", "title": "第 2 层 — 长期对齐规范（独立问题，只预订入口）", "issues": [
-      {"id": "I-80", "title": "长期对齐规范机制（AGENTS.md / SKILL 形式）", "prio": "P2", "status": "open", "note": "用户定义：让后续协作持续保持『语义对齐』的规范，属长期 infrastructure 问题，独立于本轮 graph 任务；此处只订入口，条件：第 1 层结项后评估。规范内容不得在本任务中提前定死"},
-      {"id": "I-83", "title": "QV 类型定义定位规则（内容预订入第 2 层 AGENTS.md）", "prio": "P2", "status": "open", "ev": "user", "note": "用户 2026-08-24 定：QV 脚本运行时是纯浏览器/Electron JS 环境；类型定义的意义仅在于 agent 参考 + 自身开发便利；只要不造成使用者（agent）认知误导或负担，不过分纠结类型精确度。建议写入 AGENTS.md，内容预订第 2 层基建"},
+      {"id": "I-80", "title": "长期对齐规范机制（AGENTS.md / SKILL 形式）", "prio": "P2", "status": "open", "note": "机制初版已落地（2026-08-25 N4 交付）：AGENTS.md（仓库根）+ .agents/skills/qv-reference-alignment；内容随实践迭代，用户审查中"},
+      {"id": "I-83", "title": "QV 类型定义定位规则（已写入 AGENTS.md）", "prio": "P2", "status": "done", "ev": "user", "note": "规则已写入 AGENTS.md（2026-08-25）并进维护 SKILL；I-91 提炼时引用"},
     ]},
     {"key": "research", "title": "悬空研究（不做也 OK）", "issues": [
       {"id": "I-90", "title": "2.0 骨架方向性调研入口", "prio": "P2", "status": "open", "note": "未来独立任务入口，现在不启动"},
