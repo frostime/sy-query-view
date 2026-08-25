@@ -71,7 +71,7 @@ updated: 2026-08-25
 - `src/core/proxy.ts:86-90` 与 `:367-387`：`sorton` 实现默认 `desc`，接口/JSDoc 曾写默认 `asc`；用户已拍板以实现为准，注释和生成文档现已统一为 `desc`。
 - `src/core/query.ts:537-543` 与 `types/core/query.d.ts:216`：`Query.sql` 已用条件返回类型表达 `wrap=false` 的 raw 数组与默认 wrapper 分支；仍需真实 Kernel 复测。
 - `src/core/query.ts:738-753`、`:1092`、`:1119-1121` 与 `types/core/query.d.ts:293,419,447`：childDoc、fb2p、pruneBlocks 的 wrapper 元素声明已同步；运行时仍需 I-50 复测。
-- `src/core/query.ts:864-914` 与 `types/core/query.d.ts:362`：`keywordDoc` 已保留 wrapper 联合返回类型，但空数组分支造成 `any[]`，且动态 `keywords` 字段的结构仍未表达。
+- `src/core/query.ts:872-917` 与 `types/core/query.d.ts:370`：`keywordDoc` 已保留 wrapper 联合返回类型，但空数组分支造成 `any[]`，且动态 `keywords` 字段的结构仍未表达。
 - `src/core/proxy.ts:302-309` 与 `types/core/proxy.d.ts:61`：`asMap` 默认 key 为 `id`，声明现已改为可选并写明默认值。
 - `src/core/proxy.ts:194-206` 与 `types/core/proxy.d.ts:10-22`：`tourl`、`tolink`、`toref` 已作为运行时兼容别名进入声明和生成文档。
 
