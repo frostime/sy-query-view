@@ -42,6 +42,9 @@ interface I18n {
         nav_skill: string;
         copy: string;
         copied: string;
+        outline: string;
+        outline_title: string;
+        outline_close: string;
         retry: string;
         page_not_found: string;
         fallback_notice: string;

@@ -74,6 +74,9 @@ src_docsite_indexts:
   nav_skill: Agent Skill
   copy: Copy
   copied: Copied
+  outline: Outline
+  outline_title: Page outline
+  outline_close: Close
   retry: Retry
   page_not_found: Page not found
   fallback_notice: This page is not available in {0}; showing the {1} version.

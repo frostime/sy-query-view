@@ -32,6 +32,13 @@ export interface RenderCtx {
     ui: RenderUi;
 }
 
+export interface OutlineEntry {
+    id: string;
+    text: string;
+    level: number;
+    heading: HTMLHeadingElement;
+}
+
 /**仅归一化行尾（\r\n 与 \r → \n） */
 const normalizeNewlines = (s: string): string => s.replace(/\r\n?/g, "\n");
 
@@ -185,6 +192,38 @@ const attachCopyButtons = (container: HTMLElement, ui: RenderUi): void => {
         });
         pre.appendChild(btn);
     });
+};
+
+/**
+ * 提取页面标题并为没有 id 的标题补充稳定的页面内 id。
+ * Lute 当前关闭了自动标题 id，因此 Outline 需要在渲染后建立自己的定位点。
+ */
+export const extractOutline = (container: HTMLElement): OutlineEntry[] => {
+    const usedIds = new Set<string>();
+    const headings = container.querySelectorAll<HTMLHeadingElement>("h1, h2, h3, h4, h5, h6");
+    const entries: OutlineEntry[] = [];
+
+    headings.forEach((heading, index) => {
+        const text = normalizeNewlines(heading.textContent ?? "").replace(/\s+/g, " ").trim();
+        if (!text) return;
+
+        const baseId = heading.id.trim() || `qv-doc-heading-${index + 1}`;
+        let id = baseId;
+        let suffix = 2;
+        while (usedIds.has(id)) {
+            id = `${baseId}-${suffix++}`;
+        }
+        heading.id = id;
+        usedIds.add(id);
+        entries.push({
+            id,
+            text,
+            level: Number(heading.tagName.slice(1)),
+            heading,
+        });
+    });
+
+    return entries;
 };
 
 /**首个 H1 文本（Md2HTML 产物 <h1>，备用，不用于导航） */

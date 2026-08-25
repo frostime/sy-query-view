@@ -64,6 +64,9 @@ src_docsite_indexts:
   nav_skill: 智能体技能
   copy: 复制
   copied: 已复制
+  outline: 大纲
+  outline_title: 页面大纲
+  outline_close: 关闭
   retry: 重试
   page_not_found: 页面不存在
   fallback_notice: 该页面暂无{0}版本，已显示{1}版本

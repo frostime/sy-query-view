@@ -8,40 +8,47 @@
     display: flex;
     width: 100%;
     height: 100%;
+    position: relative;
     overflow: hidden;
     background-color: var(--b3-theme-background);
     color: var(--b3-theme-on-background);
 
-    // 代码块（Md2HTML 产物 <pre><code>）：为复制按钮留位，并确保可选可复制
+    // 代码块（Md2HTML 产物 <pre><code>）：pre 负责卡片外观，code 负责内容换行。
     // （部分主题/protyle 样式会对 pre/code 设 user-select:none，外溢到 b3-typography）
     :global(.b3-typography pre) {
         position: relative;
-        padding-right: 52px;
+        overflow: hidden;
+        padding: 0;
+        border: 1px solid var(--b3-theme-primary);
+        border-radius: 6px;
+        background-color: var(--b3-theme-surface);
         user-select: text;
     }
-    // 重置代码块内 code 的框/背景/padding：只保留 pre 一层框，避免复制按钮夹在两层框中间。
+    // 预留复制按钮区域，长签名自动换行，避免文字被按钮或横向滚动条遮住。
     // 仅命中 pre>code（代码块），不影响 p/li 内 inline code 的主题样式。
     :global(.b3-typography pre code) {
         display: block;
+        max-width: 100%;
+        overflow-wrap: anywhere;
         border: none;
         background: transparent;
-        padding: 0;
+        padding: 12px 64px 12px 14px;
+        white-space: pre-wrap;
         user-select: text;
     }
 
     .copy {
         position: absolute;
-        top: 6px;
-        right: 6px;
-        padding: 2px 10px;
+        top: 8px;
+        right: 8px;
+        padding: 3px 9px;
         font-size: 12px;
         line-height: 1.6;
         cursor: pointer;
-        border: none;
+        border: 1px solid var(--b3-border-color);
         border-radius: 4px;
-        background-color: var(--b3-theme-background-light);
+        background-color: var(--b3-theme-background);
         color: var(--b3-theme-on-background);
-        opacity: 0.85;
         z-index: 1;
 
         &:hover {
@@ -105,7 +112,7 @@
     flex: 1;
     min-width: 0;
     overflow-y: auto;
-    padding: 16px 24px 48px;
+    padding: 16px 24px 80px;
 }
 
 .notice {
@@ -135,6 +142,140 @@
     &:hover {
         background-color: var(--b3-list-hover);
     }
+}
+
+.outlineToggle {
+    position: absolute;
+    right: 24px;
+    bottom: 20px;
+    z-index: 5;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 12px;
+    border: 1px solid var(--b3-border-color);
+    border-radius: 6px;
+    background-color: var(--b3-theme-background);
+    color: var(--b3-theme-on-background);
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgb(0 0 0 / 10%);
+    font: inherit;
+    font-size: 13px;
+    line-height: 1.5;
+
+    &:hover,
+    &[aria-expanded="true"] {
+        border-color: var(--b3-theme-primary);
+        background-color: var(--b3-theme-primary-lighter);
+        color: var(--b3-theme-primary);
+    }
+}
+
+.outlineToggle[hidden] {
+    display: none;
+}
+
+.outlineIcon {
+    font-size: 16px;
+    line-height: 1;
+}
+
+.outlinePanel {
+    position: absolute;
+    right: 24px;
+    bottom: 68px;
+    z-index: 4;
+    display: flex;
+    width: min(300px, calc(100% - 32px));
+    max-height: min(70vh, calc(100% - 100px));
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid var(--b3-border-color);
+    border-radius: 6px;
+    background-color: var(--b3-theme-background);
+    box-shadow: 0 8px 28px rgb(0 0 0 / 14%);
+}
+
+.outlinePanel[hidden] {
+    display: none;
+}
+
+.outlineHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--b3-border-color);
+    font-weight: 600;
+}
+
+.outlineClose {
+    width: 26px;
+    height: 26px;
+    padding: 0;
+    border: none;
+    border-radius: 4px;
+    background: transparent;
+    color: var(--b3-theme-on-background);
+    cursor: pointer;
+    font-size: 18px;
+    line-height: 1;
+    opacity: 0.65;
+
+    &:hover {
+        background-color: var(--b3-theme-background-light);
+        opacity: 1;
+    }
+}
+
+.outlineList {
+    overflow-y: auto;
+    padding: 8px 0;
+}
+
+.outlineItem {
+    display: block;
+    width: 100%;
+    overflow: hidden;
+    padding: 6px 12px;
+    border: none;
+    border-left: 3px solid transparent;
+    background: transparent;
+    color: var(--b3-theme-on-background);
+    cursor: pointer;
+    font: inherit;
+    text-align: left;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    &:hover {
+        background-color: var(--b3-theme-background-light);
+        color: var(--b3-theme-primary);
+    }
+}
+
+.outlineItem[data-level="2"] {
+    padding-left: 26px;
+}
+
+.outlineItem[data-level="3"] {
+    padding-left: 40px;
+    font-size: 13px;
+}
+
+.outlineItem[data-level="4"],
+.outlineItem[data-level="5"],
+.outlineItem[data-level="6"] {
+    padding-left: 54px;
+    font-size: 13px;
+}
+
+.outlineItemActive {
+    border-left-color: var(--b3-theme-primary);
+    background-color: var(--b3-theme-primary-lighter);
+    color: var(--b3-theme-primary);
+    font-weight: 600;
 }
 
 .error {

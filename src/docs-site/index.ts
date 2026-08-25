@@ -11,7 +11,7 @@ import { setting } from "@/setting";
 import { canOpenLocally, downloadDts, getPluginInfo, openDtsLocally } from "@/user-help/dts-actions";
 import { PAGE_TREE, type Lang, type NavItem, type NavLabelKey, type PageId } from "./nav";
 import { createContent, type ContentApi, type PageLoadResult } from "./content";
-import { renderPage, type RenderCtx, type RenderUi } from "./render";
+import { extractOutline, renderPage, type OutlineEntry, type RenderCtx, type RenderUi } from "./render";
 import styles from "./index.module.scss";
 
 export interface DocsSite {
@@ -29,6 +29,7 @@ export const load = async (plugin: QueryViewPlugin): Promise<DocsSite> => {
     const content: ContentApi = createContent(plugin.name);
     // 站点生命周期代数：dispose 时自增，使所有在途 Tab 请求失效（即使 SiYuan 未先调 destroy）
     let siteGeneration = 0;
+    let outlinePanelSequence = 0;
     // 每个 Tab 实例的清理函数按实例存储（destroy 只清理自己的实例）
     const tabCleanups = new WeakMap<Custom, () => void>();
 
@@ -84,6 +85,106 @@ export const load = async (plugin: QueryViewPlugin): Promise<DocsSite> => {
             const contentHost = document.createElement("div");
             main.appendChild(contentHost);
 
+            // ---- 页面大纲：右下角按钮 + 向上展开的悬浮标题树 ----
+            let outlineEntries: OutlineEntry[] = [];
+            const outlineButtons = new Map<string, HTMLButtonElement>();
+            const outlinePanelId = `docs-site-outline-panel-${++outlinePanelSequence}`;
+
+            const outlineToggle = document.createElement("button");
+            outlineToggle.type = "button";
+            outlineToggle.className = styles["outlineToggle"];
+            outlineToggle.dataset["outlineToggle"] = "";
+            outlineToggle.hidden = true;
+            outlineToggle.setAttribute("aria-expanded", "false");
+            outlineToggle.setAttribute("aria-controls", outlinePanelId);
+            outlineToggle.title = i18n.src_docsite_indexts.outline;
+
+            const outlineIcon = document.createElement("span");
+            outlineIcon.className = styles["outlineIcon"];
+            outlineIcon.textContent = "☷";
+            outlineIcon.setAttribute("aria-hidden", "true");
+            outlineToggle.appendChild(outlineIcon);
+
+            const outlineToggleLabel = document.createElement("span");
+            outlineToggleLabel.textContent = i18n.src_docsite_indexts.outline;
+            outlineToggle.appendChild(outlineToggleLabel);
+
+            const outlinePanel = document.createElement("section");
+            outlinePanel.id = outlinePanelId;
+            outlinePanel.className = styles["outlinePanel"];
+            outlinePanel.hidden = true;
+            outlinePanel.setAttribute("aria-label", i18n.src_docsite_indexts.outline_title);
+
+            const outlineHeader = document.createElement("div");
+            outlineHeader.className = styles["outlineHeader"];
+            const outlineTitle = document.createElement("span");
+            outlineTitle.textContent = i18n.src_docsite_indexts.outline_title;
+            outlineHeader.appendChild(outlineTitle);
+
+            const outlineClose = document.createElement("button");
+            outlineClose.type = "button";
+            outlineClose.className = styles["outlineClose"];
+            outlineClose.dataset["outlineClose"] = "";
+            outlineClose.setAttribute("aria-label", i18n.src_docsite_indexts.outline_close);
+            outlineClose.textContent = "×";
+            outlineHeader.appendChild(outlineClose);
+            outlinePanel.appendChild(outlineHeader);
+
+            const outlineList = document.createElement("nav");
+            outlineList.className = styles["outlineList"];
+            outlineList.setAttribute("aria-label", i18n.src_docsite_indexts.outline_title);
+            outlinePanel.appendChild(outlineList);
+            root.append(outlineToggle, outlinePanel);
+
+            const setOutlineOpen = (open: boolean): void => {
+                outlinePanel.hidden = !open;
+                outlineToggle.setAttribute("aria-expanded", String(open));
+            };
+
+            const updateOutlineActive = (): void => {
+                if (outlineEntries.length === 0) return;
+                const threshold = main.getBoundingClientRect().top + 24;
+                let active = outlineEntries[0];
+                for (const entry of outlineEntries) {
+                    if (entry.heading.getBoundingClientRect().top <= threshold) {
+                        active = entry;
+                    } else {
+                        break;
+                    }
+                }
+                outlineButtons.forEach((button, id) => {
+                    button.classList.toggle(styles["outlineItemActive"], id === active.id);
+                });
+            };
+
+            const setOutline = (entries: OutlineEntry[]): void => {
+                outlineEntries = entries;
+                outlineButtons.clear();
+                outlineList.textContent = "";
+                entries.forEach((entry) => {
+                    const button = document.createElement("button");
+                    button.type = "button";
+                    button.className = styles["outlineItem"];
+                    button.dataset["outlineId"] = entry.id;
+                    button.dataset["level"] = String(entry.level);
+                    button.title = entry.text;
+                    button.textContent = entry.text;
+                    outlineButtons.set(entry.id, button);
+                    outlineList.appendChild(button);
+                });
+
+                const hasOutline = entries.length > 0;
+                outlineToggle.hidden = !hasOutline;
+                if (!hasOutline) setOutlineOpen(false);
+                updateOutlineActive();
+            };
+
+            const scrollToOutline = (id: string): void => {
+                const entry = outlineEntries.find((item) => item.id === id);
+                entry?.heading.scrollIntoView({ behavior: "smooth", block: "start" });
+            };
+            main.addEventListener("scroll", updateOutlineActive, { passive: true });
+
             // ---- 侧边栏：静态导航 ----
             const sidebar = document.createElement("aside");
             sidebar.className = styles["sidebar"];
@@ -126,6 +227,19 @@ export const load = async (plugin: QueryViewPlugin): Promise<DocsSite> => {
             // ---- 事件委托（单一监听器）----
             const onClick = (ev: MouseEvent): void => {
                 const target = ev.target as HTMLElement;
+                if (target.closest<HTMLElement>("[data-outline-toggle]")) {
+                    setOutlineOpen(Boolean(outlinePanel.hidden));
+                    return;
+                }
+                if (target.closest<HTMLElement>("[data-outline-close]")) {
+                    setOutlineOpen(false);
+                    return;
+                }
+                const outlineEl = target.closest<HTMLElement>("[data-outline-id]");
+                if (outlineEl?.dataset["outlineId"]) {
+                    scrollToOutline(outlineEl.dataset["outlineId"]);
+                    return;
+                }
                 const navEl = target.closest<HTMLElement>("[data-page-id]");
                 if (navEl?.dataset["pageId"]) {
                     navigate(state.lang, navEl.dataset["pageId"] as PageId);
@@ -168,14 +282,17 @@ export const load = async (plugin: QueryViewPlugin): Promise<DocsSite> => {
                     baseUrl: window.location.origin + result.baseUrl,
                     ui,
                 };
-                contentHost.appendChild(renderPage(md, ctx));
+                const renderedPage = renderPage(md, ctx);
+                contentHost.appendChild(renderedPage);
                 main.scrollTop = 0;
+                setOutline(extractOutline(renderedPage));
             };
 
             const showError = (result: PageLoadResult): void => {
                 if (result.status !== "error") return;
                 noticeBar.hidden = true;
                 contentHost.textContent = "";
+                setOutline([]);
                 const err = document.createElement("div");
                 err.className = styles["error"];
                 const msg = document.createElement("div");
@@ -230,6 +347,7 @@ export const load = async (plugin: QueryViewPlugin): Promise<DocsSite> => {
                 disposed = true;
                 requestSeq++;
                 root.removeEventListener("click", onClick);
+                main.removeEventListener("scroll", updateOutlineActive);
                 this.element.textContent = "";
             };
 
