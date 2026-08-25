@@ -46,22 +46,14 @@
 
 ---
 
-## 3. `IWrappedList.map(...)` — 返回对象变化（影响极小）
-
-- v1.x：`map` 返回**普通数组**（`.pick()` / `.groupby()` / `.addcols()` 等包装方法丢失）
-- v2.0：返回 `IWrappedList`（wrapper 保留，链式方法可用）
-- **对现有脚本的影响**：普通数组操作（`Array.isArray`、下标、`for...of`）完全兼容；唯一区别是返回对象上多出包装方法。仅在脚本对返回对象做严格属性枚举（如 `Object.keys` 全等比较）时才可能察觉差异
-
----
-
-## 4. `pick` — 仅类型层面收紧（运行时无变化）
+## 3. `pick` — 仅类型层面收紧（运行时无变化）
 
 - `pick('id')` 的声明类型由 `Partial<T>[]`（对象数组）修正为标量数组 `T['id'][]`（与运行时一致）
 - **影响**：使用 TS 类型提示的脚本中，把单属性结果当对象数组用（如 `.map(b => b.id)`）会开始类型报错；运行时行为从未改变过
 
 ---
 
-## 5. 自定义视图接口 — 仅类型层面（`ICustomView` / `IDataView`）
+## 4. 自定义视图接口 — 仅类型层面（`ICustomView` / `IDataView`）
 
 - `IDataView` 接口移除；`ICustomView.use` 的 `dv` 参数类型改为 `any`（运行时仍是 DataView 实例）
 - `DataView.view` / `isValidViewContainer` 已标记 private，类型层面不可引用（运行时方法仍在；自定义组件如需包装元素请改用 `addElement`）
