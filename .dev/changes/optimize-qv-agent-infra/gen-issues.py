@@ -12,25 +12,10 @@ data = {
   },
   "domains": [
     {"key": "milestone", "title": "决策里程碑（悬空优先，需用户拍板）", "issues": [
-      {"id": "I-00", "title": "总体成功标准 / 推进深度", "prio": "P0", "status": "hang", "note": "里程碑处拍板走到哪一步（N1 PoC 或 N4 或 N5 集成）"},
+      {"id": "I-00", "title": "总体成功标准 / 推进深度", "prio": "P0", "status": "hang", "note": "里程碑处拍板走到哪一步（N5 集成已完成，剩余运行时复测、C-3、结项定稿）"},
       {"id": "I-03", "title": "2.0 全新 API 骨架", "prio": "P0", "status": "hang", "ev": "user", "note": "明确排除在本任务外，独立 backlog；防止本任务范围蔓延"},
     ]},
-    {"key": "n1", "title": "N1 — 高保真提取 / 导出机制", "issues": [
-      {"id": "I-12", "title": "Query 对象字面量只有匿名类型", "prio": "P1", "status": "open", "note": "declare const Query: {...} 无命名类型；是否生成命名 QueryAPI interface"},
-      {"id": "I-13", "title": "UseStateMixin 不能干净导出", "prio": "P1", "status": "open", "note": "export-types 靠字符串 hack 抹除 extends UseStateMixin；use-state.d.ts 被注释"},
-      {"id": "I-14", "title": "export-types.js 脆弱字符串替换", "prio": "P2", "status": "open", "note": "import(\"./proxy\"). 剥离、default;→Query、mixin 抹除；新管线不复刻"},
-    ]},
-    {"key": "n3", "title": "N3 — 生成器机制：动态 API 与注释提取规则", "issues": [
-      {"id": "I-31", "title": "面向 agent 注释约定定稿", "prio": "P0", "status": "hang", "note": "草案机制已运行：生成器 KNOWN_NOTES 注入口 + 源码 JSDoc 纯搬运；正式 [agent] tag 结构待 N6 落地时定稿（details 为样板，I-78）"},
-    ]},
-    {"key": "n5", "title": "N5 — 与 SKILL/发布体系集成", "issues": [
-      {"id": "I-50", "title": "运行时复测", "prio": "P1", "status": "hang", "ev": "HO", "note": "技能注册无 warn、Agent 读 references/、dev 改 SKILL 即同步"},
-      {"id": "I-51", "title": "参考文档双语镜像 or 改契约", "prio": "P2", "status": "hang", "ev": "HO", "note": "DOC-STRUCTURE §1.2 要求同构；现只有 en_US"},
-      {"id": "I-52", "title": "参考文档是否进文档站导航", "prio": "P2", "status": "hang", "ev": "HO", "note": "PAGE_TREE 无条目；新机制后形态待重估"},
-      {"id": "I-53", "title": "SKILL 触发面验证", "prio": "P3", "status": "open", "ev": "HO", "note": "若未来接思源 Agent 自动触发需另验证"},
-      {"id": "I-73", "title": "minAppVersion 3.1.14 vs SKILL 称 3.8.0；顶层 await 需 3.8.0", "prio": "P1", "status": "open", "ev": "WB", "disposition": "修文档", "note": "plugin.json:5；index.ts:100；分层事实；归 N5（SKILL 手工文档修正，用户指示放到 N5 节点）"},
-    ]},
-    {"key": "n6", "title": "N6 — 代码扫清（扫描/类型/注释）+ API 诚实化", "issues": [{"id": "I-79", "title": "deprecated 参数名暴露内部实现（optionDeprecatedAsValMatch 等）", "prio": "P3", "status": "hang", "ev": "scan", "disposition": "待用户决策", "note": "独立节点（C-3）：用户决定保留 or 2.0 清理；2026-08-24 用户明确单独处理，不在 N6 本批做；对应 graph.yaml conditional_candidates C-3"},{"id": "I-81", "title": "request/renderAttr 属性=函数引用形态：短签名取不到参数名", "prio": "P3", "status": "open", "ev": "scan", "disposition": "待定", "note": "query.ts:474 `request: request`（initializer 是 Identifier）；途径：改代码形态（内联箭头函数）or 生成器增强（解析引用目标参数）"},{"id": "I-82", "title": "源码 JSDoc 偶见中文（query.ts:290 now 的 days 参数），en_US 文档原样带出", "prio": "info", "status": "open", "ev": "scan", "disposition": "补注释", "note": "纯搬运原则下生成器不改内容；是否英文化源码注释待 N6 处置（可与 I-78 注释优化一并考虑）"}]},
+    {"key": "n6", "title": "N6 — 代码扫清（扫描/类型/注释）+ API 诚实化", "issues": [{"id": "I-31", "title": "面向 agent 注释约定定稿", "prio": "P0", "status": "hang", "note": "KNOWN_NOTES 注入口 + JSDoc 纯搬运已运转（N3 done 移交）；正式 [agent] tag 结构未定稿，落实注释动作归 N6/维护 SKILL"},{"id": "I-79", "title": "deprecated 参数名暴露内部实现（optionDeprecatedAsValMatch 等）", "prio": "P3", "status": "hang", "ev": "scan", "disposition": "待用户决策", "note": "独立节点（C-3）：用户决定保留 or 2.0 清理；2026-08-24 用户明确单独处理，不在 N6 本批做；对应 graph.yaml conditional_candidates C-3"},{"id": "I-81", "title": "request/renderAttr 属性=函数引用形态：短签名取不到参数名", "prio": "P3", "status": "open", "ev": "scan", "disposition": "待定", "note": "query.ts:474 `request: request`（initializer 是 Identifier）；途径：改代码形态（内联箭头函数）or 生成器增强（解析引用目标参数）"},{"id": "I-82", "title": "源码 JSDoc 偶见中文（query.ts:290 now 的 days 参数），en_US 文档原样带出", "prio": "info", "status": "open", "ev": "scan", "disposition": "补注释", "note": "纯搬运原则下生成器不改内容；是否英文化源码注释待 N6 处置（可与 I-31 注释约定一并考虑）"}]},
     {"key": "layer2", "title": "第 2 层 — 长期对齐规范（独立问题，只预订入口）", "issues": [
       {"id": "I-80", "title": "长期对齐规范机制（AGENTS.md / SKILL 形式）", "prio": "P2", "status": "open", "note": "机制初版已落地（2026-08-25 N4 交付）：AGENTS.md（仓库根）+ .agents/skills/qv-reference-alignment；内容随实践迭代"},
     ]},

@@ -81,8 +81,10 @@ current_route:
         api/reference 退役、d.ts 操作移首页）；SKILL 翻新（参考体系换四份新版参考、
         v2 语义速记嵌入 §6、fallback 链含 references/source 本地源码）；构建时打包
         src/core/{query,proxy}.ts 进技能包。遗留：zh_CHT.yaml 文档站 nav 键为旧结构
-        （既有历史不一致，未处置）；dist 不修剪已删除 docs 文件的陈旧文件（构建行为
-        未改，重打包时需清理）。
+        （nav_group_quickstart/nav_api_reference 等，与新 nav.ts 不匹配——繁体用户侧边栏
+        标签缺失，真实 bug 未修）；dist 不修剪已删除 docs 文件的陈旧文件（构建行为
+        未改，重打包时需清理）。另：另一 session 已给文档站加页面大纲 UX（暂存待提交，
+        与本节点结论无关）。
       state: done
       deps: [N4]
 
@@ -110,19 +112,18 @@ current_route:
 
   unresolved_areas:
     - 2.0 全新 API 骨架/新增 API 设计 —— 用户明确排除（I-03），若日后提出草图再激活候选节点
-    - 与文档站教程/参考分层的配合细节 —— 渐进披露结构已建立，N5 吸收（I-51/I-52）
 
 risks:
   - 现有注释覆盖率参差：很多 API 无 JSDoc 或仅一句 → 决定产物质量上限，I-31/I-82 持续约注释工作
-  - 运行时行为未经思源真机复测（I-50）：DOM/Kernel/副作用路径（keywordDoc 聚合 SQL、
+  - 运行时行为未经思源真机复测：DOM/Kernel/副作用路径（keywordDoc 聚合 SQL、
     DataView 注册、dv.render）仅 Node 断言覆盖
   - N6 修补与老用户脚本的兼容性冲突 → 每项修补须评估兼容性，行为变化必须记录 BREAKCHANGE
 
 pending_decisions:
   - 成功标准/推进深度定稿 —— 里程碑处用户拍板（I-00）
-  - 运行时复测时机（I-50）—— 用户定
+  - 运行时复测时机 —— 用户定
   - C-3 deprecated 参数处置 —— 用户单独决策
-  - I-12/13/14（export-types 管线脆弱点：Query 匿名类型 / UseStateMixin 导出 hack /
+  - export-types 管线脆弱点（Query 匿名类型 / UseStateMixin 导出 hack /
     字符串替换）—— 低优先，动 public/types.d.ts 管线前谨慎评估
 
 runtime_rules:
