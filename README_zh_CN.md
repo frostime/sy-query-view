@@ -60,7 +60,7 @@ dv.render();
 
 ## 内置使用文档
 
-完整的说明文档分为「快速开始、主题、案例、API 参考、智能体技能」等部分，提供中英双语。以下页面即为插件内文档站的源内容（文档站直接渲染这些页面），可在 GitHub 上直接浏览：
+完整的说明文档分为「快速开始、主题、案例、Agent Reference、智能体技能」等部分，提供中英双语。以下页面即为插件内文档站的源内容（文档站直接渲染这些页面），可在 GitHub 上直接浏览：
 
 **快速开始**
 
@@ -78,9 +78,16 @@ dv.render();
 
 - [案例总览](docs/zh_CN/examples/index.md) —— 按用途/标签检索案例，复制并改造。
 
-**API 参考**
+**Agent Reference**
 
-- [API 参考](docs/zh_CN/api/reference.md) —— 接口导览；也可以在文档站「API 参考」页打开或下载当前版本的 `types.d.ts` 类型声明。
+Agent Reference 为自动生成的新版分级参考（当前仅提供英文，中文用户在文档站内会自动回退到英文版）：
+
+- [Query API](docs/en_US/agent-ref/query-api.md) —— Query 各成员：SQL 与封装查询、工具函数、`DataView` 构造。
+- [DataView](docs/en_US/agent-ref/dataview.md) —— 各个 DataView 组件及选项。
+- [Wrapped Lists](docs/en_US/agent-ref/wrapped.md) —— `IWrappedList` / `IWrappedBlock` 的处理方法与元素形态。
+- [Types](docs/en_US/agent-ref/types.md) —— 共用的选项与数据类型。
+
+也可以在文档站首页打开或下载当前版本的 `types.d.ts` 类型声明。
 
 **智能体技能**
 

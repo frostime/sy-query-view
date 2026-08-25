@@ -215,9 +215,9 @@ export const load = async (plugin: QueryViewPlugin): Promise<DocsSite> => {
                 md = await content.expandSkill(md);
                 if (seq !== requestSeq || gen !== siteGeneration || disposed) return;
 
-                // API 页动作初始化与渲染串行化：动作未就绪时先等待（含请求令牌检查），
-                // 避免 API 作为首屏时工具条永久缺失；初始化失败保持未定义，下次渲染重试
-                if (result.pageId === "api-reference" && !pageActions["api-reference"]) {
+                // 首页动作（d.ts 打开/下载）初始化与渲染串行化：动作未就绪时先等待（含请求令牌检查），
+                // 避免首页作为首屏时工具条永久缺失；初始化失败保持未定义，下次渲染重试
+                if (result.pageId === "index" && !pageActions["index"]) {
                     await ensurePageActions();
                     if (seq !== requestSeq || gen !== siteGeneration || disposed) return;
                 }
@@ -243,9 +243,9 @@ export const load = async (plugin: QueryViewPlugin): Promise<DocsSite> => {
         },
     });
 
-    // API 页动作（懒初始化 + 失败重试；版本信息缓存）
+    // 首页动作（懒初始化 + 失败重试；版本信息缓存）
     const ensurePageActions = async (): Promise<void> => {
-        if (pageActions["api-reference"]) return;
+        if (pageActions["index"]) return;
         try {
             const info = await ensurePluginInfo();
             const actions: PageAction[] = [
@@ -260,7 +260,7 @@ export const load = async (plugin: QueryViewPlugin): Promise<DocsSite> => {
                     run: () => openDtsLocally(plugin.name, setting.codeEditor),
                 });
             }
-            pageActions["api-reference"] = actions;
+            pageActions["index"] = actions;
         } catch (e) {
             console.warn("[docs-site] build page actions failed", e);
         }

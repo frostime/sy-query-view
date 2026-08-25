@@ -24,6 +24,15 @@ Have a specific query or display goal in mind?
 Open the "Examples" page, filter the runnable examples by purpose, tags, or description, find the code closest to your need, and copy and customize it. All example code is shipped with the plugin in the plugin's `example/` directory, with the repository's `public/example/` as the single source.
 <!-- docs-only:end -->
 
+<!-- docs-only:start -->
+## Open or Download the Type Declaration
+
+- **Download types.d.ts**: downloads the type declaration of the currently installed version (file name `sy-query-view@{version}.types.d.ts`).
+- **Open locally** (desktop only): opens the type declaration with the command configured in the plugin setting "Open Local Editor".
+
+> The precise signatures of the plugin's public API are defined in the shipped type declaration `types.d.ts`; the four **Agent Reference** pages give a human-readable tour of `Query`, `DataView`, the wrapped result types, and the shared data/type definitions.
+<!-- docs-only:end -->
+
 ## Quick Overview of Features
 
 💡 This plugin can provide the following features (here's a general overview, detailed usage will be explained later):

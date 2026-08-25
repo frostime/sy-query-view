@@ -35,7 +35,10 @@ interface I18n {
         nav_topic_dataview_advanced: string;
         nav_topic_editor_tips: string;
         nav_examples: string;
-        nav_api_reference: string;
+        nav_agent_ref_query_api: string;
+        nav_agent_ref_dataview: string;
+        nav_agent_ref_wrapped: string;
+        nav_agent_ref_types: string;
         nav_skill: string;
         copy: string;
         copied: string;
@@ -47,10 +50,8 @@ interface I18n {
         lang_en: string;
     };
     src_indexts: {
-        incompatible_version: string;
         manual_release: string;
         manual_release_desc: string;
-        plugin_not_working: string;
     };
     src_setting_indexts: {
         api_interface: string;

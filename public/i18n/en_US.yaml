@@ -24,13 +24,9 @@ src_dataquery_componentsts:
 src_dataquery_editorts:
   onlydesktop: Only supported to open in the code editor in the desktop environment
 src_indexts:
-  incompatible_version: The current SiYuan version {0} is incompatible well with the
-    QueryView plugin. It is recommended to downgrade or upgrade SiYuan to another
-    version (other than v3.1.25 or v3.1.26).
   manual_release: Manual Release
   manual_release_desc: 'Manually release (dv.dispose) all DataView<br/>Note: Unless
     under special circumstances, generally you don''t need to do this'
-  plugin_not_working: QueryView cannot function properly
 src_setting_indexts:
   api_interface: 📃 API interface
   apitypedefinition: 'The type definition of the API interface, please refer to:'
@@ -71,7 +67,10 @@ src_docsite_indexts:
   nav_topic_dataview_advanced: DataView Advanced Features
   nav_topic_editor_tips: External Editor & Tips
   nav_examples: Examples
-  nav_api_reference: API Reference
+  nav_agent_ref_query_api: Query API
+  nav_agent_ref_dataview: DataView
+  nav_agent_ref_wrapped: Wrapped Lists
+  nav_agent_ref_types: Types
   nav_skill: Agent Skill
   copy: Copy
   copied: Copied

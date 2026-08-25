@@ -60,7 +60,7 @@ Results returned by the Query API carry some convenient properties and methods o
 
 ## Built-in Documentation
 
-The full documentation is organized into Quickstart, Topics, Examples, API Reference, and Agent Skill, available in both Chinese and English. The pages below are exactly what the in-plugin documentation site renders (the site renders these pages directly), and can be browsed right here on GitHub:
+The full documentation is organized into Quickstart, Topics, Examples, Agent Reference, and Agent Skill, available in both Chinese and English. The pages below are exactly what the in-plugin documentation site renders (the site renders these pages directly), and can be browsed right here on GitHub:
 
 **Quickstart**
 
@@ -78,9 +78,14 @@ The full documentation is organized into Quickstart, Topics, Examples, API Refer
 
 - [Example Overview](docs/en_US/examples/index.md) — find examples by purpose/tags, copy, and customize them.
 
-**API Reference**
+**Agent Reference**
 
-- [API Reference](docs/en_US/api/reference.md) — an API tour; you can also open or download the `types.d.ts` type declaration of the installed version from the "API Reference" page of the documentation site.
+- [Query API](docs/en_US/agent-ref/query-api.md) — the `Query` members: SQL and wrapped queries, utilities, and `DataView` construction.
+- [DataView](docs/en_US/agent-ref/dataview.md) — every DataView component and its options.
+- [Wrapped Lists](docs/en_US/agent-ref/wrapped.md) — the `IWrappedList` / `IWrappedBlock` processing methods and their element shapes.
+- [Types](docs/en_US/agent-ref/types.md) — the shared option and data types.
+
+You can also open or download the `types.d.ts` type declaration of the installed version from the documentation site's home page.
 
 **Agent Skill**
 

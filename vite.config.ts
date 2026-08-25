@@ -190,6 +190,14 @@ function copySkillReferences(dirname: string) {
                     fs.copyFileSync(path.join(srcDir, f), path.join(destDir, f));
                     console.log(`[skill-refs] copied ${f}`);
                 }
+                // 核心源码（影响 Query 使用的部分）打包进 references/source/，作为最终本地兜底
+                const srcCoreDir = path.resolve(__dirname, 'src/core');
+                const sourceDir = path.join(destDir, 'source');
+                fs.mkdirSync(sourceDir, { recursive: true });
+                for (const f of ['query.ts', 'proxy.ts']) {
+                    fs.copyFileSync(path.join(srcCoreDir, f), path.join(sourceDir, f));
+                    console.log(`[skill-refs] copied source/${f}`);
+                }
             }
         }
     };

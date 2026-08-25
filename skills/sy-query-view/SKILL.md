@@ -120,9 +120,12 @@ shape, and aliases). Prefer wrapped Query APIs over raw kernel calls.
 
 - Plain block list / table / markdown: `dv.addlist`, `dv.addtable`,
   `dv.addmd` — the workhorses; see `references/dataview.md` for options.
-- Also fine (fully encapsulated, pass data or an option object, they build
-  the DOM for you): `dv.cards`, `dv.details`, `dv.embed`, `dv.mermaid` and
-  the `dv.echarts` family.
+- Also fine (fully encapsulated, they build the DOM for you): `dv.cards`
+  (blocks, options), `dv.embed`, `dv.mermaid(code)` and the `dv.echarts`
+  family.
+- `dv.details(summary, content)` — a collapsible details/summary element. Both
+  `summary` and a string `content` are inserted as **raw HTML, not markdown**
+  (see `references/dataview.md`), so do not pass untrusted text.
 - Advanced, dynamic machinery — **do not write by default**; mention that it
   exists and, if the user insists, point them to the docs site topic
   `docs/en_US/topics/dataview-advanced.md`: `dv.addElement` (raw DOM),
@@ -146,12 +149,14 @@ Also in `references/dataview.md`: `dv.cards` options, `dv.useState` reference
    plugin folder (or use `file.list` on it) for a shipped `exp-*.js` that is
    close to the goal; adapt the closest one rather than starting from
    scratch.
-3. **Verify API details** in `references/query-api.md` /
-   `references/dataview.md` before writing. The reference files are long — **when the
+3. **Verify API details** before writing. The reference files are long — **when the
    target is specific (one API, one component), locate it first with grep,
    then read only the matched section** (a few lines) instead of the whole
-   file. If a signature is still ambiguous, grep the exact symbol in
-   `public/types.d.ts` of the plugin folder — never read the whole file.
+   file. Choose the file by what you are about to write (see §6):
+   `references/query-api.md` (Query), `references/dataview.md` (DataView),
+   `references/wrapped.md` (result processing), `references/types.md`
+   (shared types). If a signature is still ambiguous, grep the exact symbol
+   in `public/types.d.ts` of the plugin folder — never read the whole file.
 4. **Produce one copy-pasteable block** in the delivery form of §2.2,
    matching the user's language only in comments.
 5. **Hand over for verification**: the user pastes and runs it; tell them to
@@ -162,9 +167,10 @@ Also in `references/dataview.md`: `dv.cards` options, `dv.useState` reference
 
 - Never modify the user's notes or blocks without an explicit request
   (Case B of §2.2 is the only exception, and only on explicit request).
-- Ask first when the request involves: external network calls (e.g. GPT or
-  arbitrary HTTP via `Query.request`), destructive operations (mass deletes),
-  or undocumented APIs.
+- Ask first when the request involves: external network calls (only
+  `Query.gpt` makes real external HTTP requests; `Query.request` is SiYuan
+  **kernel** requests only, never arbitrary HTTP), destructive operations
+  (mass deletes), or undocumented APIs.
 - Never fabricate API names or behaviors. Everything above is grounded in
   `types.d.ts`, the shipped examples, and the reference files. If you need a
   name that is not in `references/query-api.md` and you cannot read the type
@@ -181,13 +187,46 @@ you are about to write:
 
 - about to call a `Query.*` API → `references/query-api.md`
 - about to use a DataView component or its options → `references/dataview.md`
+- about to process a query result (wrapped lists / blocks) → `references/wrapped.md`
+- about a shared option or data type → `references/types.md`
 
 **Level 1 — bundled with this skill** (paths relative to the skill root):
 
 | When | Read |
 |---|---|
-| verifying a Query signature | `references/query-api.md` |
-| choosing a component / its options | `references/dataview.md` |
+| verifying a `Query.*` signature / alias | `references/query-api.md` |
+| choosing a DataView component / its options | `references/dataview.md` |
+| result processing (`pick`/`sorton`/filter/slice/groupby...) | `references/wrapped.md` |
+| a shared type in a signature (`IListOptions`, `IEchartsOption`...) | `references/types.md` |
+
+**Key v2 semantics to keep in mind** (all grounded in the references above;
+when in doubt read the matched section):
+
+- `Query.keywordDoc` uses `relation: 'any' | 'all'` (default `'all'`); the
+  old `join` form is still accepted and auto-maps `'or'→'any'`,
+  `'and'→'all'`. Its `limit` counts **documents**, not blocks.
+- `Query.keyword` also prefers `relation` (block-level), with the old `join`
+  form auto-mapped the same way.
+- On a wrapped list, the plain native array methods `map` / `concat` /
+  `toSorted` are passed through and return a **plain array** (no wrapper
+  methods; elements stay whatever the callback produces). The wrapper
+  methods that re-wrap their results — `filter`, `slice`, `sorton`, `omit`,
+  `pick`, `unique`, `addrow`, `addcol`, and `groupby`'s inner lists —
+  return a wrapped list again: `filter` / `slice` keep wrapped elements,
+  while `pick`'s single-attribute form yields scalars (next bullet).
+- `pick('id')` returns a **scalar array** of ids (single attribute); pass
+  several attributes to get an array of objects.
+- `sorton(attr, order?)` defaults to `'desc'`.
+- The time utilities (`now`/`today`/`thisWeek`/`lastWeek`/`thisMonth`/
+  `lastMonth`/`thisYear`) default to `hms=true`, i.e. a 14-digit
+  `yyyyMMddHHmmss`; pass `false` for an 8-digit `yyyyMMdd`.
+- `dv.details` inserts its string content as **raw HTML**, not markdown
+  (see also §3.2).
+- `dv.render()` is **not a pure render** — it persists the embed block
+  (`POST /api/search/updateEmbedBlock`). Call it once at the end of a static
+  view; do not call it in loops or hot paths.
+- `Query.request` is a SiYuan **kernel** request only; `Query.gpt` is the
+  only API that makes real external HTTP(S) calls.
 
 **Level 2 — plugin folder** (paths relative to the plugin root, e.g.
 `data/plugins/sy-query-view/...`; only when level 1 is insufficient):
@@ -201,19 +240,20 @@ you are about to write:
 
 **Fallbacks** (in order):
 
-1. If you still cannot understand the internal mechanism of a feature, read
-   the plugin's shipped `index.js` (compiled plugin code; minified in
-   release builds) and trace the logic directly. Expensive — last resort
-   only; the normal path is level 1 → level 2.
-2. If you have web access, the project is open source at
-   <https://github.com/frostime/sy-query-view> — prefer the **uncompiled
-   source** there over the shipped `index.js`: `src/core/data-view.ts`
-   (DataView internals and component implementations),
-   `src/core/components.ts` (DOM rendering details of each component),
-   `src/core/query.ts` (Query implementations and aliases),
-   `public/types.d.ts` (types). This also covers the case where the plugin
-   folder is not readable (e.g. symlinked dev workspaces): do not stall on
-   missing level-2 files there — go to GitHub directly.
+1. **Level 1 references** above (always available; grep the exact member).
+2. **Plugin-folders docs** (`docs/en_US/...`).
+3. **`references/source/` — the local unpacked source** that ships inside
+   this skill package (new, ultimate in-package fallback):
+   `references/source/query.ts` (Query implementations and aliases) and
+   `references/source/proxy.ts` (wrapped list/block mechanics). This is
+   authoritative for exactly how a member behaves, cheaper than the
+   compiled bundle, and available even when the plugin folder is not
+   readable. Expensive — read it only when the reference files are
+   insufficient.
+4. **GitHub** — only when the local files are not readable: the project is
+   open source at <https://github.com/frostime/sy-query-view>. Prefer the
+   uncompiled source: `src/core/query.ts`, `src/core/proxy.ts`,
+   `src/core/data-view.ts`, `src/core/components.ts`, `public/types.d.ts`.
 
 If `file.read` fails on a level-2 path, the plugin may be a version where
 that file does not exist: tell the user the reference is unavailable and

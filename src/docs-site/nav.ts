@@ -16,7 +16,10 @@ export type PageId =
     | "topic-dataview"
     | "topic-dataview-advanced"
     | "topic-editor-tips"
-    | "api-reference"
+    | "agent-ref-query-api"
+    | "agent-ref-dataview"
+    | "agent-ref-wrapped"
+    | "agent-ref-types"
     | "skill";
 
 /**
@@ -34,7 +37,10 @@ export type NavLabelKey =
     | "nav_topic_dataview_advanced"
     | "nav_topic_editor_tips"
     | "nav_examples"
-    | "nav_api_reference"
+    | "nav_agent_ref_query_api"
+    | "nav_agent_ref_dataview"
+    | "nav_agent_ref_wrapped"
+    | "nav_agent_ref_types"
     | "nav_skill";
 
 /** 判别联合：分组无 id/path（无页面），条目有页面。 */
@@ -73,7 +79,10 @@ export const PAGE_TREE: NavNode[] = [
         kind: "group",
         labelKey: "nav_group_reference",
         children: [
-            { kind: "item", id: "api-reference", path: "api/reference.md", labelKey: "nav_api_reference" },
+            { kind: "item", id: "agent-ref-query-api", path: "agent-ref/query-api.md", labelKey: "nav_agent_ref_query_api" },
+            { kind: "item", id: "agent-ref-dataview", path: "agent-ref/dataview.md", labelKey: "nav_agent_ref_dataview" },
+            { kind: "item", id: "agent-ref-wrapped", path: "agent-ref/wrapped.md", labelKey: "nav_agent_ref_wrapped" },
+            { kind: "item", id: "agent-ref-types", path: "agent-ref/types.md", labelKey: "nav_agent_ref_types" },
             { kind: "item", id: "skill", path: "skill/index.md", labelKey: "nav_skill" },
         ],
     },
