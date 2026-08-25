@@ -44,7 +44,7 @@ A1 和 A2 已建立并通过：生成物检查能在漂移时非零退出，Node
 | O-02 | `Query.sql(fmt, false)` 直接返回 raw `data`（`src/core/query.ts:537-543`），曾被声明固定为 wrapper。 | 已改为条件返回类型 `<W extends boolean = true>`；`types/core/query.d.ts:216` 与文档同步，运行时行为未变。 |
 | O-03 | `childDoc`、`fb2p`、`pruneBlocks` 默认调用 `wrapList`，元素是 `IWrappedBlock`，曾宽化为 `IWrappedList<Block>`。 | 已通过 `wrapList` overload 和 Query 声明同步为 `IWrappedList<IWrappedBlock>`；当前 d.ts 为 `types/core/query.d.ts:293,419,447`。 |
 | O-04 | `keywordDoc` 当前返回类型已保留 wrapper 联合，但 `any[]` 来自空数组分支，`keywords` 动态字段也未在返回元素类型中表达（`src/core/query.ts:872-917`、`types/core/query.d.ts:370`）。 | 低优先级类型精化；按 I-83 只在能减少 Agent 误导/负担时处理。 |
-| O-05 | `asMap` 运行时默认 `key='id'`（`src/core/proxy.ts:302-309`），曾在接口和 d.ts 中要求 `key` 必传。 | 已改为 `key?: string` 并在 JSDoc 注明默认 `id`；文档同步。 |
+| O-05 | `asMap` 运行时默认 `key='id'`（`src/core/proxy.ts:302-309`），曾在接口和 d.ts 中要求 `key` 必传；返回类型仍固定为 `Record<string, Block>`，未随 `IWrappedList<T>` 泛型变化（接口 :74）。 | 默认参数已改为 `key?: string` 并在 JSDoc 注明默认 `id`；泛型返回精度按 I-83 低优先级记录，不阻塞 N4。 |
 | O-06 | `IWrappedBlock` 运行时兼容 `tourl`、`tolink`、`toref`（`src/core/proxy.ts:194-206`），曾未出现在声明/参考。 | 已作为 runtime-compatible alias 补进接口、d.ts 和生成文档。 |
 | O-07 | Query 的小写 alias 由变量循环生成（`src/core/query.ts:1259-1264`），生成器只解析字面量正则（`scripts/gen-agent-ref.mjs:162-170`），因此如 `childdoc`、`boxname` 不会列入参考。 | 已确认的生成器限制；后续决定增强静态提取或明确参考只列静态 alias。 |
 | O-08 | DataView 直接赋值 alias 与 getter 不在生成器 `getMethods()` 范围：运行时 `adddisposer/addView/addelement/addele/removeview/replaceview`（`src/core/data-view.ts:371,416-420,457,503`），getter `root_id/embed_id`（`:191-200`）；生成器只取 `types/core/data-view.d.ts` 的 methods（`scripts/gen-agent-ref.mjs:238-239`）。 | 确定公共范围后再扩展生成器；自定义视图 alias 还需运行时复测。 |
