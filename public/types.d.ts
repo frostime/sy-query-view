@@ -2,7 +2,7 @@
  * @name sy-query-view
  * @author frostime
  * @version 1.3.0
- * @updated 2026-08-24T19:36:41.787Z
+ * @updated 2026-08-25T08:51:33.738Z
  */
 
 declare module 'siyuan' {
@@ -54,6 +54,7 @@ declare const Query: {
      * Every function here is sync function, no need to await
      */
     Utils: {
+        /** Creates a SiYuanDate using the native Date constructor arguments. */
         Date: (value: string | number | Date) => SiYuanDate;
         /**
          * Gets timestamp for current time with optional day offset
@@ -77,7 +78,7 @@ declare const Query: {
          */
         thisWeek: (hms?: boolean) => any;
         /**
-         * Gets the timestamp for the start of next week
+         * Gets the timestamp for the start of last week
          * @returns Timestamp string in yyyyMMddHHmmss format
          */
         lastWeek: (hms?: boolean) => any;
@@ -121,6 +122,12 @@ declare const Query: {
          * @returns String in reference format ((id 'content'))
          */
         asRef: (b: Block) => string;
+        /**
+         * Converts blocks into an object keyed by a block property.
+         * @param blocks - Blocks to index
+         * @param key - Property used as the key; defaults to `id`
+         * @returns Object whose keys are the selected property values
+         */
         asMap: (blocks: Block[], key?: string) => {
             [key: string]: Block;
             [key: number]: Block;
@@ -168,6 +175,7 @@ declare const Query: {
             onlyDate?: boolean;
             onlyTime?: boolean;
         }) => string;
+        /** Opens a block in the current SiYuan UI. */
         openBlock: (id: BlockId, options?: {
             zoomIn?: boolean;
             action?: import("siyuan").TProtyleAction[];
@@ -181,7 +189,7 @@ declare const Query: {
      * @param useWrapBlock - Whether to wrap blocks inside the WrappedList
      * @returns Wrapped block(s)
      */
-    wrapBlocks: (blocks: Block[] | Block, useWrapBlock?: boolean) => IWrappedBlock | IWrappedList<Block>;
+    wrapBlocks: (blocks: Block[] | Block, useWrapBlock?: boolean) => IWrappedBlock | IWrappedList<IWrappedBlock>;
     /**
      * SiYuan Kernel Request API
      * @note Kernel request only — NOT arbitrary HTTP. Use Query.gpt for external HTTP(S) fetch.
@@ -193,7 +201,7 @@ declare const Query: {
     request: typeof request;
     /**
      * Gets blocks by their IDs
-     * @note This API recieve sequence of block IDs, and always return an array of Block.
+     * @note This API receives a sequence of block IDs and always returns an array of wrapped blocks.
      * @param ids - Block IDs to retrieve
      * @returns Array of wrapped blocks
      * @alias `getBlocksById`
@@ -225,7 +233,7 @@ declare const Query: {
      * @param wrap - Whether to wrap results
      * @returns Query results
      */
-    sql: (fmt: string, wrap?: boolean) => Promise<IWrappedList<IWrappedBlock>>;
+    sql: <W extends boolean = true>(fmt: string, wrap?: W) => Promise<W extends false ? Block[] : IWrappedList<IWrappedBlock>>;
     /**
      * Finds backlinks to a specific block
      * @param id - Block ID to find backlinks for
@@ -302,7 +310,7 @@ declare const Query: {
      * @param b - Parent block or block ID
      * @returns Array of child document blocks
      */
-    childDoc: (b: BlockId | Block) => Promise<IWrappedList<Block>>;
+    childDoc: (b: BlockId | Block) => Promise<IWrappedList<IWrappedBlock>>;
     /**
      * Get nearby blocks relative to the specified block within the same container.
      *
@@ -339,11 +347,11 @@ declare const Query: {
         number?: number;
     }) => Promise<{
         previous?: {
-            id: Block;
+            id: BlockId;
             markdown: string;
         }[];
         next?: {
-            id: Block;
+            id: BlockId;
             markdown: string;
         }[];
     }>;
@@ -385,7 +393,7 @@ declare const Query: {
     } | DeprecatedParam<"any" | "all"> | {
         join?: "or" | "and";
         limit?: number;
-    } | DeprecatedParam<"or" | "and">, limit?: DeprecatedParam<number>) => Promise<Block[]>;
+    } | DeprecatedParam<"or" | "and">, limit?: DeprecatedParam<number>) => Promise<any[] | IWrappedList<IWrappedBlock>>;
     /**
      * Randomly roam blocks
      * @param limit - Maximum number of results
@@ -393,6 +401,12 @@ declare const Query: {
      * @returns Array of randomly roamed blocks
      */
     random: (limit?: number, type?: BlockType) => Promise<IWrappedList<IWrappedBlock>>;
+    /**
+     * Returns the markdown content represented by a block or block ID.
+     * Document and heading blocks include their child blocks; other block types return their own markdown.
+     * @param input - Block ID or block object
+     * @returns Markdown text
+     */
     markdown: (input: BlockId | Block) => Promise<any>;
     /**
      * Return the statistics of the document with given document ID
@@ -422,10 +436,10 @@ declare const Query: {
      * @returns Processed blocks or block IDs
      * @alias `redirect`
      */
-    fb2p: (inputs: Block[], enable?: {
+    fb2p: (inputs: Block[] | BlockId[], enable?: {
         heading?: boolean;
         doc?: boolean;
-    }) => Promise<IWrappedList<Block>>;
+    }) => Promise<IWrappedList<IWrappedBlock>>;
     /**
      * Prune/Merge blocks from SQL search results to eliminate duplicates.
      *
@@ -450,10 +464,10 @@ declare const Query: {
      * @returns {Block[]} - A new array containing only the unique (pruned) blocks.
      * @alias `prune`
      */
-    pruneBlocks: (blocks: Block[], keep?: "leaf" | "root", advanced?: boolean) => Promise<IWrappedList<Block>>;
+    pruneBlocks: (blocks: Block[], keep?: "leaf" | "root", advanced?: boolean) => Promise<IWrappedList<IWrappedBlock>>;
     /**
      * Send GPT request, use AI configuration in `siyuan.config.ai.openAI` by default
-     * @param prompt - Prompt
+     * @param input - Prompt text or a user/assistant message history
      * @param options - Options
      * @param options.url - Custom API URL
      * @param options.model - Custom API model
@@ -668,8 +682,8 @@ export declare class DataView {
      * @warn Don not duplicately specify dispose function for new view!
      * @returns
      */
-    replaceView(id: string, viewContainer: HTMLElement, disposer?: () => void): HTMLElement;
-    replaceview: (id: string, viewContainer: HTMLElement, disposer?: () => void) => HTMLElement;
+    replaceView(id: string, viewContainer: HTMLElement, disposer?: () => void): HTMLElement | null;
+    replaceview: (id: string, viewContainer: HTMLElement, disposer?: () => void) => HTMLElement | null;
     /**
      * Adds markdown content to the DataView
      * @param md - Markdown text to be rendered
@@ -1014,10 +1028,16 @@ export interface IWrappedBlock extends Block {
     unwrapped: Block;
     /** Block's URI link in format: siyuan://blocks/xxx */
     asurl: string;
+    /** Runtime-compatible alias of asurl */
+    tourl: string;
     /** Block's Markdown format link [content](siyuan://blocks/xxx) */
     aslink: string;
+    /** Runtime-compatible alias of aslink */
+    tolink: string;
     /** Block's SiYuan reference format text */
     asref: string;
+    /** Runtime-compatible alias of asref */
+    toref: string;
     /** Blocks's ial list, as object
      * @example
      * let icon = block.asial['icon'];
@@ -1058,10 +1078,10 @@ export interface IWrappedList<T = Block> extends Array<T> {
     /**
      * Converts the array to a map object, where the key is specified by the key parameter.
      * Equivalent to calling `array.reduce((acc, cur) => ({...acc, [cur[key]]: cur }), {})`
-     * @param key
+     * @param key - Key attribute, defaults to 'id'
      * @returns
      */
-    asMap: (key: string) => Record<string, Block>;
+    asMap: (key?: string) => Record<string, Block>;
     /**
      * Returns a new array containing only specified properties
      * NOTE: a single attribute returns a wrapped array of scalar values
@@ -1069,6 +1089,7 @@ export interface IWrappedList<T = Block> extends Array<T> {
      * @param attrs - Property names to keep
      */
     pick<A extends keyof T>(attr: A): IWrappedList<T[A]>;
+    /** Selects multiple properties and returns wrapped objects containing only those properties. */
     pick<A extends keyof T>(...attrs: A[]): IWrappedList<Pick<T, A>>;
     /**
      * Returns a new array excluding specified properties
@@ -1078,7 +1099,7 @@ export interface IWrappedList<T = Block> extends Array<T> {
     /**
      * Returns a new array sorted by specified property
      * @param attr - Property to sort by
-     * @param order - Sort direction, defaults to 'asc'
+     * @param order - Sort direction, defaults to 'desc'
      */
     sorton(attr: keyof T, order?: 'asc' | 'desc'): IWrappedList<T>;
     /**
@@ -1095,9 +1116,17 @@ export interface IWrappedList<T = Block> extends Array<T> {
     /**
      * Returns a new array with mapped elements; the wrapper is preserved
      * @param fn - Map function
-     * @param useWrapBlock - Whether to wrap the mapped elements (default: true)
+     * @param useWrapBlock - Whether to wrap the mapped elements (default: false, matching native map semantics — elements are passed through as-is)
      */
     map<U>(fn: (value: T, index: number, array: T[]) => U, useWrapBlock?: boolean): IWrappedList<U>;
+    /**
+     * Returns a new array with elements appended; the wrapper is preserved (modifies the default Array.concat)
+     */
+    concat(...items: any[]): IWrappedList<T>;
+    /**
+     * Returns a new array sorted by the given comparator; the wrapper is preserved (modifies the default Array.toSorted)
+     */
+    toSorted(compareFn?: (a: any, b: any) => number): IWrappedList<T>;
     /**
      * Returns a new array containing elements in the specified range
      * @param start - Start index
@@ -1115,7 +1144,7 @@ export interface IWrappedList<T = Block> extends Array<T> {
     /**
      * Returns a new array with added rows
      * @alias addrows
-     * @alias concat: modify the default method of Array
+     * @alias concat
      */
     addrow(newItems: T[]): IWrappedList<T>;
     /**
@@ -1131,6 +1160,8 @@ export interface IWrappedList<T = Block> extends Array<T> {
      */
     addcol(newItems: Record<string, ScalarValue | ScalarValue[]> | Record<string, ScalarValue>[] | ((b: T, index: number) => Record<string, ScalarValue> | Record<string, ScalarValue[]>)): IWrappedList<T>;
 }
+
+export declare function wrapList(list: Block[], useWrapBlock: false): IWrappedList<Block>;
 
 ///@index.d.ts
 /*
