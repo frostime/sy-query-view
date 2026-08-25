@@ -1,51 +1,59 @@
-# Query&View 协作约定
+# Query&View 项目协作规则
 
-本仓库是思源笔记 Query&View（QV）插件。以下规则适用于修改 QV API、类型、注释、参考文档和构建产物的协作。
+本仓库是思源笔记的 Query&View（QV）插件。各类工作分 Scope 约定规范：**改代码前先确认涉及哪个 Scope，只遵循该范围的要求**。通用协作原则见文末。
 
-## 语义对齐
+---
 
-QV 的对齐检查同时看三类来源：
+## 1. 运行时行为（`src/core/`）— 面向最终脚本用户
 
-1. **运行时实现**：`src/core/` 中函数实际执行的行为。
-2. **类型声明**：`types/core/*.d.ts` 中由 TypeScript 导出的签名。
-3. **人写注释**：源码 JSDoc；它是 Agent 参考文档中行为说明的唯一人写来源。
+`//!js` 嵌入块直接调用这些 API，在浏览器/Electron 环境执行，是插件的用户契约。
 
-动态成员还要检查注册调用点：Query 的 `addAlias()` 与 DataView 的 `register()` 会在运行时增加别名。生成器只能搬运签名、注释和可静态提取的别名，不替实现作语义判断。
+规范：
 
-发现实现、声明或注释的公共行为不一致时，先保留证据并报告；不要自行改变 API 行为、签名或兼容性。纯粹与实现不符的注释措辞可以直接修正，但仍需重新生成参考文档。
+- 兼容性优先：不改变既有脚本的行为；**用户可见的行为变化必须记录**到随版本发布的变更文档 `BREAKCHANGE-v2.0.md`（仓库根，与 CHANGELOG 同级）
+- 公共 API 的运行时行为、类型声明、JSDoc 说明三者必须一致；声明或文档不能用来掩盖实现问题
+- 行为/兼容性问题不明确时，先确认契约再动手；不自行拍板用户可见语义
 
-## 类型定义的定位（I-83）
+检查：DOM/Kernel/副作用路径需在思源真实环境复测（Node 断言覆盖不了）。
 
-QV 脚本运行在浏览器/Electron JavaScript 环境；类型定义主要服务于 Agent 参考和开发时提示，不是独立的运行时约束。优先保证类型不会让使用者形成错误认知或承担不必要的理解负担；不为类型理论上的极端精确度引入超过收益的复杂改造。
+## 2. 参考文档（`docs/en_US/agent-ref/`）— 面向 AI Agent，自动生成
 
-## 参考文档与生成物
+产物由 `scripts/gen-agent-ref.mjs` 从源码生成（签名取 tsc 声明、说明取自源码 JSDoc、动态别名取自 `register()`/`addAlias()` 调用点），构建时复制进技能包供 Agent 读取。
 
-`docs/en_US/agent-ref/*.md` 是生成产物，禁止手工修改。需要改变参考内容时：
+规范：
 
-1. 修改对应源码的 JSDoc 或实现（行为改变须先取得范围/语义决定）；
-2. 运行 `pnpm gen-ref`；
-3. 运行 `pnpm gen-ref:check`，确认退出码为 `0`；
-4. 用 `git diff` 检查生成内容确实来自预期改动。
+- **禁止手工修改产物**；需要改内容时改源码 JSDoc 或实现
+- 生成器是搬运工：不编造知识；`KNOWN_NOTES` 警示必须与源码现状一致（修复代码须同步删除过时条目）
+- 行为要点写在源码 JSDoc 中（人写信息的唯一通道）
 
-`pnpm gen-ref` 会先运行类型导出，再运行 `scripts/gen-agent-ref.mjs`。`scripts/gen-agent-ref.mjs --check` 只比较预期文档，不覆盖现有产物；产物缺失或内容不同会以非零退出。
-
-行为对齐的 Node 断言运行：
+检查：
 
 ```bash
-node scripts/check-agent-alignment.mjs
+pnpm gen-ref         # 重新生成（先跑类型导出）
+pnpm gen-ref:check   # 产物与生成结果比对，必须退出 0
+node scripts/check-agent-alignment.mjs   # 核心行为断言，必须退出 0
 ```
 
-该脚本只加载 `src/core/proxy.ts` 的纯 Proxy 逻辑，不启动思源实例或 DOM。
+遵循：`qv-reference-alignment` 维护 SKILL（存于 `.agents/`，位置可能随维护调整；若缺失则以本节规范为准）。
 
-## 兼容性与变更记录
+## 3. 类型定义（`types/*.d.ts`、`public/types.d.ts`）— 面向参考与开发提示
 
-以兼容旧脚本为优先。不要无声地改变用户可见行为；需要用户迁移的行为变化追加到 `.dev/changes/optimize-qv-agent-infra/BREAKCHANGE-v2.0.md`。已决定的 `keywordDoc` 兼容映射和文档级语义不要重新设计。
+由 tsc 声明自动导出（`export-types`），不是手写真相源；QV 脚本运行时不经过类型检查。
 
-API 实现/签名问题、需要新增依赖的问题，先向负责的 supervisor 报告；不要借维护文档或生成器之名扩大范围。
+规范：
 
-## 构建与提交
+- 类型只服务于 Agent 参考与开发时的提示
+- 优先避免让使用者形成错误认知；不为理论上的精确度引入不必要复杂度
 
-- `NODE_ENV=development vite build` 会被 livereload 挂起；需要开发产物时使用 `vite build --watch` 配合超时，或直接检查已有产物。
-- `tsconfig` 使用 `strict:false`；判别联合窄化使用 `in` 操作符，不依赖失效的类型收窄。
-- `public/types.d.ts` 是构建产物。若它发生变化，单独使用 `chore` 提交，不与功能或文档提交混在一起。
-- 提交消息遵循本仓库的 Conventional Commits + emoji 规范；提交前给出相关命令和退出码。
+## 4. 构建与提交
+
+- `public/types.d.ts` 是构建产物：有变化时**单独 chore 提交**，不与功能/文档提交混在一起
+- 环境陷阱：`NODE_ENV=development vite build` 会被 livereload 挂起（需要 dev 产物时用 `vite build --watch` + 超时，或直接看产物）；`tsconfig` 为 `strict:false`，判别联合窄化用 `in` 操作符
+- 提交消息遵循 Conventional Commits + emoji；提交前给出相关命令与退出码
+
+---
+
+## 通用协作原则
+
+- **责任边界**：完成当前目标即可，不顺手扩大到无关重构、依赖或 API 设计
+- **报告优先**：发现行为/声明/说明不一致时保留证据并报告；纯注释措辞与实现不符可以修正，但修正后需要重新生成参考文档
