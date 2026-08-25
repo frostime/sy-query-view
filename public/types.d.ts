@@ -2,7 +2,7 @@
  * @name sy-query-view
  * @author frostime
  * @version 1.3.0
- * @updated 2026-08-25T08:51:33.738Z
+ * @updated 2026-08-25T10:58:40.511Z
  */
 
 declare module 'siyuan' {
@@ -1114,19 +1114,10 @@ export interface IWrappedList<T = Block> extends Array<T> {
      */
     filter(predicate: (value: T, index: number, array: T[]) => boolean): IWrappedList<T>;
     /**
-     * Returns a new array with mapped elements; the wrapper is preserved
-     * @param fn - Map function
-     * @param useWrapBlock - Whether to wrap the mapped elements (default: false, matching native map semantics — elements are passed through as-is)
+     * Returns a new array with filtered elements; the wrapper is preserved
+     * @param predicate - Filter function
      */
-    map<U>(fn: (value: T, index: number, array: T[]) => U, useWrapBlock?: boolean): IWrappedList<U>;
-    /**
-     * Returns a new array with elements appended; the wrapper is preserved (modifies the default Array.concat)
-     */
-    concat(...items: any[]): IWrappedList<T>;
-    /**
-     * Returns a new array sorted by the given comparator; the wrapper is preserved (modifies the default Array.toSorted)
-     */
-    toSorted(compareFn?: (a: any, b: any) => number): IWrappedList<T>;
+    filter(predicate: (value: T, index: number, array: T[]) => boolean): IWrappedList<T>;
     /**
      * Returns a new array containing elements in the specified range
      * @param start - Start index
@@ -1144,7 +1135,6 @@ export interface IWrappedList<T = Block> extends Array<T> {
     /**
      * Returns a new array with added rows
      * @alias addrows
-     * @alias concat
      */
     addrow(newItems: T[]): IWrappedList<T>;
     /**
