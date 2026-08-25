@@ -14,11 +14,14 @@ target:
     第 2 层（预订入口，不在本任务做细节）：长期协作规范（AGENTS.md/SKILL 形式，I-80）。
   authority: user
   success_criteria: >
-    待定稿（里程碑处用户拍板推进深度）。草案：第 1 层结项时无已知不对齐，
-    产出参考文档生成机制 + 坑清单处置 + breaking change 文档。
+    用户于 2026-08-26 接受停止：核心源码/类型/JSDoc/参考文档对齐机制、文档站集成、
+    SKILL 与发布体系已完成；后续细微优化另开轻量任务，不再沿用本 graph。
 
 supervisor: pi main agent（2026-08-25 接手，已消费前手 HANDOVER）
 target_authority: user
+status: closed
+closed_at: 2026-08-26
+close_decision: 用户确认核心内容基本完成，后续细微优化不再拖着本 graph 继续推进。
 
 handover:
   status: consumed
@@ -79,36 +82,32 @@ current_route:
       desc: 已落地（2026-08-25，委托 worker 实现并验收全绿）：minAppVersion→3.8.0（死代码
         清理+BREAKCHANGE §5）；文档站 Agent Reference 四页（en-only，fallback 生效，
         api/reference 退役、d.ts 操作移首页）；SKILL 翻新（参考体系换四份新版参考、
-        v2 语义速记嵌入 §6、fallback 链含 references/source 本地源码）；构建时打包
-        src/core/{query,proxy}.ts 进技能包。遗留：zh_CHT.yaml 文档站 nav 键为旧结构
-        （nav_group_quickstart/nav_api_reference 等，与新 nav.ts 不匹配——繁体用户侧边栏
-        标签缺失，真实 bug 未修）；dist 不修剪已删除 docs 文件的陈旧文件（构建行为
-        未改，重打包时需清理）。另：另一 session 已给文档站加页面大纲 UX（暂存待提交，
-        与本节点结论无关）。
+        §6 后经压缩校准，fallback 链含 references/source 本地源码）；构建时打包
+        src/core/{query,proxy}.ts 进技能包。zh_CHT 导航键已由 abaf764 对齐；文档站页面
+        大纲 UX 已由 b51cacb 提交。仍保留 dist 不修剪已删除 docs 文件的构建注意事项。
       state: done
       deps: [N4]
 
     N6:
-      title: 代码扫清（扫描/类型/注释）+ API 诚实化（孤立分支）
-      desc: 三批实现 + 结项复核修复批次均已提交；wrapList 回退拍板已落地（见 accepted_state）。
-        池内余项：I-79（C-3 单独节点，用户决策）、I-81（request/renderAttr 短签名，P3 待定）、
-        I-82（中文 JSDoc，补注释）。
-      state: active
+      title: 代码扫清（扫描/类型/注释）+ API 诚实化（已停放）
+      desc: 已完成主要修补并提交；剩余 I-31/I-79/I-81/I-82 不阻塞本 graph 的核心交付，
+        留作后续独立优化。
+      state: parked
       deps: []
       note: >
-        与其他节点无硬依赖；坑清单/修补结果在生成器 KNOWN_NOTES 注入口与
-        BREAKCHANGE 处合流。用户分歧：扫描/类型/注释信息一律归本节点，不在主线顺手做。
+        本 graph 关闭后不再推进此分支；未来若处理注释、deprecated 参数或短签名问题，
+        另开轻量任务。
 
   conditional_candidates:
     - id: C-2
       title: 第 2 层 — 长期对齐规范（AGENTS.md / SKILL）
       condition: 第 1 层结项后由用户评估是否启动；初版已随 N4 落地（AGENTS.md +
         .agents/skills/qv-reference-alignment），内容随实践迭代（I-80）
-      state: candidate
+      state: deferred
     - id: C-3
       title: deprecated 参数处置（I-79，用户单独决策）
-      condition: 用户决定保留 or 2.0 清理 optionDeprecatedAsValMatch 等参数后激活
-      state: candidate
+      condition: 用户决定保留 or 2.0 清理 optionDeprecatedAsValMatch 等参数后另开任务
+      state: deferred
 
   unresolved_areas:
     - 2.0 全新 API 骨架/新增 API 设计 —— 用户明确排除（I-03），若日后提出草图再激活候选节点
@@ -119,12 +118,17 @@ risks:
     DataView 注册、dv.render）仅 Node 断言覆盖
   - N6 修补与老用户脚本的兼容性冲突 → 每项修补须评估兼容性，行为变化必须记录 BREAKCHANGE
 
-pending_decisions:
-  - 成功标准/推进深度定稿 —— 里程碑处用户拍板（I-00）
-  - 运行时复测时机 —— 用户定
-  - C-3 deprecated 参数处置 —— 用户单独决策
-  - export-types 管线脆弱点（Query 匿名类型 / UseStateMixin 导出 hack /
-    字符串替换）—— 低优先，动 public/types.d.ts 管线前谨慎评估
+pending_decisions: []
+
+closure:
+  delivered:
+    - N1-N5 核心路线完成：自动参考生成、对齐验证、发布集成、文档站 Agent Reference、SKILL 与源码 fallback。
+    - N6 已完成主要兼容性修补；wrapList 回退与 BREAKCHANGE 已按用户决策落地。
+  deferred:
+    - 运行时真机复测（DOM/Kernel/副作用路径）。
+    - I-31/I-79/I-81/I-82、C-3 与第 2 层长期规范，留在 issues.yaml 作为未来独立 backlog。
+    - 2.0 全新 API 骨架仍明确排除在本任务外。
+  follow_up: 后续细微优化另开轻量任务，不恢复本 graph 的 active 路线。
 
 runtime_rules:
   - graph.yaml 唯一写入者：supervisor；用户（target authority）只改目标与成功标准
