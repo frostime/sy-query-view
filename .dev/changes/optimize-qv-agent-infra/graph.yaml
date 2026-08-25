@@ -1,5 +1,6 @@
 # Long Task Orchestration graph — optimize-qv-agent-infra
-# 唯一写入者：supervisor（当前 pi session 主 agent）。本文件是当前控制状态，不是日记。
+# 唯一写入者：supervisor（当前 pi session 主 agent）。本文件是当前控制状态，不是日记；
+# 历史细节与遗留决策记录见控制目录与 git 历史。
 
 backlog: .dev/changes/optimize-qv-agent-infra/issues.yaml
 terms: .dev/changes/optimize-qv-agent-infra/TERM.md
@@ -8,143 +9,89 @@ terms: .dev/changes/optimize-qv-agent-infra/TERM.md
 target:
   statement: >
     达成「语义对齐」：函数实际行为 / 类型标注 / 文档标注三者一致。
-    第 1 层（本 graph）：本轮结束时消除已知不对齐——N1-N5 建立从源码
-    自动生成参考文档的机制（消除"文档与源码脱节"），N6 修补源码内部
-    的类型与行为不一致（消除"声明与运行时背离"），结项时经复核验证。
-    第 2 层（预订入口，不在本任务做细节）：长期协作规范（AGENTS.md/SKILL
-    形式，I-80）。
+    第 1 层（本 graph）：建立从源码自动生成参考文档的机制（消除"文档与源码脱节"），
+    并修补源码内部的类型与行为不一致（消除"声明与运行时背离"），结项时经复核验证。
+    第 2 层（预订入口，不在本任务做细节）：长期协作规范（AGENTS.md/SKILL 形式，I-80）。
   authority: user
   success_criteria: >
     待定稿（里程碑处用户拍板推进深度）。草案：第 1 层结项时无已知不对齐，
     产出参考文档生成机制 + 坑清单处置 + breaking change 文档。
 
-supervisor: pi main agent（继任，2026-08-25 接手；前手 S074，已消费其 HANDOVER）
+supervisor: pi main agent（2026-08-25 接手，已消费前手 HANDOVER）
 target_authority: user
 
 handover:
   status: consumed
   file: control/HANDOVER.md
-  note: 2026-08-25 用户决定更换 supervisor；继任者读 graph.yaml + control/HANDOVER.md 后，在此记录自己为 supervisor 并置 status 为 consumed。
-  consumed_at: 2026-08-25（继任 supervisor 接手：已读 graph.yaml + HANDOVER.md，确认控制状态）
 
 accepted_state:
-  - v1.3 已交付：SKILL 227 行自包含（references/ 随构建复制）、手工 agent-ref 两份
-    （query-api.md / dataview.md）、dev 强制同步、导航重构。
-  - Worker-B 校验结论（entry-handoff/chat-export…Worker-B.xml）：手工文档与运行时
-    多处不一致——wrapList 返回类型（childDoc/keywordDoc/fb2p/pruneBlocks 实为 wrapped）、
-    pick('id') 返回标量、map 不保留 wrapper、echartsTree.layout 被忽略、
-    addcolumns flex 无效、keywordDoc join:'or' 语义陷阱、时间函数默认 hms=true、
-    addmd 实支持 KaTeX、minAppVersion 与顶层 await 版本混淆、Query.request 是内核
-    请求而非任意 HTTP。
-  - 用户决策：d.ts vs Markdown 本质无区别，关键是「高保真」——解析 TS 拿到接口+
-    注释后按自定义格式拼接，能做到则形式自由选择。
-  - 用户决策：JSDoc/自定义 tag 都只是注释内容，机制无本质区别；现有注释结构不大改，
-    内容面向 agent 使用场景增量写。
-  - 用户决策：API 修补以兼容性为前提（老用户脚本不炸），行为变化必须记录进
-    面向用户的 breaking change 文档。
-  - 用户决策：API 重设计（2.0 全新 API 骨架）不作为本任务内容；本任务只做「填坑」。
-  - N1 调研（本 session）：
-    - 高保真成立：ts-morph round-trip + TS `getJSDocCommentsAndTags` 对 interface/
-      对象字面量成员统一有效；泛型/索引签名/多行示例保真。
-    - 动态成员可在构建期从 register()/addAlias() 调用点精确生成
-      （DataView 19 处 register→171 名；Query 8 组别名）——N3 方案成立。
-    - 升级依赖不解决问题：TS 5.7.2/ts-morph 24 已够（I-16）。动态别名进静态类型是语言语义限制。
-    - 对象字面量 Query 导出为匿名类型（I-12）；DataView 的 addxxx 动态方法在声明全缺（I-30）。
-    - 类型诚实前置：生成器只能印"源码当前声明"，childDoc 等 Wrapped 声明错误须先修（I-17）。
-    - 原型 v0 已产出：.dev/changes/optimize-qv-agent-infra/prototypes/agent-ref-v0.md，
-    含附录 A（源码→桥接→文档三对应 + A.4 诚实性前置）。形态基线已兑现为生成器输出。
-  - 用户确认：行为要点必须作为源码注释存在，生成器纯搬运（I-22）；人写信息一律进 JSDoc。
-  - N1 收尾完成（2026-08-24）：真实产物样本验证 18 组件/171 别名全自动提取；
-    签名取 tsc 声明 AST（正则文本提取不可靠，曾截断）；结论全文见
-    HANDOVER-rollback-branch.md「N1 收尾结论」。
-  - 用户拍板（2026-08-25）：wrapList 的 map/concat/toSorted 不做包装——本轮加入的
-    同名包装（返回 wrapper）与原生数组方法语义重叠，会对 Agent 造成歧义；恢复原生
-    透传（接口声明/排除列表/case 一并撤回），filter/slice 保留 v1.3 包装不动；
-    addrow 的 @alias concat 随之移除（concat 现为原生方法）。
-  - 配套修复（2026-08-25）：wrapList get 陷阱对 symbol 属性原生透传——修复 v1.3 遗留
-    陷阱：兜底 return null 使原生 concat 的 isConcatSpreadable 判定失效，v1.3 的
-    list.concat(x) 实际返回 [list整体, x]（错误行为）；修复后 concat/toSorted 恢复
-    真正的原生语义。A2 断言同步（map/concat/toSorted 断言普通数组 + 原生 concat
-    展开测试）；BREAKCHANGE §3 map 条目删除（恢复原生后无行为变化）。
-  - 用户拍板（2026-08-24，回退到「方向确认」节点后重新确认）：
-    - 方向通过：tsc 核心导出 + register/addAlias 调用点生成动态成员集合 + 结项复核；
-      N1 收尾交付「真实产物样本」（带完整别名的 DataView 方法声明 md），连上 N2/N3 格式讨论。
-    - 消费形式 = markdown 主格式（I-01 done）；d.ts 保留为签名核对层定位。
-    - 类型诚实后置（I-17 open）：先跑通整个生成框架，再回头修源码类型问题；
-      生成器对已知不对齐点先用「待核实」标注呈现。
+  - 用户决策：API 修补以兼容性为前提（老用户脚本不炸）；用户可见的行为变化必须记录进
+    BREAKCHANGE-v2.0.md（仓库根）；修复从未生效的错误（fix error）不算 breaking。
+  - 用户决策：参考文档消费形式 = markdown 主格式（生成器产出 docs/en_US/agent-ref/ 四份），
+    d.ts 保留为签名核对层定位。
+  - 用户确认：行为要点必须以源码注释（JSDoc）形式存在，生成器纯搬运、不编造知识；
+    现有注释结构不大改，面向 agent 使用场景增量写；KNOWN_NOTES ⚠ 注入口现 4 条仍为真
+    （today/thisWeek hms 默认、dv.render 持久化副作用、dv.details 裸 HTML），随代码修复同步增删。
+  - 操作要点：生成器签名取自 tsc 声明 AST（正则文本提取不可靠，曾截断）；
+    export-types/生成器须经 pnpm run 执行（PATH 含 node_modules/.bin，避开全局 TS6）。
+  - 用户拍板（2026-08-25）：wrapList 只保留 filter/slice 两个原生同名方法的包装
+    （v1.3 行为）；map/concat/toSorted 恢复原生透传（同名包装与原生语义重叠会造成
+    Agent 歧义）；get 陷阱对 symbol 属性原生透传（修复 v1.3 isConcatSpreadable 陷阱）；
+    addrow 别名仅 addrows。
+  - 边界：API 重设计（2.0 全新骨架）不在本任务，只填坑；范围蔓延由 unresolved_areas 与
+    issues 池（I-03/I-90）约束。
 
 current_route:
   nodes:
     N1:
-      title: 高保真提取/导出机制验证（已完成）
-      desc: >
-        高保真提取与导出机制均已验证成立（结论见 accepted_state 与
-        HANDOVER-rollback-branch.md「N1 收尾结论」）；正式生成器已落地
-        （scripts/gen-agent-ref.mjs，commit 4f6d29a）。
+      title: 高保真提取/导出机制（已完成）
+      desc: 生成器 scripts/gen-agent-ref.mjs + `pnpm gen-ref` 已落地投入使用。
       state: done
       deps: []
 
     N2:
-      title: 生成格式与文档结构设计（已实现，待用户整体审阅）
-      desc: 模板已固化（I-20/I-21 done）：短签名标题 + ts block 完整签名 +
-        Params/Returns/Example/Source + ⚠ 注入 + 多行参数续行缩进；四模块划分
-        （query-api/dataview/wrapped/types.md）。commit 4f6d29a/c080ea2。
-        注意 O-11（生成器文件头注释写 wrapped-list.md，实际输出 wrapped.md）为
-        低风险文案清理项，未处理。
+      title: 生成格式与文档结构设计（已完成）
+      desc: 模板已固化：短签名标题 + ts block 完整签名 + Params/Returns/Example/Source +
+        ⚠ 注入 + 多行参数续行缩进；四模块 query-api/dataview/wrapped/types.md。
+        未决小项：O-11（生成器文件头注释写 wrapped-list.md，实际输出 wrapped.md），
+        低风险文案清理。
       state: done
       deps: [N1]
 
     N3:
-      title: 生成器机制：动态 API 与注释提取规则（机制已实现）
-      desc: >
-        register/addAlias 调用点别名展开已实现（I-30 done，commit 4f6d29a）；
-        JSDoc 提取规则已定（TS 官方 API，纯搬运）。注释约定（I-31）为草案
-        机制（KNOWN_NOTES 注入口），正式 [agent] tag 结构待 N6 落地时定稿——
-        落实注释动作归 N6。
+      title: 生成器机制：动态 API 与注释提取规则（已完成）
+      desc: register/addAlias 调用点别名展开 + JSDoc 纯搬运（TS 官方 API）已实现；
+        KNOWN_NOTES 是 ⚠ 注入口机制。未决：正式 [agent] tag 注释约定（I-31）待定稿，
+        落实注释动作归 N6/维护 SKILL。
       state: done
       deps: [N1]
 
     N4:
-      title: 对齐验证（结项复核）
-      desc: >
-        已委托 S689 完成（2026-08-25）：A1 gen-ref:check + A2 行为断言脚本
-        （check-agent-alignment.mjs）+ AGENTS.md + .agents/skills/qv-reference-alignment
-        + I-40 清单定稿 + 对齐性问题报告（R-01~13 已处置、O-01~11 边界清单）。
-        审计抓出 map/concat/toSorted 死代码等 13 项，修复批次（src 三文件 + types.d.ts
-        + BREAKCHANGE 移位）在暂存区待用户审查。验证全绿（gen-ref:check=0、assertions=0，
-        但仅在工作区含暂存修复时成立——见 accepted_state 2026-08-25 条目）。
-        交付材料：nodes/S689-alignment-check/。
+      title: 对齐验证（结项复核，已完成）
+      desc: A1（gen-ref:check）+ A2（check-agent-alignment.mjs 行为断言）已交付并通过；
+        对齐性问题报告与复核边界清单在 nodes/S689-alignment-check/（R-01~13 已处置，
+        R-01/02 后按用户拍板回退见 accepted_state；O-01~11 为生成器边界记录）。
       state: done
       deps: [N2, N3]
-      note: N6 曾列在 deps 中（结项复核以 N6 产物为审计对象）；复核产出 R-01~13 修复
-        批次回流 N6，故 N6 现为 active 待验收，不再是本节点硬依赖。
 
     N5:
       title: 与 SKILL/发布体系集成
-      desc: 2.0 以新机制替换 v1.3 手工 agent-ref 的落地方案（打包/分发/文档站配合）；
-        含 SKILL 修正（I-73：minAppVersion 表述与新参考格式匹配）——用户指示作为
-        N5 内工作项，不提前处理。I-73 核实仍 open：skills/sy-query-view/SKILL.md:26
-        仍称 3.8.0 为插件最低版本，plugin.json:6 实为 3.1.14（顶层 await 才需 3.8.0）。
+      desc: 2.0 以新机制替换 v1.3 手工 agent-ref 的落地方案（打包/分发/文档站配合）。
+        首项 I-73：skills/sy-query-view/SKILL.md:26 仍称 3.8.0 为插件最低版本，
+        plugin.json:6 实为 3.1.14（顶层 await 才需 3.8.0）——修文档，改前与用户确认措辞。
       state: frontier
       deps: [N4]
 
     N6:
       title: 代码扫清（扫描/类型/注释）+ API 诚实化（孤立分支）
-      desc: >
-        源码侧一切「让源码成为可靠真相源」的工作，与生成器主线分开推进。
-        进展：三批实现已提交（75c8bba/2f374d3/1b48a8c）+ 结项复核修复批次已提交
-        （755efe5，R-01~13 处置）。2026-08-25 用户拍板：map/concat/toSorted 回退
-        原生透传（删除本轮加入的同名包装，避免 Agent 歧义），配套修复 v1.3 的
-        isConcatSpreadable 陷阱（symbol 原生透传）——本轮回退改动在工作区待提交。
-        池内余项：I-79（C-3 单独节点，用户决策）、I-81（request/renderAttr 短签名，
-        P3 待定）、I-82（中文 JSDoc，info 补注释）。
+      desc: 三批实现 + 结项复核修复批次均已提交；wrapList 回退拍板已落地（见 accepted_state）。
+        池内余项：I-79（C-3 单独节点，用户决策）、I-81（request/renderAttr 短签名，P3 待定）、
+        I-82（中文 JSDoc，补注释）。
       state: active
       deps: []
       note: >
-        与其他节点无硬依赖；坑清单/修补结果在 N4（结项复核）与 N2/N3
-        （生成器注入口内容同步）处合流。
-        生成器 KNOWN_NOTES 是注入口机制（归主线），其中内容源自本节点处置。
-        用户分歧：扫描/类型/注释信息一律归本节点，不在主线顺手做。
+        与其他节点无硬依赖；坑清单/修补结果在生成器 KNOWN_NOTES 注入口与
+        BREAKCHANGE 处合流。用户分歧：扫描/类型/注释信息一律归本节点，不在主线顺手做。
 
   conditional_candidates:
     - id: C-2
@@ -156,50 +103,23 @@ current_route:
       title: deprecated 参数处置（I-79，用户单独决策）
       condition: 用户决定保留 or 2.0 清理 optionDeprecatedAsValMatch 等参数后激活
       state: candidate
-      note: 2026-08-24 用户指示：单独作为节点，不做进 N6 本批
+
   unresolved_areas:
-    - 2.0 全新 API 骨架/新增 API 设计 —— 用户明确排除，若日后提出草图再激活候选节点
-    - 与文档站教程/参考分层的配合细节 —— v1.3 已建立渐进披露结构，N2/N5 吸收
-
-  主线推进（2026-08-24）:
-    - 正式生成器 scripts/gen-agent-ref.mjs + `pnpm gen-ref` 已落地（commit 4f6d29a）：
-      四模块输出（query-api/dataview/wrapped/types.md），短签名标题 + ts block
-      完整签名 + 参数/返回/示例/来源，⚠ 坑注注入（KNOWN_NOTES 现 4 条：today/
-      thisWeek/render/details，随代码修复同步增删），幂等可重跑。
-    - 盘点结论（本 session）：Query 24 顶层 + Utils 20 嵌套（声明↔源码双源对齐可行）；
-      DataView 27 公开方法（19 register 组件 + 8 普通）；WrappedList interface 全有
-      JSDoc；types.md 12 手写 interface。边角：request/renderAttr 属性=函数引用形态（I-81）。
-    - 生成文档中文来源 = 生成器模板文本（非源码注释）——en_US 文档应英文，待改。
-    - 用户决策（2026-08-24）：扫描代码/优化类型/优化注释一律归 N6 节点，主线只做生成器。
-
-  主线整合（2026-08-25，继任 supervisor）:
-    - 交接完成：读 graph.yaml + control/HANDOVER.md，记录 supervisor，handover consumed。
-    - 基线验证（工作区含暂存修复）：pnpm gen-ref:check=0、check-agent-alignment.mjs=0。
-    - 发现并记录：HEAD（601dc61）自身不自洽——S689 提交的 agent-ref 文档是按
-      「含修复的源码」生成的，而源码修复留在了暂存区。故暂存批次提交后 HEAD 才
-      自洽；若回退/重排 S689 提交，须 src+docs 成对处理（中间态 gen-ref:check 非零属预期）。
-    - issues.yaml（21 条）与 gen-issues.py 一致，n4 domain 已按 N4 done 收口；
-      I-17 状态更新为原则已执行（剩余 I-12/13/14 归 export-types 管线脆弱点）。
-    - 节点状态核对：N1~N4 done；N6 active（修复批次待用户验收）；N5 frontier（N4 已满足，
-      I-73 为最小可做项）。
+    - 2.0 全新 API 骨架/新增 API 设计 —— 用户明确排除（I-03），若日后提出草图再激活候选节点
+    - 与文档站教程/参考分层的配合细节 —— 渐进披露结构已建立，N5 吸收（I-51/I-52）
 
 risks:
-  - 现有注释覆盖率参差：很多 API 无 JSDoc 或仅一句 → 决定产物质量上限，N3 需给增量注释约定
-  - ts-morph 对泛型/重载/交叉类型的保真度未知 → N1 回答
-  - 动态成员（运行时拼接的 API）静态声明拿不到 → N3 回答
-  - N6 修补与老用户脚本的兼容性冲突 → 每项修补须评估兼容性，行为变化必须记录 breaking change
-  - HEAD 与暂存批次不自洽：S689 已提交按修复源码生成的文档，源码修复未提交 →
-    提交/回退/重排时须 src+docs 成对，避免把不自洽状态固化为 HEAD
+  - 现有注释覆盖率参差：很多 API 无 JSDoc 或仅一句 → 决定产物质量上限，I-31/I-82 持续约注释工作
+  - 运行时行为未经思源真机复测（I-50）：DOM/Kernel/副作用路径（keywordDoc 聚合 SQL、
+    DataView 注册、dv.render）仅 Node 断言覆盖
+  - N6 修补与老用户脚本的兼容性冲突 → 每项修补须评估兼容性，行为变化必须记录 BREAKCHANGE
 
 pending_decisions:
   - 成功标准/推进深度定稿 —— 里程碑处用户拍板（I-00）
-  - 结项复核原则正式确认 —— 用户已给定义，待节点推进后正式固化（I-02）
-  - 类型诚实后置衔接 —— 已执行（N6 三批 + S689 修复批次）；剩余 I-12/13/14
-    （Query 匿名类型 / UseStateMixin 导出 hack / export-types 字符串替换）涉及
-    public/types.d.ts 生成管线脆弱点，日后谨慎处理
-  - N6 暂存批次验收 —— 用户审查中（放行提交 or 修改 or 回退）
   - 运行时复测时机（I-50）—— 用户定
   - C-3 deprecated 参数处置 —— 用户单独决策
+  - I-12/13/14（export-types 管线脆弱点：Query 匿名类型 / UseStateMixin 导出 hack /
+    字符串替换）—— 低优先，动 public/types.d.ts 管线前谨慎评估
 
 runtime_rules:
   - graph.yaml 唯一写入者：supervisor；用户（target authority）只改目标与成功标准
@@ -207,9 +127,7 @@ runtime_rules:
   - 只读探索可 out-of-graph；写入共享状态/不可逆动作须先入图
   - 用户偏好：参考（签名+要点，grep 定位）→ 教程 → 源码/GitHub 后备；
     README 是纯用户门面，勿擅自加 Agent 入口
-  - 环境陷阱（继承自 handover）：NODE_ENV=development vite build 会被 livereload 挂起；
-    tsconfig strict:false 下判别联合窄化失效，用 in 操作符；types.d.ts 是构建产物，
-    提交时单独 chore commit
-  - 新增陷阱（2026-08-25）：export-types 须经 pnpm/npm run（PATH 含 node_modules/.bin）
-    执行；直接 node scripts/export-types.js 会命中全局 tsc（TS6，报 TS5011 rootDir /
-    TS5107 node10 弃用）；同样原因建议验证时用 pnpm gen-ref:check 而非裸命令
+  - 环境陷阱：NODE_ENV=development vite build 会被 livereload 挂起；tsconfig strict:false
+    下判别联合窄化失效，用 in 操作符；types.d.ts 是构建产物，提交时单独 chore commit；
+    export-types 须经 pnpm/npm run 执行（直接 node scripts/export-types.js 会命中全局
+    tsc 6，报 TS5011/TS5107）；验证统一用 pnpm gen-ref:check

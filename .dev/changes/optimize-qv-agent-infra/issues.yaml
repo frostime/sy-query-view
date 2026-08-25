@@ -51,16 +51,6 @@ domains:
     prio: P2
     status: open
     note: import("./proxy"). 剥离、default;→Query、mixin 抹除；新管线不复刻
-  - id: I-15
-    title: ts-morph getTags(name) 按名过滤失效
-    prio: info
-    status: open
-    note: 遍历 + getTagName() 过滤可绕过；工具降级记录，非阻塞
-  - id: I-17
-    title: 源码类型声明的诚实度是文档准确度天花板
-    prio: P0
-    status: open
-    note: 原则已执行（N6/N4：wrapList 标注/overload、pick 双签名、childDoc 等声明修正、replaceView/nearby/fb2p/sql 等类型诚实化）；剩余具体项见 I-12/13/14
 - key: n3
   title: N3 — 生成器机制：动态 API 与注释提取规则
   issues:
@@ -134,13 +124,7 @@ domains:
     title: 长期对齐规范机制（AGENTS.md / SKILL 形式）
     prio: P2
     status: open
-    note: 机制初版已落地（2026-08-25 N4 交付）：AGENTS.md（仓库根）+ .agents/skills/qv-reference-alignment；内容随实践迭代，用户审查中
-  - id: I-83
-    title: QV 类型定义定位规则（已写入 AGENTS.md）
-    prio: P2
-    status: done
-    ev: user
-    note: 规则已写入 AGENTS.md（2026-08-25）并进维护 SKILL；I-91 提炼时引用
+    note: 机制初版已落地（2026-08-25 N4 交付）：AGENTS.md（仓库根）+ .agents/skills/qv-reference-alignment；内容随实践迭代
 - key: research
   title: 悬空研究（不做也 OK）
   issues:
