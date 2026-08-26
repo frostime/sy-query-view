@@ -187,10 +187,10 @@ Finds backlinks to a specific block
 
 ---
 
-## Query.attr(name, val?, optionDeprecatedAsValMatch?, limit?)
+## Query.attr(name, val?, options?)
 
 ```ts
-attr: (name: string, val?: string, optionDeprecatedAsValMatch?: { valMatch?: "=" | "like"; limit?: number; } | DeprecatedParam<"=" | "like">, limit?: DeprecatedParam<number>) => Promise<IWrappedList<IWrappedBlock>>
+attr: (name: string, val?: string, options?: { valMatch?: "=" | "like"; limit?: number; }) => Promise<IWrappedList<IWrappedBlock>>
 ```
 
 Finds blocks with specific attributes
@@ -202,18 +202,17 @@ Finds blocks with specific attributes
 - `options` — Options
 - `options.valMatch` — Match type ('=' or 'like')
 - `options.limit` — Maximum number of results
-- `limit` — (Deprecated) Maximum number of results
 
 **Returns**: Array of matching blocks
 
-**Source** `src/core/query.ts:569`
+**Source** `src/core/query.ts:568`
 
 ---
 
-## Query.tag(tags, optionDeprecatedAsJoin?, limit?)
+## Query.tag(tags, options?)
 
 ```ts
-tag: (tags: string | string[], optionDeprecatedAsJoin?: { join?: "or" | "and"; limit?: number; match?: "=" | "like"; } | DeprecatedParam<"or" | "and">, limit?: DeprecatedParam<number>) => Promise<IWrappedList<IWrappedBlock>>
+tag: (tags: string | string[], options?: { join?: "or" | "and"; limit?: number; match?: "=" | "like"; }) => Promise<IWrappedList<IWrappedBlock>>
 ```
 
 Search blocks by tags
@@ -225,7 +224,6 @@ Search blocks by tags
 - `options.join` — Join type ('or' or 'and')
 - `options.limit` — Maximum number of results
 - `options.match` — Match type ('=' or 'like'), if `like` the tags will be automatically add % as prefix and suffix
-- `limit` — (Deprecated) Maximum number of results
 
 **Returns**: Array of blocks matching the tags
 
@@ -237,14 +235,14 @@ Query.tag(['tag1', 'tag2'], { join: 'or' }) // Search for blocks with 'tag1' or 
 Query.tag(['tag1', 'tag2'], { join: 'and' }) // Search for blocks with 'tag1' and 'tag2'
 ```
 
-**Source** `src/core/query.ts:612`
+**Source** `src/core/query.ts:602`
 
 ---
 
-## Query.task(optionDeprecatedAsAfter?, limit?)
+## Query.task(options?)
 
 ```ts
-task: (optionDeprecatedAsAfter?: { limit?: number; after?: string; } | DeprecatedParam<string>, limit?: DeprecatedParam<number>) => Promise<IWrappedList<IWrappedBlock>>
+task: (options?: { limit?: number; after?: string; }) => Promise<IWrappedList<IWrappedBlock>>
 ```
 
 Find unsolved task blocks
@@ -254,7 +252,6 @@ Find unsolved task blocks
 - `options` — Options
 - `options.after` — After which the blocks were updated
 - `options.limit` — Maximum number of results
-- `limit` — (Deprecated) Maximum number of results
 
 **Returns**: Array of unsolved task blocks
 
@@ -266,14 +263,14 @@ Query.task({ after: '2024101000' })
 Query.task({ limit: 32 })
 ```
 
-**Source** `src/core/query.ts:666`
+**Source** `src/core/query.ts:647`
 
 ---
 
-## Query.dailynote(optionsDeprecatedAsNotebook?, limitDeprecated?)
+## Query.dailynote(options?)
 
 ```ts
-dailynote: (optionsDeprecatedAsNotebook?: { notebook?: NotebookId; limit?: number; } | DeprecatedParam<NotebookId>, limitDeprecated?: DeprecatedParam<number>) => Promise<IWrappedList<IWrappedBlock>>
+dailynote: (options?: { notebook?: NotebookId; limit?: number; }) => Promise<IWrappedList<IWrappedBlock>>
 ```
 
 Gets the daily notes document
@@ -294,7 +291,7 @@ Query.dailynote({ notebook: '20231224140619-bpyuay4' })
 Query.dailynote({ limit: 32 })
 ```
 
-**Source** `src/core/query.ts:701`
+**Source** `src/core/query.ts:672`
 
 ---
 
@@ -312,7 +309,7 @@ Gets child documents of a block
 
 **Returns**: Array of child document blocks
 
-**Source** `src/core/query.ts:737`
+**Source** `src/core/query.ts:693`
 
 ---
 
@@ -359,14 +356,14 @@ await query.nearby('block123');
 await query.nearby('block123', { direction: 'previous', number: 3 });
 ```
 
-**Source** `src/core/query.ts:786`
+**Source** `src/core/query.ts:742`
 
 ---
 
-## Query.keyword(keywords, options?, limit?)
+## Query.keyword(keywords, options?)
 
 ```ts
-keyword: (keywords: string | string[], options?: { relation?: "any" | "all"; limit?: number; } | DeprecatedParam<"any" | "all"> | { join?: "or" | "and"; limit?: number; } | DeprecatedParam<"or" | "and">, limit?: DeprecatedParam<number>) => Promise<IWrappedList<IWrappedBlock>>
+keyword: (keywords: string | string[], options?: { relation?: "any" | "all"; limit?: number; } | DeprecatedParam<"any" | "all"> | { join?: "or" | "and"; limit?: number; } | DeprecatedParam<"or" | "and">) => Promise<IWrappedList<IWrappedBlock>>
 ```
 
 Search blocks that contain the given keywords
@@ -377,18 +374,17 @@ Search blocks that contain the given keywords
 - `options` — Options
 - `options.relation` — Relation between keywords at block level: 'any' — blocks containing at least one keyword; 'all' — blocks containing every keyword (default: 'any')
 - `options.limit` — Maximum number of results to return, default is 999
-- `limit` — (Deprecated) Maximum number of results to return, default is 999
 
 **Returns**: Array of blocks that contain the given keywords
 
-**Source** `src/core/query.ts:825`
+**Source** `src/core/query.ts:780`
 
 ---
 
-## Query.keywordDoc(keywords, options?, limit?)
+## Query.keywordDoc(keywords, options?)
 
 ```ts
-keywordDoc: (keywords: string | string[], options?: { relation?: "any" | "all"; limit?: number; } | DeprecatedParam<"any" | "all"> | { join?: "or" | "and"; limit?: number; } | DeprecatedParam<"or" | "and">, limit?: DeprecatedParam<number>) => Promise<any[] | IWrappedList<IWrappedBlock>>
+keywordDoc: (keywords: string | string[], options?: { relation?: "any" | "all"; limit?: number; } | DeprecatedParam<"any" | "all"> | { join?: "or" | "and"; limit?: number; } | DeprecatedParam<"or" | "and">) => Promise<any[] | IWrappedList<IWrappedBlock>>
 ```
 
 Search the document that contains all the keywords.
@@ -411,7 +407,7 @@ let docs = await Query.keywordDoc(['Keywords A', 'Keywords B']);
 docs[0].keywords['Keywords A'] // get the matched keyword block by using `keywords` property
 ```
 
-**Source** `src/core/query.ts:871`
+**Source** `src/core/query.ts:826`
 
 ---
 
@@ -430,7 +426,7 @@ Randomly roam blocks
 
 **Returns**: Array of randomly roamed blocks
 
-**Source** `src/core/query.ts:930`
+**Source** `src/core/query.ts:885`
 
 ---
 
@@ -449,7 +445,7 @@ Document and heading blocks include their child blocks; other block types return
 
 **Returns**: Markdown text
 
-**Source** `src/core/query.ts:944`
+**Source** `src/core/query.ts:899`
 
 ---
 
@@ -467,7 +463,7 @@ Return the statistics of the document with given document ID
 
 **Returns**: The statistics of the document; .runeCount - The number of characters in the document; .wordCount - The number of words (Chinese characters are counted as one word) in the document; .linkCount - The number of links in the document; .imageCount - The number of images in the document; .refCount - The number of references in the document; .blockCount - The number of blocks in the document
 
-**Source** `src/core/query.ts:974`
+**Source** `src/core/query.ts:929`
 
 ---
 
@@ -490,7 +486,7 @@ Redirects first block IDs to their parent containers
 
 **Available names** (2, expanded from register()/addAlias() call sites): `fb2p` · `redirect`
 
-**Source** `src/core/query.ts:997`
+**Source** `src/core/query.ts:952`
 
 ---
 
@@ -527,7 +523,7 @@ This function resolves this duplication issue by merging related blocks based on
 
 **Available names** (4, expanded from register()/addAlias() call sites): `pruneBlocks` · `prune` · `mergeBlocks` · `merge`
 
-**Source** `src/core/query.ts:1118`
+**Source** `src/core/query.ts:1073`
 
 ---
 
@@ -556,7 +552,7 @@ Send GPT request, use AI configuration in `siyuan.config.ai.openAI` by default
 
 **Notes**: The only API that sends external HTTP(S) requests via fetch; every other Query API is a SiYuan kernel request.
 
-**Source** `src/core/query.ts:1140`
+**Source** `src/core/query.ts:1095`
 
 ---
 

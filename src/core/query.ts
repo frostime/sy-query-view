@@ -563,25 +563,16 @@ const Query = {
      * @param options - Options
      * @param options.valMatch - Match type ('=' or 'like')
      * @param options.limit - Maximum number of results
-     * @param limit - (Deprecated) Maximum number of results
      * @returns Array of matching blocks
      */
     attr: async (
         name: string,
         val?: string,
-        optionDeprecatedAsValMatch?: {
+        options?: {
             valMatch?: '=' | 'like', limit?: number
-        } | DeprecatedParam<"=" | 'like'>,
-        limit?: DeprecatedParam<number>
+        }
     ) => {
-        const options = handleOptions(
-            'attr',
-            { valMatch: '=' as '=' | 'like', limit: undefined as number | undefined },
-            optionDeprecatedAsValMatch,
-            { limit },
-            'valMatch'
-        );
-        const { valMatch: match, limit: lim } = options;
+        const { valMatch: match = '=', limit: lim } = options ?? {};
         return Query.sql(`
         SELECT B.*
         FROM blocks AS B
@@ -602,7 +593,6 @@ const Query = {
      * @param options.join - Join type ('or' or 'and')
      * @param options.limit - Maximum number of results
      * @param options.match - Match type ('=' or 'like'), if `like` the tags will be automatically add % as prefix and suffix
-     * @param limit - (Deprecated) Maximum number of results
      * @returns Array of blocks matching the tags
      * @example
      * Query.tag('tag1') // Search for blocks with 'tag1'
@@ -611,21 +601,13 @@ const Query = {
      */
     tag: async (
         tags: string | string[],
-        optionDeprecatedAsJoin?: {
+        options?: {
             join?: 'or' | 'and',
             limit?: number,
             match?: '=' | 'like'
-        } | DeprecatedParam<'or' | 'and'>,
-        limit?: DeprecatedParam<number>
+        }
     ) => {
-        const opts = handleOptions(
-            'tag',
-            { join: 'or' as 'or' | 'and', limit: undefined as number | undefined, match: '=' as '=' | 'like' },
-            optionDeprecatedAsJoin,
-            { limit },
-            'join'
-        );
-        const { join, limit: lim, match } = opts;
+        const { join = 'or', limit: lim, match = '=' } = options ?? {};
 
         // 格式化标签函数
         const formatTag = (tag: string, isLike: boolean) => {
@@ -656,25 +638,14 @@ const Query = {
      * @param options - Options
      * @param options.after - After which the blocks were updated
      * @param options.limit - Maximum number of results
-     * @param limit - (Deprecated) Maximum number of results
      * @returns Array of unsolved task blocks
      * @example
      * Query.task()
      * Query.task({ after: '2024101000' })
      * Query.task({ limit: 32 })
      */
-    task: async (
-        optionDeprecatedAsAfter?: { limit?: number; after?: string } | DeprecatedParam<string>,
-        limit?: DeprecatedParam<number>
-    ) => {
-        const options = handleOptions(
-            'task',
-            { limit: undefined as number | undefined, after: undefined as string | undefined },
-            optionDeprecatedAsAfter,
-            { limit },
-            'after'
-        );
-        const { limit: lim, after: afterDate } = options;
+    task: async (options?: { limit?: number; after?: string }) => {
+        const { limit: lim, after: afterDate } = options ?? {};
         const LIST_MARK = siyuanVersion().compare('3.1.29') >= 0 ? '-' : '*';
 
         return Query.sql(`
@@ -698,23 +669,8 @@ const Query = {
      * Query.dailynote({ notebook: '20231224140619-bpyuay4' })
      * Query.dailynote({ limit: 32 })
      */
-    dailynote: async (
-        optionsDeprecatedAsNotebook?: { notebook?: NotebookId, limit?: number } | DeprecatedParam<NotebookId>,
-        limitDeprecated?: DeprecatedParam<number>
-    ) => {
-        const opts = handleOptions(
-            'dailynote',
-            { notebook: undefined as NotebookId | undefined, limit: 64 as number },
-            optionsDeprecatedAsNotebook,
-            { limit: limitDeprecated },
-            'notebook'
-        );
-        let { notebook, limit } = opts;
-        //@ts-ignore
-        if (optionsDeprecatedAsNotebook.box && !notebook) {
-            //@ts-ignore
-            notebook = optionsDeprecatedAsNotebook.box;
-        }
+    dailynote: async (options?: { notebook?: NotebookId, limit?: number }) => {
+        const { notebook, limit = 64 } = options ?? {};
 
         const sql = `
         SELECT B.*
@@ -818,16 +774,15 @@ const Query = {
      * @param options - Options
      * @param options.relation - Relation between keywords at block level: 'any' — blocks containing at least one keyword; 'all' — blocks containing every keyword (default: 'any')
      * @param options.limit - Maximum number of results to return, default is 999
-     * @param limit - (Deprecated) Maximum number of results to return, default is 999
      * @returns Array of blocks that contain the given keywords
      * @deprecated-key join: 旧版参数名（'or' | 'and'），语义映射：'or' → 'any'，'and' → 'all'；兼容保留
      */
-    keyword: async (keywords: string | string[], options?: { relation?: 'any' | 'all', limit?: number } | DeprecatedParam<'any' | 'all'> | { join?: 'or' | 'and', limit?: number } | DeprecatedParam<'or' | 'and'>, limit?: DeprecatedParam<number>) => {
+    keyword: async (keywords: string | string[], options?: { relation?: 'any' | 'all', limit?: number } | DeprecatedParam<'any' | 'all'> | { join?: 'or' | 'and', limit?: number } | DeprecatedParam<'or' | 'and'>) => {
         const opts = handleOptions(
             'keyword',
             { relation: 'any' as 'any' | 'all', limit: 999 as number },
             options as any,
-            { limit },
+            {},
             'relation'
         );
         // 旧版兼容：join → relation（'or' → 'any'，'and' → 'all'）
@@ -868,12 +823,12 @@ const Query = {
      * @deprecated-key join: 旧版参数名（'or' | 'and'），语义映射：'or' → 'any'，'and' → 'all'；兼容保留
      * @deprecated-key 旧式字符串形态（第二个参数直接传 'or'/'and'）同样兼容
      */
-    keywordDoc: async (keywords: string | string[], options?: { relation?: 'any' | 'all', limit?: number } | DeprecatedParam<'any' | 'all'> | { join?: 'or' | 'and', limit?: number } | DeprecatedParam<'or' | 'and'>, limit?: DeprecatedParam<number>) => {
+    keywordDoc: async (keywords: string | string[], options?: { relation?: 'any' | 'all', limit?: number } | DeprecatedParam<'any' | 'all'> | { join?: 'or' | 'and', limit?: number } | DeprecatedParam<'or' | 'and'>) => {
         const opts = handleOptions(
             'keywordDoc',
             { relation: 'all' as 'any' | 'all', limit: 999 as number },
             options as any,
-            { limit },
+            {},
             'relation'
         );
         // 旧版兼容：join → relation（'or' → 'any'，'and' → 'all'）

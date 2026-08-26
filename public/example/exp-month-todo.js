@@ -1,3 +1,3 @@
 //!js
-let blocks = await Query.task(Query.utils.thisMonth(), 32);
+let blocks = await Query.task({ after: Query.utils.thisMonth(), limit: 32 });
 return blocks.pick('id');

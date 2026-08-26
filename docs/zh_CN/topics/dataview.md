@@ -444,9 +444,8 @@ mermaidKanban 主要用于用于将块以 kanban 的形式展示出来，它有�
 ```js
 //!js
 let dv = Query.Dataview(protyle, item, top);
-// null: no `after` filter, query all task block
-// 128: max number of result
-let blocks = await Query.task(null, 128);
+// 不传 after：查询全部未完成任务；limit：最多返回 128 条
+let blocks = await Query.task({ limit: 128 });
 let grouped = blocks.groupby((b) => {
     return b.createdDate.slice(0, -3)
 });

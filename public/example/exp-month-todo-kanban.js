@@ -1,8 +1,7 @@
 //!js
 let dv = Query.Dataview(protyle, item, top);
-// null: no `after` filter, query all task block
-// 128: max number of result
-let blocks = await Query.task(null, 128);
+// Omit `after` to query all unfinished tasks, capped at 128 results.
+let blocks = await Query.task({ limit: 128 });
 let grouped = blocks.groupby((b) => {
     return b.createdDate.slice(0, -3)
 });

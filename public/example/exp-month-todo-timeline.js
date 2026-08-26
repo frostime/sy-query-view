@@ -1,7 +1,7 @@
 //!js
 let dv = Query.Dataview(protyle, item, top);
 
-let blocks = await Query.task(null, 128);
+let blocks = await Query.task({ limit: 128 });
 blocks = blocks.sorton('created', 'desc');
 const blockKey = (b) => b.createdDate.slice(0, 7);
 
