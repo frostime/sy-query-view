@@ -110,7 +110,7 @@ For the SQL side itself (table schemas, query patterns, path/daily-note semantic
 
 ## 6. Reference file map (read on demand)
 
-The bundled references are installed next to this `SKILL.md`. Read the narrowest matching file first:
+Current SKILL is at `data/storage/ai/agent/skills/sy-query-view/SKILL.md`. The bundled references are installed next to this `SKILL.md`. Read the narrowest matching file first. Use `file.list / file.read` to load reference file.
 
 | Need | Read |
 |---|---|
@@ -123,11 +123,12 @@ The bundled references are installed next to this `SKILL.md`. Read the narrowest
 | id / path / hpath resolution | `references/siyuan/document-tree-and-paths.md` |
 | daily notes | `references/siyuan/dailynote-model.md` |
 
-For a specific question, grep the exact member and read the nearby section. Read a whole reference only when the task is genuinely open-ended, such as choosing among many components.
+For a specific question, `grep` the exact member and read the nearby section. Read a whole reference only when the task is genuinely open-ended, such as choosing among many components.
 
 If the bundled references are insufficient, use these fallbacks in order:
 
-1. **Local source bundled with this skill:** `references/source/query.ts` for Query implementations and aliases, and `references/source/proxy.ts` for wrapped list/block behavior. These are authoritative for those members only.
-2. **Installed plugin docs and files:** `/data/plugins/sy-query-view/docs/en_US/examples/index.md` to choose an example, then `/data/plugins/sy-query-view/example/exp-*.js` for its code; `/data/plugins/sy-query-view/docs/en_US/topics/query.md` and `/data/plugins/sy-query-view/docs/en_US/topics/dataview.md` for richer explanations; `/data/plugins/sy-query-view/docs/en_US/topics/dataview-advanced.md` for `useState`, custom views, raw DOM, or lifecycle; grep `/data/plugins/sy-query-view/types.d.ts` for an exact symbol type (`public/types.d.ts` in the repository).
+**Local source bundled with this skill:** `references/source/query.ts` for Query implementations and aliases, and `references/source/proxy.ts` for wrapped list/block behavior. These are authoritative for those members only.
+
+**Installed plugin docs and files:** `/data/plugins/sy-query-view/docs/en_US/examples/index.md` to choose an example, then `/data/plugins/sy-query-view/example/exp-*.js` for its code; `/data/plugins/sy-query-view/docs/en_US/topics/query.md` and `/data/plugins/sy-query-view/docs/en_US/topics/dataview.md` for richer explanations; `/data/plugins/sy-query-view/docs/en_US/topics/dataview-advanced.md` for `useState`, custom views, raw DOM, or lifecycle; grep `/data/plugins/sy-query-view/types.d.ts` for an exact symbol type (`public/types.d.ts` in the repository).
 
 If no authoritative source is readable, say so instead of guessing.
