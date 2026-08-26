@@ -78,6 +78,8 @@ Match the user's intent to an API and verify its exact signature in `references/
 
 These are calibration examples, not an exhaustive map. For other intents, scan `query-api.md`, which groups Query members by signature, return shape, and aliases. Prefer wrapped Query APIs over raw kernel calls.
 
+For the SQL side itself (table schemas, query patterns, path/daily-note semantics), read the vendored SiYuan platform notes under `references/siyuan/` (see §6).
+
 `Query.sql(sql)` defaults to a wrapped list in the source shipped with this skill. If the running installation returns a plain array, call `Query.wrapBlocks(rows)` before using `.pick`, `.sorton`, or other wrapped-list methods; treat that as a runtime bundle/version mismatch. Passing `false` explicitly returns a plain array.
 
 ### 3.2 Rendering
@@ -116,6 +118,10 @@ The bundled references are installed next to this `SKILL.md`. Read the narrowest
 | DataView component or options | `references/dataview.md` |
 | wrapped result processing (`pick`, `sorton`, `filter`, `slice`, `groupby`, ...) | `references/wrapped.md` |
 | shared option or data type | `references/types.md` |
+| SQL tables (`blocks`, `refs`, `attributes`, `assets`, `spans`) and query patterns | `references/siyuan/sql-query-guide.md` |
+| block types, fields, attributes, Markdown extensions | `references/siyuan/siyuan-block.md` |
+| id / path / hpath resolution | `references/siyuan/document-tree-and-paths.md` |
+| daily notes | `references/siyuan/dailynote-model.md` |
 
 For a specific question, grep the exact member and read the nearby section. Read a whole reference only when the task is genuinely open-ended, such as choosing among many components.
 
