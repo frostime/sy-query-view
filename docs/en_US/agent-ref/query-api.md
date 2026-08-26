@@ -270,28 +270,32 @@ Query.task({ limit: 32 })
 ## Query.dailynote(options?)
 
 ```ts
-dailynote: (options?: { notebook?: NotebookId; limit?: number; }) => Promise<IWrappedList<IWrappedBlock>>
+dailynote: (options?: { notebook?: NotebookId; after?: Date | string; before?: Date | string; limit?: number; }) => Promise<IWrappedList<IWrappedBlock>>
 ```
 
-Gets the daily notes document
+Gets daily note documents, optionally limited to an inclusive date range.
+When `after` or `before` is specified, results are ordered by daily note date descending.
 
 **Params**
 
 - `options` — Options
-- `options.notebook` — Notebook ID, if not specified, all daily notes documents will be returned
-- `options.limit` — Maximum number of results
+- `options.notebook` — Notebook ID, if not specified, daily notes from all notebooks are returned
+- `options.after` — Earliest daily note date to include, as a Date or `yyyyMMdd` string
+- `options.before` — Latest daily note date to include, as a Date or `yyyyMMdd` string
+- `options.limit` — Maximum number of results, defaults to 64
 
-**Returns**: Array of daily notes document blocks
+**Returns**: Array of daily note document blocks
 
 **Example**
 
 ```ts
 Query.dailynote()
 Query.dailynote({ notebook: '20231224140619-bpyuay4' })
-Query.dailynote({ limit: 32 })
+Query.dailynote({ after: Query.utils.thisMonth(false), before: Query.utils.today(false) })
+Query.dailynote({ after: new Date(2024, 0, 1), limit: 32 })
 ```
 
-**Source** `src/core/query.ts:672`
+**Source** `src/core/query.ts:676`
 
 ---
 
@@ -309,7 +313,7 @@ Gets child documents of a block
 
 **Returns**: Array of child document blocks
 
-**Source** `src/core/query.ts:693`
+**Source** `src/core/query.ts:722`
 
 ---
 
@@ -356,7 +360,7 @@ await query.nearby('block123');
 await query.nearby('block123', { direction: 'previous', number: 3 });
 ```
 
-**Source** `src/core/query.ts:742`
+**Source** `src/core/query.ts:771`
 
 ---
 
@@ -377,7 +381,7 @@ Search blocks that contain the given keywords
 
 **Returns**: Array of blocks that contain the given keywords
 
-**Source** `src/core/query.ts:780`
+**Source** `src/core/query.ts:809`
 
 ---
 
@@ -407,7 +411,7 @@ let docs = await Query.keywordDoc(['Keywords A', 'Keywords B']);
 docs[0].keywords['Keywords A'] // get the matched keyword block by using `keywords` property
 ```
 
-**Source** `src/core/query.ts:826`
+**Source** `src/core/query.ts:855`
 
 ---
 
@@ -426,7 +430,7 @@ Randomly roam blocks
 
 **Returns**: Array of randomly roamed blocks
 
-**Source** `src/core/query.ts:885`
+**Source** `src/core/query.ts:914`
 
 ---
 
@@ -445,7 +449,7 @@ Document and heading blocks include their child blocks; other block types return
 
 **Returns**: Markdown text
 
-**Source** `src/core/query.ts:899`
+**Source** `src/core/query.ts:928`
 
 ---
 
@@ -463,7 +467,7 @@ Return the statistics of the document with given document ID
 
 **Returns**: The statistics of the document; .runeCount - The number of characters in the document; .wordCount - The number of words (Chinese characters are counted as one word) in the document; .linkCount - The number of links in the document; .imageCount - The number of images in the document; .refCount - The number of references in the document; .blockCount - The number of blocks in the document
 
-**Source** `src/core/query.ts:929`
+**Source** `src/core/query.ts:958`
 
 ---
 
@@ -486,7 +490,7 @@ Redirects first block IDs to their parent containers
 
 **Available names** (2, expanded from register()/addAlias() call sites): `fb2p` · `redirect`
 
-**Source** `src/core/query.ts:952`
+**Source** `src/core/query.ts:981`
 
 ---
 
@@ -523,7 +527,7 @@ This function resolves this duplication issue by merging related blocks based on
 
 **Available names** (4, expanded from register()/addAlias() call sites): `pruneBlocks` · `prune` · `mergeBlocks` · `merge`
 
-**Source** `src/core/query.ts:1073`
+**Source** `src/core/query.ts:1102`
 
 ---
 
@@ -552,7 +556,7 @@ Send GPT request, use AI configuration in `siyuan.config.ai.openAI` by default
 
 **Notes**: The only API that sends external HTTP(S) requests via fetch; every other Query API is a SiYuan kernel request.
 
-**Source** `src/core/query.ts:1095`
+**Source** `src/core/query.ts:1124`
 
 ---
 

@@ -659,18 +659,45 @@ const Query = {
     },
 
     /**
-     * Gets the daily notes document
+     * Gets daily note documents, optionally limited to an inclusive date range.
+     * When `after` or `before` is specified, results are ordered by daily note date descending.
      * @param options - Options
-     * @param options.notebook - Notebook ID, if not specified, all daily notes documents will be returned
-     * @param options.limit - Maximum number of results
-     * @returns Array of daily notes document blocks
+     * @param options.notebook - Notebook ID, if not specified, daily notes from all notebooks are returned
+     * @param options.after - Earliest daily note date to include, as a Date or `yyyyMMdd` string
+     * @param options.before - Latest daily note date to include, as a Date or `yyyyMMdd` string
+     * @param options.limit - Maximum number of results, defaults to 64
+     * @returns Array of daily note document blocks
      * @example
      * Query.dailynote()
      * Query.dailynote({ notebook: '20231224140619-bpyuay4' })
-     * Query.dailynote({ limit: 32 })
+     * Query.dailynote({ after: Query.utils.thisMonth(false), before: Query.utils.today(false) })
+     * Query.dailynote({ after: new Date(2024, 0, 1), limit: 32 })
      */
-    dailynote: async (options?: { notebook?: NotebookId, limit?: number }) => {
-        const { notebook, limit = 64 } = options ?? {};
+    dailynote: async (options?: {
+        notebook?: NotebookId,
+        after?: Date | string,
+        before?: Date | string,
+        limit?: number
+    }) => {
+        const { notebook, after, before, limit = 64 } = options ?? {};
+        const toDailyNoteDate = (date: Date | string) => {
+            return typeof date === 'string' ? date : formatDateTime('yyyyMMdd', date);
+        };
+        const afterDate = after === undefined ? undefined : toDailyNoteDate(after);
+        const beforeDate = before === undefined ? undefined : toDailyNoteDate(before);
+        const dateConditions = [
+            afterDate === undefined ? '' : `AND A.value >= '${afterDate}'`,
+            beforeDate === undefined ? '' : `AND A.value <= '${beforeDate}'`
+        ].filter(Boolean).join('\n            ');
+        const hasDateRange = afterDate !== undefined || beforeDate !== undefined;
+        const dateOrder = hasDateRange ? `
+        ORDER BY (
+            SELECT MAX(A.value)
+            FROM attributes AS A
+            WHERE A.block_id = B.id
+              AND A.name like 'custom-dailynote-%'
+              ${dateConditions}
+        ) DESC` : '';
 
         const sql = `
         SELECT B.*
@@ -679,7 +706,9 @@ const Query = {
             SELECT A.block_id
             FROM attributes AS A
             WHERE A.name like 'custom-dailynote-%'
+            ${dateConditions}
         ) AND B.type = 'd' ${notebook ? `AND B.box = '${notebook}'` : ''}
+        ${dateOrder}
         limit ${limit};
         `
         return Query.sql(sql);

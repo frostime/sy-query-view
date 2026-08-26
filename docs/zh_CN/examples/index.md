@@ -11,6 +11,7 @@
 | 文件 | 标题 | 说明 | 标签 |
 |---|---|---|---|
 | exp-month-todo.js | 本月待办列表 | 查询本月所有未完成的 TODO 列表 | task, todo, list |
+| exp-month-dailynotes.js | 本月日记 | 按日记日期查询本月截至今天的日记文档 | dailynote, date, list |
 | exp-child-docs.js | 子文档列表 | 列出当前文档的所有子文档，效果类似 Notion 等软件 | doc, list |
 | exp-avs-under-root-doc.js | 属性视图汇总 | 查询所在文档下所有的属性视图（Attribute View），然后汇总显示在嵌入块中 | attribute-view, embed |
 | exp-doc-backlinks-table.js | 当前文档反向链接表格 | 以表格的形式显示当前文档的回链 | backlink, table |
@@ -35,6 +36,12 @@
 查询本月所有未完成的 TODO 列表。
 
 {{example:exp-month-todo.js}}
+
+## exp-month-dailynotes
+
+按日记日期查询本月截至今天的日记文档，结果从新到旧排列。
+
+{{example:exp-month-dailynotes.js}}
 
 ## exp-child-docs
 

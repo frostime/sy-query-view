@@ -11,6 +11,7 @@ Usage: copy an example's code into an embedded block (the content starts with `/
 | File | Title | Description | Tags |
 |---|---|---|---|
 | exp-month-todo.js | Unfinished TODOs This Month | Query all unfinished TODO lists of this month | task, todo, list |
+| exp-month-dailynotes.js | Daily Notes This Month | Query daily note documents from the start of this month through today | dailynote, date, list |
 | exp-child-docs.js | List Sub-documents | List all the sub-documents of the current document; similar to software such as Notion | doc, list |
 | exp-avs-under-root-doc.js | Summarize Attribute Views | Query all attribute views under the current document and summarize them in an embedded block | attribute-view, embed |
 | exp-doc-backlinks-table.js | Backlink Table of the Current Document | Display backlinks of the current document in a table format | backlink, table |
@@ -35,6 +36,12 @@ Usage: copy an example's code into an embedded block (the content starts with `/
 Query all unfinished TODO lists of this month.
 
 {{example:exp-month-todo.js}}
+
+## exp-month-dailynotes
+
+Query daily note documents from the start of this month through today, ordered from newest to oldest.
+
+{{example:exp-month-dailynotes.js}}
 
 ## exp-child-docs
 

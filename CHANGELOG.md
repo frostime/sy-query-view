@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `Query.dailynote` 支持通过 `after` / `before` 按日记日期划定包含边界的检索范围。
+
 ## [1.3.0] - 2026-08-07
 
 ### Fixed
