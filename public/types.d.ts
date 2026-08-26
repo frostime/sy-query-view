@@ -2,7 +2,7 @@
  * @name sy-query-view
  * @author frostime
  * @version 1.3.0
- * @updated 2026-08-26T12:53:02.686Z
+ * @updated 2026-08-26T13:04:29.392Z
  */
 
 declare module 'siyuan' {
@@ -288,18 +288,24 @@ declare const Query: {
         after?: string;
     }) => Promise<IWrappedList<IWrappedBlock>>;
     /**
-     * Gets the daily notes document
+     * Gets daily note documents, optionally limited to an inclusive date range.
+     * When `after` or `before` is specified, results are ordered by daily note date descending.
      * @param options - Options
-     * @param options.notebook - Notebook ID, if not specified, all daily notes documents will be returned
-     * @param options.limit - Maximum number of results
-     * @returns Array of daily notes document blocks
+     * @param options.notebook - Notebook ID, if not specified, daily notes from all notebooks are returned
+     * @param options.after - Earliest daily note date to include, as a Date or `yyyyMMdd` string
+     * @param options.before - Latest daily note date to include, as a Date or `yyyyMMdd` string
+     * @param options.limit - Maximum number of results, defaults to 64
+     * @returns Array of daily note document blocks
      * @example
      * Query.dailynote()
      * Query.dailynote({ notebook: '20231224140619-bpyuay4' })
-     * Query.dailynote({ limit: 32 })
+     * Query.dailynote({ after: Query.utils.thisMonth(false), before: Query.utils.today(false) })
+     * Query.dailynote({ after: new Date(2024, 0, 1), limit: 32 })
      */
     dailynote: (options?: {
         notebook?: NotebookId;
+        after?: Date | string;
+        before?: Date | string;
         limit?: number;
     }) => Promise<IWrappedList<IWrappedBlock>>;
     /**
