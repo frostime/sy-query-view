@@ -2,7 +2,7 @@
  * @name sy-query-view
  * @author frostime
  * @version 1.3.0
- * @updated 2026-08-25T17:04:25.637Z
+ * @updated 2026-08-26T10:20:13.117Z
  */
 
 declare module 'siyuan' {
@@ -230,8 +230,8 @@ declare const Query: {
     /**
      * Executes SQL query and optionally wraps results
      * @param fmt - SQL query string
-     * @param wrap - Whether to wrap results
-     * @returns Query results
+     * @param wrap - Whether to wrap results; defaults to true when omitted
+     * @returns Query results: an IWrappedList by default, plain Block[] when wrap is false
      */
     sql: <W extends boolean = true>(fmt: string, wrap?: W) => Promise<W extends false ? Block[] : IWrappedList<IWrappedBlock>>;
     /**
