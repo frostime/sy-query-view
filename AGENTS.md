@@ -10,7 +10,7 @@
 
 规范：
 
-- 兼容性优先：不改变既有脚本的行为；**用户可见的行为变化必须记录**到随版本发布的变更文档 `BREAKCHANGE-v2.0.md`（仓库根，与 CHANGELOG 同级）
+- 兼容性优先：不改变既有脚本的行为；**用户可见的行为变化必须记录**到仓库根的 `BREAKCHANGE.md`（破坏性变更及预告，按版本分节，格式与 CHANGELOG 同构）
 - 公共 API 的运行时行为、类型声明、JSDoc 说明三者必须一致；声明或文档不能用来掩盖实现问题
 - 行为/兼容性问题不明确时，先确认契约再动手；不自行拍板用户可见语义
 
@@ -50,6 +50,16 @@ node scripts/check-agent-alignment.mjs   # 核心行为断言，必须退出 0
 - `public/types.d.ts` 是构建产物：有变化时**单独 chore 提交**，不与功能/文档提交混在一起
 - 环境陷阱：`NODE_ENV=development vite build` 会被 livereload 挂起（需要 dev 产物时用 `vite build --watch` + 超时，或直接看产物）；`tsconfig` 为 `strict:false`，判别联合窄化用 `in` 操作符
 - 提交消息遵循 Conventional Commits + emoji；提交前给出相关命令与退出码
+
+---
+
+## 5. 文档与工作产物布局
+
+- 模块契约 `src/core/core.SPEC.md`：改 `src/core` 公共行为前必读；改行为的同一变更中同步更新
+- 破坏性变更记录：根目录 `BREAKCHANGE.md`；维护流程见 `.agents/skills/qv-breakchange/SKILL.md`
+- `.dev/changes/<slug>/`：单个进行中变更的工作区（spec/计划/交接）；完结后迁出持久知识，目录移入 `.dev/changes/archive/`（git 忽略）或删除
+- `.dev/docs/`：跨模块持久文档（如上游思源版本行为分析）
+- 参考文档对齐维护：`.agents/skills/qv-reference-alignment/SKILL.md`
 
 ---
 
