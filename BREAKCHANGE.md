@@ -1,45 +1,66 @@
-# BREAKCHANGE — 破坏性变更记录（面向脚本作者）
+# BREAKCHANGE
+
+Query&View 的破坏性变更与预告，面向脚本作者。
+未发布的内容放在 `[Unreleased]`，随版本发布改为版本号。
 
 ## [Unreleased]
 
 ## [2.0.0]
 
-### Break Change in v2.0.0
+### `Query.keywordDoc` (保持兼容)
 
-以下变更将随下一版本发布即生效。
+**接口变更**：
 
-#### Query.keywordDoc — 查询逻辑发生变更 ⚠️ 重点
+```ts
+// --- OLD ---
+keywordDoc(keywords, options?: { join?: 'or' | 'and', limit?: number })
+// --- NEW ---
+keywordDoc(keywords, options?: { relation?: 'any' | 'all', limit?: number })
+```
 
-**重要：即使你继续使用旧写法 `join`，返回结果也可能与 v1.x 不同。** 两个层面的变更：
+**行为变更**：
 
-**行为变化（对旧写法同样生效）**
+- `{ join: 'or' }` 自动映射为 `relation:'any'`：v1.x 只返回包含全部关键词的文档；v2.x 返回包含任一关键词的文档，结果可能变多
+- `{ join: 'and' }` 自动映射为 `relation:'all'`：v1.x 要求全部关键词出现在**同一块内**；v2.x 要求全部关键词出现在**同一文档内**（可跨块），结果可能变多
+- `limit`：v1.x 为检索块数上限，超出部分被丢弃，所在文档可能整篇漏查；v2.x 为返回文档数上限
+- 无参数调用行为不变；返回结果仍为文档数组，附 `.keywords` 属性
 
-| 场景 | v1.x 实际行为 | v2.0 行为 |
-|---|---|---|
-| 无参数（默认） | 假 OR 的默认路径实际等价于"所有关键词都命中"（文档级） | `relation:'all'`（文档级），**行为一致，无变化** |
-| `join:'or'` | **假 OR**：SQL 是 OR，但后续过滤仍要求所有关键词都命中——`'or'` 实际等价于"全部命中" | 真 `'any'`：文档内含**任一**关键词即返回（结果变多） |
-| `join:'and'` | **块级**：要求**同一块**内出现所有关键词（SQL AND + 文档级检查），跨块分布的关键词搜不到 | 文档级 `'all'`：同一文档内所有关键词都出现即可，**允许分布在不同的块**（结果变多） |
+**用例对比**：
 
-**对现有脚本的影响**：
-- 无参数调用：行为不变
-- 使用 `join:'or'` 的脚本：返回的文档数可能**变多**（现在"任一命中"即可）
-- 使用 `join:'and'` 的脚本：返回的文档数可能**变多**（跨块分布的关键词文档也会命中）
-- 建议：核对查询结果是否符合预期，必要时改用 `relation:'all'` 并确认过滤逻辑
+```js
+// 旧写法（仍可用，行为按映射后的语义执行）
+await Query.keywordDoc(["TODO", "会议"], { join: 'or' });   // 映射为 'any'：任一词出现即返回
+await Query.keywordDoc(["TODO", "会议"], { join: 'and' });  // 映射为 'all'：两词都出现才返回
 
-**limit 语义变化（修复的截断缺陷）**
+// 新写法
+await Query.keywordDoc(["TODO", "会议"]);                      // 默认 'all'：两词都出现才返回
+await Query.keywordDoc(["TODO", "会议"], { relation: 'any' }); // 任一词出现即返回
+await Query.keywordDoc(["TODO", "会议"], { relation: 'all' }); // 两词都出现才返回
+```
 
-- v1.x：`limit` 作用于**块数**（SQL 先截断块集合，再做文档级过滤——关键词分散在不同块的文档可能被截断漏掉，且无 ORDER BY 时截断结果不稳定）
-- v2.0：文档级判定在 SQL 内完成（`GROUP BY root_id` + `HAVING`），`limit` 作用于**文档数**（返回文档数上限）
-- 对现有脚本的影响：结果集**更完整**（不再因块数截断漏查）；极少数脚本若依赖"块级 limit 导致的漏查"（不应有），结果会变多
+**兼容性声明**:
 
-#### 最低思源版本提升至 3.8.0 ⚠️ 需升级
+旧参数形态在 v2.0.0 版依然可用，未来版本将移除。
 
-- v2.0 起插件的最低思源版本要求由 **3.1.14 提升至 3.8.0**；安装/升级时思源会按 `minAppVersion` 拦截低于 3.8.0 的版本（不再依赖旧的桌面端版本检查代码）。
-- **影响**：使用思源 **3.8.0 以下**版本的用户无法安装/运行 v2.0（也享受不到新的能力与修复）。已有脚本若已在工作中，其语法与行为不受影响；建议升级思源到 3.8.0+。
-- 伴随清理：移除了 `onload` 中对 3.1.25 / 3.1.26 的桌面端版本检查死代码及其 i18n 文案。
+### `Query.keyword` (保持兼容)
 
-### Future Break Change Forenotice
+**接口变更**：同上，`join` 参数改名为 `relation`（取值 `'or'→'any'`，`'and'→'all'`）。
 
-预告哪些 API 在未来会发生 break change。**当前处于兼容期**：旧行为仍可用、运行时有警告；实际移除时会登记在移除版本的上方小节。
+**行为变更**：无，仅仅是参数改名。
 
-- `Query.keyword` / `Query.keywordDoc` 的旧参数形态：对象 `{ join: 'or' | 'and' }` 与旧字符串位置传参（`keyword(kw, 'or')`）。已改名 `relation`，旧形态自动映射保留（`'or'→'any'`，`'and'→'all'`）并 `console.warn`；类型声明同样保留旧形态。未来版本将移除旧形态。
+**用例对比**：
+
+```js
+// 旧写法（仍可用，行为按映射后的语义执行）
+await Query.keyword("日记", { join: 'or' });
+await Query.keywordDoc("日记", 'and');
+
+
+// 新写法
+await Query.keyword("日记", { relation: 'any' });
+await Query.keywordDoc("日记", { relation: 'all' });
+```
+
+**兼容性声明**:
+
+旧参数形态在 v2.0.0 版依然可用，但每次调用会输出 `console.warn`，未来版本将移除。

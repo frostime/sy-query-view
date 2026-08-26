@@ -35,7 +35,7 @@
      （标准实现见 query.ts `handleOptions()`，新增废弃参数应复用它而不是另起炉灶）；
    - 类型声明保留旧形态（TS 兼容）；
    - 在 `BREAKCHANGE.md` 的「Future Break Change Forenotice」区登记条目。
-3. **移除** —— 实际的破坏性变更：在 `BREAKCHANGE.md` 对应版本的「Break Change in v{version}」区
+3. **移除** —— 实际的破坏性变更：在 `BREAKCHANGE.md` 对应版本的「Break Change in v2.0.0」区（写实际版本号）
    新增条目并给出迁移路径，同时从预告区删除对应条目。
 
 记录文件为仓库根 `BREAKCHANGE.md`，按版本分节（惯例同 CHANGELOG，未发布内容放 `[Unreleased]`，
