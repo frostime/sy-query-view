@@ -89,7 +89,7 @@ For the SQL side itself (table schemas, query patterns, path/daily-note semantic
 - `dv.details(summary, content)` inserts `summary` and string `content` as **raw HTML, not markdown**; do not pass untrusted text.
 - `dv.render()` is not pure rendering: it persists the embed block. Build a static view first and call it once at the end, not in loops or hot paths.
 - Do not write advanced machinery by default: `dv.addElement`, `dv.columns`/`dv.rows`, `dv.removeView`/`dv.replaceView`, and custom view registration. If the user insists, read `/data/plugins/sy-query-view/docs/en_US/topics/dataview-advanced.md`.
-- Write `dv.useState` only on explicit request; it persists state in block attributes and has side effects that are difficult to verify. Follow `references/dataview.md` and the advanced topic exactly.
+- Write `dv.useState` only on explicit request. Follow `references/dataview.md`, the advanced topic, and the cautions in §7 exactly.
 
 `references/dataview.md` also contains `dv.cards` options, the `dv.useState` reference, and component option tables.
 
@@ -132,3 +132,12 @@ If the bundled references are insufficient, use these fallbacks in order:
 **Installed plugin docs and files:** `/data/plugins/sy-query-view/docs/en_US/examples/index.md` to choose an example, then `/data/plugins/sy-query-view/example/exp-*.js` for its code; `/data/plugins/sy-query-view/docs/en_US/topics/query.md` and `/data/plugins/sy-query-view/docs/en_US/topics/dataview.md` for richer explanations; `/data/plugins/sy-query-view/docs/en_US/topics/dataview-advanced.md` for `useState`, custom views, raw DOM, or lifecycle; grep `/data/plugins/sy-query-view/types.d.ts` for an exact symbol type (`public/types.d.ts` in the repository).
 
 If no authoritative source is readable, say so instead of guessing.
+
+## 7. Points requiring caution
+
+Query&View embedded blocks execute arbitrary JavaScript in the user's active SiYuan environment. Keep side effects minimal and follow these lifecycle constraints:
+
+- Treat DataView primarily as a read-only dashboard. Avoid input-heavy or highly interactive controls: SiYuan also handles user-input events, and DataView suppresses only a limited set of event propagation.
+- Avoid timers, observers, subscriptions, and event listeners attached outside the DataView-owned DOM unless they are required. Register the matching cleanup with `dv.addDisposer(...)` or the disposer accepted by `dv.addElement(...)`; for example, call `clearTimeout`, `clearInterval`, `disconnect`, or `removeEventListener`. A custom registered view that creates side effects must return its own `dispose` function.
+- Use `dv.useState` only when the user explicitly requests persistent state. It is experimental: updates are cached in `sessionStorage` and flushed to custom block attributes later, not persisted on every change. Store only JSON-serializable values, do not treat it as durable real-time storage, and do not mutate it unconditionally during rendering. Multi-device synchronization may still cause conflicts or state loss; warn the user and read the advanced topic before writing such code.
+- `dv.repaint()` performs a full teardown and rerun, not a local component update. For a simple content change, update the existing element directly. When one rendered component must be rebuilt, prefer `dv.replaceView(id, newView)` with an unmounted component such as `dv.md(...)`, not an `add...` call; this keeps the rest of the DataView intact and runs the replaced component's disposer. Use `dv.repaint()` only when the entire embedded block must be re-executed.
