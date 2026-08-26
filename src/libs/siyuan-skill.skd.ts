@@ -55,6 +55,8 @@
  *   └── ...
  *
  * plugin version 变化时，整个 target 被视为插件发布物并重新发布。
+ * 发布先在 /data/temp 中完成整目录复制和 manifest 写入，再改名为 target：
+ * 中断时旧 target 保持完整，或暂时缺失并在下次注册时重新安装，不会留下半成品。
  * 同 version 下 runtime 不触碰 target，也不检测用户修改。
  *
  * 文件边界：
@@ -65,7 +67,8 @@
  * - readSkillFile(..., "binary") 可读取原始 Uint8Array。
  *
  * public async API 均返回 { ok: boolean, ... }，运行期 I/O 错误不向外 throw。
- * 内部仅使用 /api/file/getFile、putFile、readDir、removeFile。
+ * 内部仅使用思源 Kernel 文件 API：getFile、putFile、readDir、removeFile、
+ * workspaceCopyFiles、renameFile。
  */
 
 export const PLUGIN_SKILL_MANIFEST = ".siyuan-plugin-skill.json";
@@ -189,6 +192,8 @@ export class SiYuanSkillRuntime {
     const sourceDir = join(this.pluginRoot, dir);
     const targetDir = join(this.skillsRoot, skillName);
     const manifestPath = join(targetDir, PLUGIN_SKILL_MANIFEST);
+    const stagingRoot = join("/data/temp/siyuan-plugin-skill-sdk", this.pluginName, skillName);
+    const stagedSkillDir = join(stagingRoot, skillName);
 
     let plugin: { name: string; version: string };
     try {
@@ -254,15 +259,20 @@ export class SiYuanSkillRuntime {
     };
 
     try {
-      // Version 变化即重新发布整个 plugin-owned bundle。
+      // Kernel 在一次请求中递归复制整个目录。复制和 manifest 都在临时目录完成，
+      // 因而插件重载不会在正式 Skill 目录中留下可见的半成品。
+      await removeIfExists(stagingRoot);
+      await copyWorkspaceFiles([sourceDir], stagingRoot);
+      await putText(join(stagedSkillDir, PLUGIN_SKILL_MANIFEST), JSON.stringify(manifest, null, 2) + "\n");
+
+      // renameFile 不覆盖已有路径。先删除旧发布物再改名；若两步间中断，
+      // target 只是暂时缺失，下次 register 会按 installed 路径自行恢复。
       await removeIfExists(targetDir);
-      await putDir(targetDir);
-      for (const d of source.directories) await putDir(join(targetDir, d));
-      for (const f of source.files) await putBytes(join(targetDir, f), await getBytes(join(sourceDir, f)));
-      await putText(manifestPath, JSON.stringify(manifest, null, 2) + "\n");
+      await renameFile(stagedSkillDir, targetDir);
+      await removeIfExists(stagingRoot);
     } catch (e) {
-      // 清掉半成品，下一次 register 会从 missing 重新安装。
-      try { await removeIfExists(targetDir); } catch {}
+      // 不清理 target：交换前它仍是完整旧版本，交换后它已是完整新版本。
+      try { await removeIfExists(stagingRoot); } catch {}
       return fail("WRITE_FAILED", e, skillName, targetDir);
     }
 
@@ -503,14 +513,6 @@ async function getText(path: string): Promise<string> {
   return decode(await getBytes(path));
 }
 
-async function putDir(path: string): Promise<void> {
-  const f = new FormData();
-  f.append("path", path);
-  f.append("isDir", "true");
-  f.append("modTime", now());
-  await postForm("/api/file/putFile", f);
-}
-
 async function putBytes(path: string, bytes: Uint8Array): Promise<void> {
   const f = new FormData();
   f.append("path", path);
@@ -522,6 +524,14 @@ async function putBytes(path: string, bytes: Uint8Array): Promise<void> {
 
 async function putText(path: string, text: string): Promise<void> {
   await putBytes(path, new TextEncoder().encode(text));
+}
+
+async function copyWorkspaceFiles(srcs: string[], destDir: string): Promise<void> {
+  await post("/api/file/workspaceCopyFiles", { srcs, destDir });
+}
+
+async function renameFile(path: string, newPath: string): Promise<void> {
+  await post("/api/file/renameFile", { path, newPath });
 }
 
 async function removeIfExists(path: string): Promise<void> {
@@ -624,7 +634,7 @@ function base(path: string): string {
 }
 
 function now(): string {
-  return String(Math.floor(Date.now() / 1000));
+  return String(Date.now());
 }
 
 function is404(e: unknown): boolean {
