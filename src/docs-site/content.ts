@@ -4,7 +4,7 @@
  *                 契约见 .dev/changes/query-view-docs-portal/nodes/shape-docs-gui/docs-site.LAND.md §3.2/§5。
  */
 
-import { pagePath, type Lang, type PageId } from "./nav";
+import { pageFile, type Lang, type PageId } from "./nav";
 
 export type PageLoadResult =
     | { status: "ok"; lang: Lang; pageId: PageId; markdown: string; baseUrl: string }
@@ -15,7 +15,7 @@ export interface ContentApi {
     /** window.siyuan.config.lang 以 zh 开头 → zh_CN，否则 en_US */
     resolveLang(): Lang;
     otherLang(l: Lang): Lang;
-    /** "/plugins/{pluginName}/docs/{lang}/{path}" */
+    /** "/plugins/{pluginName}/<pageFile>，如 docs/zh_CN/topics/query.md 或 BREAKCHANGE/zh_CN.md */
     pageUrl(lang: Lang, id: PageId): string;
     /** 状态化加载；成功（ok/fallback）内容入 Map 缓存 (lang,id)，失败不缓存 */
     loadPage(lang: Lang, id: PageId): Promise<PageLoadResult>;
@@ -61,7 +61,7 @@ export const createContent = (pluginName: string): ContentApi => {
     const otherLang = (l: Lang): Lang => (l === "zh_CN" ? "en_US" : "zh_CN");
 
     const pageUrl = (lang: Lang, id: PageId): string =>
-        `${base}/docs/${lang}/${pagePath(id)}`;
+        `${base}/${pageFile(id, lang)}`;
 
     const loadPage = async (lang: Lang, id: PageId): Promise<PageLoadResult> => {
         const cacheKey = `${lang}/${id}`;

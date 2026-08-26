@@ -41,7 +41,7 @@ description: 维护 Query&View 的破坏性变更记录（BREAKCHANGE.md）；�
 
 ## 第三步：登记格式
 
-- 文件：仓库根 `BREAKCHANGE.md`。`## [Unreleased]` 下列出 `## [X.Y.Z]` 版本节；发布时删除 `[Unreleased]`、给版本节加日期。
+- 文件：`public/BREAKCHANGE/`——`zh_CN.md` 为中文主文件，`en_US.md` 为同步维护的英文版；两份随包分发并在内置文档站展示。`## [Unreleased]` 下列出 `## [X.Y.Z]` 版本节；发布时删除 `[Unreleased]`、给版本节加日期。
 - 每个受影响的 API 一条，标题 `### Query.xxx (状态)`，状态标记：`保持兼容`（旧形态仍可用）、`已移除` 等。
 - 条目固定四段：
   1. **接口变更**：OLD / NEW 签名对照（一个代码块内）；无签名变化的写"无"

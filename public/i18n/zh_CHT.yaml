@@ -62,6 +62,7 @@ src_docsite_indexts:
   nav_agent_ref_wrapped: 包裝列表
   nav_agent_ref_types: 類型
   nav_skill: 智能體技能
+  nav_breakchange: 破壞性變更
   copy: 复制
   copied: 已复制
   outline: 大綱

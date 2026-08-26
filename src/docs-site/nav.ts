@@ -16,6 +16,7 @@ export type PageId =
     | "topic-dataview"
     | "topic-dataview-advanced"
     | "topic-editor-tips"
+    | "breakchange"
     | "agent-ref-query-api"
     | "agent-ref-dataview"
     | "agent-ref-wrapped"
@@ -37,6 +38,7 @@ export type NavLabelKey =
     | "nav_topic_dataview_advanced"
     | "nav_topic_editor_tips"
     | "nav_examples"
+    | "nav_breakchange"
     | "nav_agent_ref_query_api"
     | "nav_agent_ref_dataview"
     | "nav_agent_ref_wrapped"
@@ -55,13 +57,17 @@ export interface NavGroup {
 export interface NavItem {
     kind: "item";
     id: PageId;
-    path: string;
+    /** 常规页：相对 docs/{lang}/ 的路径（如 "topics/query.md"）；standalone 存在时可省略 */
+    path?: string;
     labelKey: NavLabelKey;
+    /** 独立页：插件根相对的文件路径模板，{lang} 会替换为语言代码（如 "BREAKCHANGE/{lang}.md"） */
+    standalone?: string;
 }
 
 /** 顶层可为 NavItem（首页等）或 NavGroup；顺序严格对应 DOC-STRUCTURE §1.2 侧边栏。 */
 export const PAGE_TREE: NavNode[] = [
     { kind: "item", id: "index", path: "index.md", labelKey: "nav_index" },
+    { kind: "item", id: "breakchange", labelKey: "nav_breakchange", standalone: "BREAKCHANGE/{lang}.md" },
     {
         kind: "group",
         labelKey: "nav_group_tutorials",
@@ -88,8 +94,8 @@ export const PAGE_TREE: NavNode[] = [
     },
 ];
 
-/** 页面相对 docs/{lang}/ 的路径，如 "topics/query.md"。 */
-export const pagePath = (id: PageId): string => {
+/** 在 PAGE_TREE 中查找指定页面条目。 */
+const findItem = (id: PageId): NavItem | undefined => {
     const find = (nodes: NavNode[]): NavItem | undefined => {
         for (const node of nodes) {
             if (node.kind === "item") {
@@ -101,9 +107,20 @@ export const pagePath = (id: PageId): string => {
         }
         return undefined;
     };
-    const item = find(PAGE_TREE);
+    return find(PAGE_TREE);
+};
+
+/** 页面的插件根相对文件路径：常规页 docs/{lang}/<path>；独立页按 standalone 模板替换 {lang}。 */
+export const pageFile = (id: PageId, lang: Lang): string => {
+    const item = findItem(id);
     if (!item) {
         throw new Error(`[docs-site] unknown page id: ${id}`);
     }
-    return item.path;
+    if (item.standalone) {
+        return item.standalone.replace("{lang}", lang);
+    }
+    if (!item.path) {
+        throw new Error(`[docs-site] page has neither path nor standalone: ${id}`);
+    }
+    return `docs/${lang}/${item.path}`;
 };

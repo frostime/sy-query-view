@@ -34,16 +34,17 @@
    - 运行时警告：`console.warn` 每次调用提示；用户可见提示用 `showMessage` 且每 API 会话级去重只弹一次
      （标准实现见 query.ts `handleOptions()`，新增废弃参数应复用它而不是另起炉灶）；
    - 类型声明保留旧形态（TS 兼容）；
-   - 在 `BREAKCHANGE.md` 的「Future Break Change Forenotice」区登记条目。
-3. **移除** —— 实际的破坏性变更：在 `BREAKCHANGE.md` 对应版本的「Break Change in v2.0.0」区（写实际版本号）
-   新增条目并给出迁移路径，同时从预告区删除对应条目。
+   - 在 `public/BREAKCHANGE/zh_CN.md` 对应版本节登记该 API 的条目，标题标 `(保持兼容)`。
+3. **移除** —— 实际的破坏性变更：更新对应条目的状态与迁移路径；若此前未登记，
+   则在移除版本的版本节新增条目。
 
-记录文件为仓库根 `BREAKCHANGE.md`，按版本分节（惯例同 CHANGELOG，未发布内容放 `[Unreleased]`，
+记录位置为 `public/BREAKCHANGE/`：`zh_CN.md` 为中文主文件，`en_US.md` 为同步维护的英文版，
+两份随包分发并在内置文档站展示。按版本分节（惯例同 CHANGELOG，未发布内容放 `[Unreleased]`，
 发版时随之改为版本号）。收录边界：只记"会导致现有 `//!js` 脚本**运行时行为**变化"的内容；
-类型/JSDoc 层面的变化不构成破坏性变更（运行时行为是唯一判定基准），按性质记入 CHANGELOG 的
-Changed/Fixed。
+安装门槛（如 minAppVersion 提升）不算——旧环境在安装阶段即被拦截；类型/JSDoc 层面的变化同样
+不算（运行时行为是唯一判定基准），按性质记入 CHANGELOG 的 Changed/Fixed。
 
-首个走完整流程的实例：`keyword`/`keywordDoc` 的 `join` → `relation`（预告已登记在 Unreleased 区）。
+首个走完整流程的实例：`keyword`/`keywordDoc` 的 `join` → `relation`（见 Unreleased 节）。
 
 ## 3. 行为不变量
 

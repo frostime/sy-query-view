@@ -72,6 +72,7 @@ src_docsite_indexts:
   nav_agent_ref_wrapped: Wrapped Lists
   nav_agent_ref_types: Types
   nav_skill: Agent Skill
+  nav_breakchange: Breaking Changes
   copy: Copy
   copied: Copied
   outline: Outline

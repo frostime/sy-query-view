@@ -53,7 +53,7 @@ await Query.keywordDoc(["TODO", "会议"], { relation: 'all' }); // 两词都出
 ```js
 // 旧写法（仍可用，行为按映射后的语义执行）
 await Query.keyword("日记", { join: 'or' });
-await Query.keywordDoc("日记", 'and');
+await Query.keyword("日记", 'and');
 
 
 // 新写法
