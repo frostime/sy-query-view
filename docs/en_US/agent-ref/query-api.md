@@ -158,9 +158,9 @@ Executes SQL query and optionally wraps results
 **Params**
 
 - `fmt` — SQL query string
-- `wrap` — Whether to wrap results
+- `wrap` — Whether to wrap results; defaults to true when omitted
 
-**Returns**: Query results
+**Returns**: Query results: an IWrappedList by default, plain Block[] when wrap is false
 
 **Source** `src/core/query.ts:537`
 
@@ -183,7 +183,7 @@ Finds backlinks to a specific block
 
 **Available names** (2, expanded from register()/addAlias() call sites): `backlink` · `backlinks`
 
-**Source** `src/core/query.ts:552`
+**Source** `src/core/query.ts:551`
 
 ---
 
@@ -206,7 +206,7 @@ Finds blocks with specific attributes
 
 **Returns**: Array of matching blocks
 
-**Source** `src/core/query.ts:570`
+**Source** `src/core/query.ts:569`
 
 ---
 
@@ -237,7 +237,7 @@ Query.tag(['tag1', 'tag2'], { join: 'or' }) // Search for blocks with 'tag1' or 
 Query.tag(['tag1', 'tag2'], { join: 'and' }) // Search for blocks with 'tag1' and 'tag2'
 ```
 
-**Source** `src/core/query.ts:613`
+**Source** `src/core/query.ts:612`
 
 ---
 
@@ -266,7 +266,7 @@ Query.task({ after: '2024101000' })
 Query.task({ limit: 32 })
 ```
 
-**Source** `src/core/query.ts:667`
+**Source** `src/core/query.ts:666`
 
 ---
 
@@ -294,7 +294,7 @@ Query.dailynote({ notebook: '20231224140619-bpyuay4' })
 Query.dailynote({ limit: 32 })
 ```
 
-**Source** `src/core/query.ts:702`
+**Source** `src/core/query.ts:701`
 
 ---
 
@@ -312,7 +312,7 @@ Gets child documents of a block
 
 **Returns**: Array of child document blocks
 
-**Source** `src/core/query.ts:738`
+**Source** `src/core/query.ts:737`
 
 ---
 
@@ -359,7 +359,7 @@ await query.nearby('block123');
 await query.nearby('block123', { direction: 'previous', number: 3 });
 ```
 
-**Source** `src/core/query.ts:787`
+**Source** `src/core/query.ts:786`
 
 ---
 
@@ -381,7 +381,7 @@ Search blocks that contain the given keywords
 
 **Returns**: Array of blocks that contain the given keywords
 
-**Source** `src/core/query.ts:826`
+**Source** `src/core/query.ts:825`
 
 ---
 
@@ -411,7 +411,7 @@ let docs = await Query.keywordDoc(['Keywords A', 'Keywords B']);
 docs[0].keywords['Keywords A'] // get the matched keyword block by using `keywords` property
 ```
 
-**Source** `src/core/query.ts:872`
+**Source** `src/core/query.ts:871`
 
 ---
 
@@ -430,7 +430,7 @@ Randomly roam blocks
 
 **Returns**: Array of randomly roamed blocks
 
-**Source** `src/core/query.ts:931`
+**Source** `src/core/query.ts:930`
 
 ---
 
@@ -449,7 +449,7 @@ Document and heading blocks include their child blocks; other block types return
 
 **Returns**: Markdown text
 
-**Source** `src/core/query.ts:945`
+**Source** `src/core/query.ts:944`
 
 ---
 
@@ -467,7 +467,7 @@ Return the statistics of the document with given document ID
 
 **Returns**: The statistics of the document; .runeCount - The number of characters in the document; .wordCount - The number of words (Chinese characters are counted as one word) in the document; .linkCount - The number of links in the document; .imageCount - The number of images in the document; .refCount - The number of references in the document; .blockCount - The number of blocks in the document
 
-**Source** `src/core/query.ts:975`
+**Source** `src/core/query.ts:974`
 
 ---
 
@@ -490,7 +490,7 @@ Redirects first block IDs to their parent containers
 
 **Available names** (2, expanded from register()/addAlias() call sites): `fb2p` · `redirect`
 
-**Source** `src/core/query.ts:998`
+**Source** `src/core/query.ts:997`
 
 ---
 
@@ -527,7 +527,7 @@ This function resolves this duplication issue by merging related blocks based on
 
 **Available names** (4, expanded from register()/addAlias() call sites): `pruneBlocks` · `prune` · `mergeBlocks` · `merge`
 
-**Source** `src/core/query.ts:1119`
+**Source** `src/core/query.ts:1118`
 
 ---
 
@@ -556,7 +556,7 @@ Send GPT request, use AI configuration in `siyuan.config.ai.openAI` by default
 
 **Notes**: The only API that sends external HTTP(S) requests via fetch; every other Query API is a SiYuan kernel request.
 
-**Source** `src/core/query.ts:1141`
+**Source** `src/core/query.ts:1140`
 
 ---
 

@@ -531,16 +531,15 @@ const Query = {
     /**
      * Executes SQL query and optionally wraps results
      * @param fmt - SQL query string
-     * @param wrap - Whether to wrap results
-     * @returns Query results
+     * @param wrap - Whether to wrap results; defaults to true when omitted
+     * @returns Query results: an IWrappedList by default, plain Block[] when wrap is false
      */
     sql: async <W extends boolean = true>(fmt: string, wrap?: W): Promise<W extends false ? Block[] : IWrappedList<IWrappedBlock>> => {
         fmt = fmt.trim();
         let data = await sql(fmt);
-        if (data === null || data === undefined) return [] as any;
-        // return wrap ? data.map(wrapBlock) : data;
+        if (data === null || data === undefined) data = [];
         //@ts-ignore
-        return wrap ? wrapList(data) : data as any;
+        return (wrap ?? true) ? wrapList(data) : data as any;
     },
 
     /**
