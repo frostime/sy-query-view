@@ -127,7 +127,7 @@ For a specific question, grep the exact member and read the nearby section. Read
 
 If the bundled references are insufficient, use these fallbacks in order:
 
-1. **Installed plugin docs and files:** `/data/plugins/sy-query-view/docs/en_US/examples/index.md` to choose an example, then `/data/plugins/sy-query-view/example/exp-*.js` for its code; `/data/plugins/sy-query-view/docs/en_US/topics/query.md` and `/data/plugins/sy-query-view/docs/en_US/topics/dataview.md` for richer explanations; `/data/plugins/sy-query-view/docs/en_US/topics/dataview-advanced.md` for `useState`, custom views, raw DOM, or lifecycle; grep `/data/plugins/sy-query-view/types.d.ts` for an exact symbol type (`public/types.d.ts` in the repository).
-2. **Local source bundled with this skill:** `references/source/query.ts` for Query implementations and aliases, and `references/source/proxy.ts` for wrapped list/block behavior. These are authoritative for those members only.
+1. **Local source bundled with this skill:** `references/source/query.ts` for Query implementations and aliases, and `references/source/proxy.ts` for wrapped list/block behavior. These are authoritative for those members only.
+2. **Installed plugin docs and files:** `/data/plugins/sy-query-view/docs/en_US/examples/index.md` to choose an example, then `/data/plugins/sy-query-view/example/exp-*.js` for its code; `/data/plugins/sy-query-view/docs/en_US/topics/query.md` and `/data/plugins/sy-query-view/docs/en_US/topics/dataview.md` for richer explanations; `/data/plugins/sy-query-view/docs/en_US/topics/dataview-advanced.md` for `useState`, custom views, raw DOM, or lifecycle; grep `/data/plugins/sy-query-view/types.d.ts` for an exact symbol type (`public/types.d.ts` in the repository).
 
 If no authoritative source is readable, say so instead of guessing.
