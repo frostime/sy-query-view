@@ -2,7 +2,7 @@
  * @name sy-query-view
  * @author frostime
  * @version 1.3.0
- * @updated 2026-08-26T10:20:13.117Z
+ * @updated 2026-08-26T12:53:02.686Z
  */
 
 declare module 'siyuan' {
@@ -248,13 +248,12 @@ declare const Query: {
      * @param options - Options
      * @param options.valMatch - Match type ('=' or 'like')
      * @param options.limit - Maximum number of results
-     * @param limit - (Deprecated) Maximum number of results
      * @returns Array of matching blocks
      */
-    attr: (name: string, val?: string, optionDeprecatedAsValMatch?: {
+    attr: (name: string, val?: string, options?: {
         valMatch?: "=" | "like";
         limit?: number;
-    } | DeprecatedParam<"=" | "like">, limit?: DeprecatedParam<number>) => Promise<IWrappedList<IWrappedBlock>>;
+    }) => Promise<IWrappedList<IWrappedBlock>>;
     /**
      * Search blocks by tags
      * @param tags - Tags to search for; can provide multiple tags
@@ -262,34 +261,32 @@ declare const Query: {
      * @param options.join - Join type ('or' or 'and')
      * @param options.limit - Maximum number of results
      * @param options.match - Match type ('=' or 'like'), if `like` the tags will be automatically add % as prefix and suffix
-     * @param limit - (Deprecated) Maximum number of results
      * @returns Array of blocks matching the tags
      * @example
      * Query.tag('tag1') // Search for blocks with 'tag1'
      * Query.tag(['tag1', 'tag2'], { join: 'or' }) // Search for blocks with 'tag1' or 'tag2'
      * Query.tag(['tag1', 'tag2'], { join: 'and' }) // Search for blocks with 'tag1' and 'tag2'
      */
-    tag: (tags: string | string[], optionDeprecatedAsJoin?: {
+    tag: (tags: string | string[], options?: {
         join?: "or" | "and";
         limit?: number;
         match?: "=" | "like";
-    } | DeprecatedParam<"or" | "and">, limit?: DeprecatedParam<number>) => Promise<IWrappedList<IWrappedBlock>>;
+    }) => Promise<IWrappedList<IWrappedBlock>>;
     /**
      * Find unsolved task blocks
      * @param options - Options
      * @param options.after - After which the blocks were updated
      * @param options.limit - Maximum number of results
-     * @param limit - (Deprecated) Maximum number of results
      * @returns Array of unsolved task blocks
      * @example
      * Query.task()
      * Query.task({ after: '2024101000' })
      * Query.task({ limit: 32 })
      */
-    task: (optionDeprecatedAsAfter?: {
+    task: (options?: {
         limit?: number;
         after?: string;
-    } | DeprecatedParam<string>, limit?: DeprecatedParam<number>) => Promise<IWrappedList<IWrappedBlock>>;
+    }) => Promise<IWrappedList<IWrappedBlock>>;
     /**
      * Gets the daily notes document
      * @param options - Options
@@ -301,10 +298,10 @@ declare const Query: {
      * Query.dailynote({ notebook: '20231224140619-bpyuay4' })
      * Query.dailynote({ limit: 32 })
      */
-    dailynote: (optionsDeprecatedAsNotebook?: {
+    dailynote: (options?: {
         notebook?: NotebookId;
         limit?: number;
-    } | DeprecatedParam<NotebookId>, limitDeprecated?: DeprecatedParam<number>) => Promise<IWrappedList<IWrappedBlock>>;
+    }) => Promise<IWrappedList<IWrappedBlock>>;
     /**
      * Gets child documents of a block
      * @param b - Parent block or block ID
@@ -361,7 +358,6 @@ declare const Query: {
      * @param options - Options
      * @param options.relation - Relation between keywords at block level: 'any' — blocks containing at least one keyword; 'all' — blocks containing every keyword (default: 'any')
      * @param options.limit - Maximum number of results to return, default is 999
-     * @param limit - (Deprecated) Maximum number of results to return, default is 999
      * @returns Array of blocks that contain the given keywords
      * @deprecated-key join: 旧版参数名（'or' | 'and'），语义映射：'or' → 'any'，'and' → 'all'；兼容保留
      */
@@ -371,7 +367,7 @@ declare const Query: {
     } | DeprecatedParam<"any" | "all"> | {
         join?: "or" | "and";
         limit?: number;
-    } | DeprecatedParam<"or" | "and">, limit?: DeprecatedParam<number>) => Promise<IWrappedList<IWrappedBlock>>;
+    } | DeprecatedParam<"or" | "and">) => Promise<IWrappedList<IWrappedBlock>>;
     /**
      * Search the document that contains all the keywords.
      * @param keywords {string | string[]} keywords to search for; can provide multiple keywords
@@ -393,7 +389,7 @@ declare const Query: {
     } | DeprecatedParam<"any" | "all"> | {
         join?: "or" | "and";
         limit?: number;
-    } | DeprecatedParam<"or" | "and">, limit?: DeprecatedParam<number>) => Promise<any[] | IWrappedList<IWrappedBlock>>;
+    } | DeprecatedParam<"or" | "and">) => Promise<any[] | IWrappedList<IWrappedBlock>>;
     /**
      * Randomly roam blocks
      * @param limit - Maximum number of results
