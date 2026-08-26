@@ -1,7 +1,6 @@
 ---
 name: sy-query-view
-description: >-
-  Write, adapt, and hand over JavaScript embedded blocks for the Query&View (sy-query-view) SiYuan plugin: `//!js` blocks using the Query API for queries and DataView for rendering. Use when the user asks for help writing Query&View code, JS embedded blocks, Query View, or Dataview-style queries in SiYuan.
+description: Write, adapt embedded blocks for the Query&View (sy-query-view, qv) SiYuan plugin, it offers Query API for queries and DataView for rendering. Use when the user asks for help writing Query and View code, and JS embedded blocks for querying and visualizing.
 ---
 
 # Query&View Code Assistant
@@ -124,6 +123,5 @@ If the bundled references are insufficient, use these fallbacks in order:
 
 1. **Installed plugin docs and files:** `/data/plugins/sy-query-view/docs/en_US/examples/index.md` to choose an example, then `/data/plugins/sy-query-view/example/exp-*.js` for its code; `/data/plugins/sy-query-view/docs/en_US/topics/query.md` and `/data/plugins/sy-query-view/docs/en_US/topics/dataview.md` for richer explanations; `/data/plugins/sy-query-view/docs/en_US/topics/dataview-advanced.md` for `useState`, custom views, raw DOM, or lifecycle; grep `/data/plugins/sy-query-view/types.d.ts` for an exact symbol type (`public/types.d.ts` in the repository).
 2. **Local source bundled with this skill:** `references/source/query.ts` for Query implementations and aliases, and `references/source/proxy.ts` for wrapped list/block behavior. These are authoritative for those members only.
-3. **GitHub:** when the needed local docs/source are unavailable or do not cover the target. Prefer the uncompiled source at <https://github.com/frostime/sy-query-view>: `src/core/query.ts`, `src/core/proxy.ts`, `src/core/data-view.ts`, `src/core/components.ts`, and `public/types.d.ts`.
 
-If no authoritative local or GitHub source is readable, say so instead of guessing.
+If no authoritative source is readable, say so instead of guessing.
