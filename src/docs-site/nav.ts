@@ -20,8 +20,7 @@ export type PageId =
     | "agent-ref-query-api"
     | "agent-ref-dataview"
     | "agent-ref-wrapped"
-    | "agent-ref-types"
-    | "skill";
+    | "agent-ref-types";
 
 /**
  * 侧边栏标签键，必须与 i18n 中 src_docsite_indexts 的对应键一致
@@ -42,8 +41,7 @@ export type NavLabelKey =
     | "nav_agent_ref_query_api"
     | "nav_agent_ref_dataview"
     | "nav_agent_ref_wrapped"
-    | "nav_agent_ref_types"
-    | "nav_skill";
+    | "nav_agent_ref_types";
 
 /** 判别联合：分组无 id/path（无页面），条目有页面。 */
 export type NavNode = NavGroup | NavItem;
@@ -89,7 +87,6 @@ export const PAGE_TREE: NavNode[] = [
             { kind: "item", id: "agent-ref-dataview", path: "agent-ref/dataview.md", labelKey: "nav_agent_ref_dataview" },
             { kind: "item", id: "agent-ref-wrapped", path: "agent-ref/wrapped.md", labelKey: "nav_agent_ref_wrapped" },
             { kind: "item", id: "agent-ref-types", path: "agent-ref/types.md", labelKey: "nav_agent_ref_types" },
-            { kind: "item", id: "skill", path: "skill/index.md", labelKey: "nav_skill" },
         ],
     },
 ];

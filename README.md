@@ -60,7 +60,7 @@ Results returned by the Query API carry some convenient properties and methods o
 
 ## Built-in Documentation
 
-The full documentation is organized into Quickstart, Topics, Examples, Agent Reference, and Agent Skill, available in both Chinese and English. The pages below are exactly what the in-plugin documentation site renders (the site renders these pages directly), and can be browsed right here on GitHub:
+The full documentation is organized into Quickstart, Topics, Examples, and Agent Reference, available in both Chinese and English. The pages below are exactly what the in-plugin documentation site renders (the site renders these pages directly), and can be browsed right here on GitHub:
 
 **Quickstart**
 
@@ -89,7 +89,7 @@ You can also open or download the `types.d.ts` type declaration of the installed
 
 **Agent Skill**
 
-- [Agent Skill](docs/en_US/skill/index.md) — a `SKILL.md` that guides AI agents to query and render with this plugin, shipped with the plugin version.
+- [Agent Skill](skills/sy-query-view/SKILL.md) — the Agent Skill shipped with the plugin, providing rules and references for AI agents working with Query&View.
 
 ## Technical Details
 
