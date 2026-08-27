@@ -24,7 +24,9 @@ The plugin extends SiYuan JS embedded blocks. A block starting with `//!js` runs
 
 ### 2.1 Readable draft form
 
-Start from this skeleton and adapt it:
+Mimimal Example is given here.
+
+Dataview mode:
 
 ```js
 //!js
@@ -46,7 +48,7 @@ Rules:
 
 - `//!js` must be the first line.
 - `protyle`, `item`, and `top` are already available; never invent or redefine them.
-- Top-level `await` is valid on SiYuan 3.8.0+. Do not use the legacy wrapper unless explicitly targeting an older version.
+- Top-level `await` is valid on SiYuan 3.8.0+.
 - Use `=>`, not the HTML entity `=&gt;`.
 
 ### 2.2 Delivery form
@@ -93,22 +95,23 @@ For the SQL side itself (table schemas, query patterns, path/daily-note semantic
 
 `references/dataview.md` also contains `dv.cards` options, the `dv.useState` reference, and component option tables.
 
-## 4. Workflow
 
-1. Clarify the data and display goal (plain blocks, list/table/markdown, or chart).
-2. Choose a nearby example from `/data/plugins/sy-query-view/docs/en_US/examples/index.md`, then read its code from `/data/plugins/sy-query-view/example/exp-*.js` (`public/example/` in the repository); use `file.list` when available.
-3. Verify the exact API details before writing. For a specific target, grep the matching member in the narrowest reference file and read its section; if the signature remains ambiguous, grep `/data/plugins/sy-query-view/types.d.ts` (`public/types.d.ts` in the repository) instead of reading the whole file.
-4. Return one copy-pasteable block in the form required by §2.2, with comments in the user's language if useful.
-5. Hand it over for the user to run and ask them to check the SiYuan console; embedded-block errors may not surface as ordinary exceptions. Iterate with minimal changes.
+## 4. Cautious
 
-## 5. Safety boundaries
+Query and View can execute arbitrary JavaScript in the user's active SiYuan environment, call the kernel API, and modify user data. Therefore, the highest level of safety awareness must be maintained.
 
-- Never modify the user's notes or blocks without an explicit request. Case B is allowed only for that request.
-- Ask first before external HTTP requests (`Query.gpt` is the only such API), destructive operations such as mass deletion, or undocumented APIs. `Query.request` calls SiYuan kernel APIs; it is not arbitrary HTTP.
+- NEVER use `document` to bypass the guardrails of query view to access the external DOM space that belongs to SiYuan Note.
+- `Query.request` calls SiYuan kernel API, SHOULD NOT call non-readonly API without user permission.
 - Do not fabricate API names or behavior. If the needed member is absent from `references/query-api.md` and the type declaration is unreadable, say so instead of guessing.
-- This skill does not install, enable, or invoke the plugin, and does not promise how SiYuan loads skill files.
+- Treat DataView primarily as a read-only dashboard. Avoid input-heavy or highly interactive controls: SiYuan also handles user-input events, and DataView suppresses only a limited set of event propagation.
+- Avoid timers, observers, subscriptions, and event listeners attached outside the DataView-owned DOM unless they are required. Register the matching cleanup with `dv.addDisposer(...)` or the disposer accepted by `dv.addElement(...)`; for example, call `clearTimeout`, `clearInterval`, `disconnect`, or `removeEventListener`. A custom registered view that creates side effects must return its own `dispose` function.
+- Use `dv.useState` only when the user explicitly requests persistent state. It is experimental: updates are cached in `sessionStorage` and flushed to custom block attributes later, not persisted on every change. Store only JSON-serializable values, do not treat it as durable real-time storage, and do not mutate it unconditionally during rendering. Multi-device synchronization may still cause conflicts or state loss; warn the user and read the advanced topic before writing such code.
+- `dv.repaint()` performs a full teardown and rerun, not a local component update. For a simple content change, update the existing element directly.
+- When one rendered component must be rebuilt, prefer `dv.replaceView(id, newView)` with an unmounted component such as `dv.md(...)`, not an `add...` call; this keeps the rest of the DataView intact and runs the replaced component's disposer. Use `dv.repaint()` only when the entire embedded block must be re-executed.
 
-## 6. Reference file map (read on demand)
+## 5. Reference file map (read on demand)
+
+**Bundled References**
 
 Current SKILL is at `data/storage/ai/agent/skills/sy-query-view/SKILL.md`. The bundled references are installed next to this `SKILL.md`. Read the narrowest matching file first. Use `file.list / file.read` to load reference file.
 
@@ -129,15 +132,9 @@ If the bundled references are insufficient, use these fallbacks in order:
 
 **Local source bundled with this skill:** `references/source/query.ts` for Query implementations and aliases, and `references/source/proxy.ts` for wrapped list/block behavior. These are authoritative for those members only.
 
-**Installed plugin docs and files:** `/data/plugins/sy-query-view/docs/en_US/examples/index.md` to choose an example, then `/data/plugins/sy-query-view/example/exp-*.js` for its code; `/data/plugins/sy-query-view/docs/en_US/topics/query.md` and `/data/plugins/sy-query-view/docs/en_US/topics/dataview.md` for richer explanations; `/data/plugins/sy-query-view/docs/en_US/topics/dataview-advanced.md` for `useState`, custom views, raw DOM, or lifecycle; grep `/data/plugins/sy-query-view/types.d.ts` for an exact symbol type (`public/types.d.ts` in the repository).
+**Installed plugin docs and files:**
+`/data/plugins/sy-query-view/docs/en_US/examples/index.md` to choose an example, then `/data/plugins/sy-query-view/example/exp-*.js` for its code;
+`/data/plugins/sy-query-view/docs/en_US/topics/query.md` and `/data/plugins/sy-query-view/docs/en_US/topics/dataview.md` for richer explanations;
+`/data/plugins/sy-query-view/docs/en_US/topics/dataview-advanced.md` for `useState`, custom views, raw DOM, or lifecycle
 
 If no authoritative source is readable, say so instead of guessing.
-
-## 7. Points requiring caution
-
-Query&View embedded blocks execute arbitrary JavaScript in the user's active SiYuan environment. Keep side effects minimal and follow these lifecycle constraints:
-
-- Treat DataView primarily as a read-only dashboard. Avoid input-heavy or highly interactive controls: SiYuan also handles user-input events, and DataView suppresses only a limited set of event propagation.
-- Avoid timers, observers, subscriptions, and event listeners attached outside the DataView-owned DOM unless they are required. Register the matching cleanup with `dv.addDisposer(...)` or the disposer accepted by `dv.addElement(...)`; for example, call `clearTimeout`, `clearInterval`, `disconnect`, or `removeEventListener`. A custom registered view that creates side effects must return its own `dispose` function.
-- Use `dv.useState` only when the user explicitly requests persistent state. It is experimental: updates are cached in `sessionStorage` and flushed to custom block attributes later, not persisted on every change. Store only JSON-serializable values, do not treat it as durable real-time storage, and do not mutate it unconditionally during rendering. Multi-device synchronization may still cause conflicts or state loss; warn the user and read the advanced topic before writing such code.
-- `dv.repaint()` performs a full teardown and rerun, not a local component update. For a simple content change, update the existing element directly. When one rendered component must be rebuilt, prefer `dv.replaceView(id, newView)` with an unmounted component such as `dv.md(...)`, not an `add...` call; this keeps the rest of the DataView intact and runs the replaced component's disposer. Use `dv.repaint()` only when the entire embedded block must be re-executed.
