@@ -18,6 +18,7 @@ import { embedBlockEvent } from "./editor";
 import Query from "./query";
 import { finalizeAllDataviews, onProtyleDestroyed } from "./finalize";
 import { loadUserCustomView, filepath as customViewFilePath } from "./custom-view";
+import * as AgentDebugTools from "./agent-debug-tools";
 import { setting } from "../setting";
 import type QueryViewPlugin from "..";
 import { i18n } from "..";
@@ -57,6 +58,7 @@ const openCustomViewDirectory = (open: 'file' | 'dir') => {
 const load = (plugin: QueryViewPlugin) => {
 
     globalThis.Query = Query;
+    AgentDebugTools.load(plugin);
 
     plugin.eventBus.on("click-blockicon", embedBlockEvent);
     //关闭页签的时候，finailize 内部的 dataview
@@ -128,6 +130,7 @@ const load = (plugin: QueryViewPlugin) => {
 const unload = (plugin: QueryViewPlugin) => {
 
     finalizeAllDataviews();
+    AgentDebugTools.unload(plugin);
 
     delete globalThis.Query;
 
