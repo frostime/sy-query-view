@@ -9,6 +9,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - `Query.dailynote` 支持通过 `after` / `before` 按日记日期划定包含边界的检索范围。
+- 时间转换与查询边界支持 8 位 `yyyyMMdd`、14 位 `yyyyMMddHHmmss` 和 JavaScript `Date`，由对应 API 自动归一化。
+
+### Changed
+
+- 时间输出参数改用更明确的 `'date' | 'datetime'`；旧布尔值保持兼容并进入废弃期。
+- 非法的思源日期、日期范围和日期偏移会直接报错，不再静默产生无效日期或错误 SQL。
+
+### Fixed
+
+- 修复 `Query.Utils.lastMonth()` 在部分月末错误返回本月月初的问题。
+- 修复 `Query.Utils.asDate()` 无法解析同组 API 产生的 8 位日期的问题。
 
 ## [1.3.0] - 2026-08-07
 

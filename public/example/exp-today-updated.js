@@ -1,5 +1,5 @@
 //!js
-const now = Query.Utils.today(false);
+const now = Query.Utils.today('date');
 let dv = Query.DataView(protyle, item, top);
 const todayState = dv.useState('today', now); //Only update the state once.
 

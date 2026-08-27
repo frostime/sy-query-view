@@ -1,6 +1,6 @@
 //!js
-const monthStart = Query.utils.thisMonth(false);
-const today = Query.utils.today(false);
+const monthStart = Query.utils.thisMonth('date');
+const today = Query.utils.today('date');
 const dailyNotes = await Query.dailynote({
     after: monthStart,
     before: today,

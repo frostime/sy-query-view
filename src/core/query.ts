@@ -27,6 +27,15 @@ type DeprecatedParam<T> = T;
 
 const hasWarnMsgAPI = new Set();
 
+function warnDeprecatedUsage(apiName: string) {
+    const msg = i18n.src_core_queryts.query_obsolete_params.replace('{0}', apiName);
+    console.warn(msg);
+    if (!hasWarnMsgAPI.has(apiName)) {
+        showMessage(msg, 7000, 'error');
+        hasWarnMsgAPI.add(apiName);
+    }
+}
+
 function handleOptions<T extends Record<string, any>, K extends keyof T>(
     apiName: string,
     defaultParamVals: T,
@@ -56,12 +65,7 @@ function handleOptions<T extends Record<string, any>, K extends keyof T>(
     }
 
     if (isDepecatedUsage) {
-        const msg = i18n.src_core_queryts.query_obsolete_params;
-        console.warn(msg.replace('{0}', apiName));
-        if (!hasWarnMsgAPI.has(apiName)) {
-            showMessage(msg.replace('{0}', apiName), 7000, 'error');
-            hasWarnMsgAPI.add(apiName);
-        }
+        warnDeprecatedUsage(apiName);
     }
 
     return opts;
@@ -196,30 +200,62 @@ const cond = async (cond: string) => {
     return globalThis.Query.sql(`select * from blocks where ${cond}`);
 }
 
-const beginOfDay = (date: Date) => {
-    date.setHours(0, 0, 0, 0);
-    return date;
+type DateFormat = 'date' | 'datetime';
+type DateFormatInput = DateFormat | DeprecatedParam<boolean>;
+type DateOffsetUnit = 'd' | 'w' | 'm' | 'y';
+type DateOffset = number | `${bigint}${DateOffsetUnit}`;
+type SiYuanDateConstructorArgs =
+    | []
+    | [value: string | number | Date]
+    | [year: number, monthIndex: number, date?: number, hours?: number, minutes?: number, seconds?: number, ms?: number];
+type DateInput = Date | string;
+
+function normalizeDateFormat(apiName: string, format: DateFormatInput = 'datetime'): DateFormat {
+    if (typeof format === 'boolean') {
+        warnDeprecatedUsage(apiName);
+        return format ? 'datetime' : 'date';
+    }
+    if (format !== 'date' && format !== 'datetime') {
+        throw new TypeError(`${apiName}: format must be "date" or "datetime"`);
+    }
+    return format;
 }
 
+function assertValidDate(date: Date, apiName: string) {
+    if (Number.isNaN(date.getTime())) {
+        throw new RangeError(`${apiName}: invalid date`);
+    }
+}
 
 /**
- * Data class for SiYuan timestamp
- * In SiYuan, the timestamp is in the format of yyyyMMddHHmmss
+ * A local-calendar Date specialized for SiYuan date strings.
+ *
+ * An 8-digit `yyyyMMdd` value represents a calendar date without a time or time zone.
+ * Converting it to JavaScript Date maps it to the start of that date in the local time zone.
+ * A 14-digit `yyyyMMddHHmmss` value represents local date and time to second precision.
  */
 class SiYuanDate extends Date {
 
+    /** Returns a copy at the start of the same local calendar date. */
     beginOfDay() {
         const date = new SiYuanDate(this.getTime());
+        assertValidDate(date, 'SiYuanDate.beginOfDay');
         date.setHours(0, 0, 0, 0);
         return date;
     }
 
-    toString(hms: boolean = true) {
-        return formatDateTime('yyyyMMdd' + (hms ? 'HHmmss' : ''), this) as string;
+    /**
+     * Converts this value to a compact SiYuan date string.
+     * @param format - `'date'` returns `yyyyMMdd`; `'datetime'` (default) returns `yyyyMMddHHmmss`; deprecated booleans map `false` to `'date'` and `true` to `'datetime'`
+     * @returns An 8-digit date or 14-digit local date-time string
+     */
+    toString(format: DateFormatInput = 'datetime') {
+        assertValidDate(this, 'SiYuanDate.toString');
+        const normalizedFormat = normalizeDateFormat('SiYuanDate.toString', format);
+        return formatDateTime(normalizedFormat === 'date' ? 'yyyyMMdd' : 'yyyyMMddHHmmss', this) as string;
     }
 
-    // primitimive of string
-    //@ts-ignore
+    //@ts-ignore Date's primitive conversion signature does not expose its implementation to subclasses.
     [Symbol.toPrimitive](hint: string) {
         switch (hint) {
             case 'string': return this.toString();
@@ -227,31 +263,70 @@ class SiYuanDate extends Date {
         }
     }
 
+    /**
+     * Parses an exact 8-digit SiYuan date or 14-digit SiYuan date-time string in the local time zone.
+     * Invalid formats and impossible calendar values throw instead of being silently normalized.
+     */
     static fromString(timestr: string) {
-        return new SiYuanDate(timestr.replace(/(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})/, '$1-$2-$3 $4:$5:$6'));
+        if (typeof timestr !== 'string') {
+            throw new TypeError('SiYuanDate.fromString: value must be a string');
+        }
+        const match = timestr.match(/^(\d{4})(\d{2})(\d{2})(?:(\d{2})(\d{2})(\d{2}))?$/);
+        if (!match) {
+            throw new TypeError('SiYuanDate.fromString: expected yyyyMMdd or yyyyMMddHHmmss');
+        }
+
+        const [, yearText, monthText, dayText, hourText = '00', minuteText = '00', secondText = '00'] = match;
+        const [year, month, day, hour, minute, second] = [
+            yearText, monthText, dayText, hourText, minuteText, secondText
+        ].map(Number);
+        const date = new SiYuanDate(0);
+        date.setFullYear(year, month - 1, day);
+        date.setHours(hour, minute, second, 0);
+
+        const isExactCalendarValue = date.getFullYear() === year
+            && date.getMonth() === month - 1
+            && date.getDate() === day
+            && date.getHours() === hour
+            && date.getMinutes() === minute
+            && date.getSeconds() === second;
+        if (!isExactCalendarValue) {
+            throw new RangeError(`SiYuanDate.fromString: invalid calendar value "${timestr}"`);
+        }
+        return date;
     }
 
     /**
-     * Format date
-     * @param fmt default as 'yyyy-MM-dd HH:mm:ss'
-     * @returns
+     * Formats this date with QV's date-time tokens; defaults to `yyyy-MM-dd HH:mm:ss`.
+     * @param fmt - Format containing `yyyy`, `yy`, `MM`, `dd`, `HH`, `mm`, or `ss`
      */
     format(fmt: string = 'yyyy-MM-dd HH:mm:ss') {
+        assertValidDate(this, 'SiYuanDate.format');
         return formatDateTime(fmt, this);
     }
 
-
-    add(days: number | string) {
-        const parseDelta = (): { unit: 'd' | 'w' | 'm' | 'y', delta: number } => {
-            if (typeof days === 'string') {
-                const match = days.match(/^(-?\d+)(d|w|m|y)$/);
-                if (match) {
-                    return { unit: match[2] as 'd' | 'w' | 'm' | 'y', delta: parseInt(match[1]) };
+    /**
+     * Returns a copy offset by calendar days, weeks, months, or years.
+     * Numeric values mean calendar days; strings must be an integer followed by `d`, `w`, `m`, or `y`.
+     * Month and year offsets retain JavaScript Date's overflow behavior.
+     */
+    add(offset: DateOffset = 0) {
+        const parseOffset = (): { unit: DateOffsetUnit, delta: number } => {
+            if (typeof offset === 'number') {
+                if (!Number.isSafeInteger(offset)) {
+                    throw new TypeError('SiYuanDate.add: numeric offsets must be safe integers');
                 }
+                return { unit: 'd', delta: offset };
             }
-            return { unit: 'd', delta: days as number ?? 0 };
-        }
-        const { unit, delta } = parseDelta();
+            const match = offset.match(/^(-?\d+)(d|w|m|y)$/);
+            if (!match) {
+                throw new TypeError('SiYuanDate.add: expected an integer or a value such as "-7d", "2w", "1m", or "1y"');
+            }
+            return { unit: match[2] as DateOffsetUnit, delta: Number(match[1]) };
+        };
+
+        assertValidDate(this, 'SiYuanDate.add');
+        const { unit, delta } = parseOffset();
         const newDate = new SiYuanDate(this.getTime());
         switch (unit) {
             case 'd': newDate.setDate(newDate.getDate() + delta); break;
@@ -259,8 +334,32 @@ class SiYuanDate extends Date {
             case 'm': newDate.setMonth(newDate.getMonth() + delta); break;
             case 'y': newDate.setFullYear(newDate.getFullYear() + delta); break;
         }
+        assertValidDate(newDate, 'SiYuanDate.add');
         return newDate;
     }
+}
+
+function createSiYuanDate(args: SiYuanDateConstructorArgs): SiYuanDate {
+    if (args.length === 1 && typeof args[0] === 'string' && /^(?:\d{8}|\d{14})$/.test(args[0])) {
+        return SiYuanDate.fromString(args[0]);
+    }
+    return Reflect.construct(SiYuanDate, args) as SiYuanDate;
+}
+
+function formatDateInput(input: DateInput, format: DateFormat, apiName: string): string {
+    const date = typeof input === 'string'
+        ? SiYuanDate.fromString(input)
+        : new SiYuanDate(input);
+    assertValidDate(date, apiName);
+    return date.toString(format);
+}
+
+function formatTaskAfter(input: DateInput): string {
+    if (typeof input === 'string' && /^(?:\d{10}|\d{12})$/.test(input)) {
+        warnDeprecatedUsage('Query.task(options.after)');
+        return SiYuanDate.fromString(input.padEnd(14, '0')).toString('datetime');
+    }
+    return formatDateInput(input, 'datetime', 'Query.task(options.after)');
 }
 
 
@@ -282,99 +381,109 @@ const Query = {
      * Every function here is sync function, no need to await
      */
     Utils: {
-        /** Creates a SiYuanDate using the native Date constructor arguments. */
-        Date: (...args: ConstructorParameters<typeof SiYuanDate>) => new SiYuanDate(...args),
         /**
-         * Gets timestamp for current time with optional day offset
-         * @param days - Number of days to offset (positive or negative)
-         * - {number} 直接用数字
-         * - {string} 使用字符串，如 '1d' 表示 1 天，'2w' 表示 2 周，'3m' 表示 3 个月，'4y' 表示 4 年
-         * - 可以为负数
-         * @returns Timestamp string in yyyyMMddHHmmss format
+         * Creates a SiYuanDate using native Date constructor arguments.
+         * Exact `yyyyMMdd` and `yyyyMMddHHmmss` strings are parsed as local SiYuan dates instead of native date strings.
+         * @returns A SiYuanDate; call without arguments for the current local date and time
+         * @example Query.Utils.Date('20260827').add('1w').toString('date')
          */
-        now: (days?: number | string, hms: boolean = true) => {
-            let date = new SiYuanDate();
-            date = date.add(days);
-            return date.toString(hms);
+        Date: (...args: SiYuanDateConstructorArgs) => createSiYuanDate(args),
+
+        /**
+         * Gets the current local date-time with an optional calendar offset.
+         * @param offset - Integer days, or an integer with `d`, `w`, `m`, or `y`, such as `-7d` or `2w`
+         * @param format - `'date'` returns `yyyyMMdd`; `'datetime'` (default) returns `yyyyMMddHHmmss`; deprecated booleans map `false` to `'date'` and `true` to `'datetime'`
+         * @returns An 8-digit date or 14-digit local date-time string
+         */
+        now: (offset: DateOffset = 0, format: 'date' | 'datetime' | boolean = 'datetime'): string => {
+            const date = new SiYuanDate().add(offset);
+            return date.toString(normalizeDateFormat('Query.Utils.now', format));
         },
 
         /**
-         * Gets the timestamp for the start of today
-         * @param {boolean} hms - Whether to include time (default: true), e.g today(false) returns 20241201, today(true) returns 20241201000000
-         * @returns Timestamp string in yyyyMMddHHmmss format
+         * Gets the start of the current local calendar date.
+         * @param format - `'date'` returns `yyyyMMdd`; `'datetime'` (default) returns `yyyyMMddHHmmss`; deprecated booleans map `false` to `'date'` and `true` to `'datetime'`
+         * @returns An 8-digit date or the same date at `000000`
          */
-        today: (hms: boolean = true) => new SiYuanDate().beginOfDay().toString(hms),
+        today: (format: 'date' | 'datetime' | boolean = 'datetime'): string => {
+            return new SiYuanDate().beginOfDay().toString(normalizeDateFormat('Query.Utils.today', format));
+        },
 
         /**
-         * Gets the timestamp for the start of current week
-         * @param {boolean} hms - Whether to include time (default: true), e.g thisWeek(false) returns 20241201, thisWeek(true) returns 20241201000000
-         * @returns Timestamp string in yyyyMMddHHmmss format
+         * Gets the start of the current local week; weeks start on Sunday.
+         * @param format - `'date'` returns `yyyyMMdd`; `'datetime'` (default) returns `yyyyMMddHHmmss`; deprecated booleans map `false` to `'date'` and `true` to `'datetime'`
+         * @returns An 8-digit date or that Sunday at `000000`
          */
-        thisWeek: (hms: boolean = true) => {
-            let date = new SiYuanDate().beginOfDay();
+        thisWeek: (format: 'date' | 'datetime' | boolean = 'datetime'): string => {
+            const date = new SiYuanDate().beginOfDay();
             date.setDate(date.getDate() - date.getDay());
-            return date.toString(hms);
+            return date.toString(normalizeDateFormat('Query.Utils.thisWeek', format));
         },
 
         /**
-         * Gets the timestamp for the start of last week
-         * @returns Timestamp string in yyyyMMddHHmmss format
+         * Gets the start of the previous local week; weeks start on Sunday.
+         * @param format - `'date'` returns `yyyyMMdd`; `'datetime'` (default) returns `yyyyMMddHHmmss`; deprecated booleans map `false` to `'date'` and `true` to `'datetime'`
+         * @returns An 8-digit date or that Sunday at `000000`
          */
-        lastWeek: (hms: boolean = true) => {
-            let date = new SiYuanDate().beginOfDay();
+        lastWeek: (format: 'date' | 'datetime' | boolean = 'datetime'): string => {
+            const date = new SiYuanDate().beginOfDay();
             date.setDate(date.getDate() - 7 - date.getDay());
-            return date.toString(hms);
+            return date.toString(normalizeDateFormat('Query.Utils.lastWeek', format));
         },
 
         /**
-         * Gets the timestamp for the start of current month
-         * @returns Timestamp string in yyyyMMddHHmmss format
+         * Gets the start of the current local calendar month.
+         * @param format - `'date'` returns `yyyyMMdd`; `'datetime'` (default) returns `yyyyMMddHHmmss`; deprecated booleans map `false` to `'date'` and `true` to `'datetime'`
+         * @returns An 8-digit date or the first day of the month at `000000`
          */
-        thisMonth: (hms: boolean = true) => {
-            let date = new SiYuanDate();
+        thisMonth: (format: 'date' | 'datetime' | boolean = 'datetime'): string => {
+            const date = new SiYuanDate();
             date.setDate(1);
-            date = date.beginOfDay();
-            return date.toString(hms);
+            return date.beginOfDay().toString(normalizeDateFormat('Query.Utils.thisMonth', format));
         },
 
         /**
-         * Gets the timestamp for the start of last month
-         * @returns Timestamp string in yyyyMMddHHmmss format
+         * Gets the start of the previous local calendar month.
+         * @param format - `'date'` returns `yyyyMMdd`; `'datetime'` (default) returns `yyyyMMddHHmmss`; deprecated booleans map `false` to `'date'` and `true` to `'datetime'`
+         * @returns An 8-digit date or the first day of the previous month at `000000`
          */
-        lastMonth: (hms: boolean = true) => {
-            let date = new SiYuanDate().beginOfDay();
+        lastMonth: (format: 'date' | 'datetime' | boolean = 'datetime'): string => {
+            const date = new SiYuanDate().beginOfDay();
+            date.setDate(1);
             date.setMonth(date.getMonth() - 1);
-            date.setDate(1);
-            return formatDateTime('yyyyMMdd' + (hms ? 'HHmmss' : ''), date);
+            return date.toString(normalizeDateFormat('Query.Utils.lastMonth', format));
         },
 
         /**
-         * Gets the timestamp for the start of current year
-         * @returns Timestamp string in yyyyMMddHHmmss format
+         * Gets the start of the current local calendar year.
+         * @param format - `'date'` returns `yyyyMMdd`; `'datetime'` (default) returns `yyyyMMddHHmmss`; deprecated booleans map `false` to `'date'` and `true` to `'datetime'`
+         * @returns An 8-digit date or January 1 at `000000`
          */
-        thisYear: (hms: boolean = true) => {
-            let date = new SiYuanDate().beginOfDay();
-            date.setMonth(0);
-            date.setDate(1);
-            return formatDateTime('yyyyMMdd' + (hms ? 'HHmmss' : ''), date);
+        thisYear: (format: 'date' | 'datetime' | boolean = 'datetime'): string => {
+            const date = new SiYuanDate().beginOfDay();
+            date.setMonth(0, 1);
+            return date.toString(normalizeDateFormat('Query.Utils.thisYear', format));
         },
 
         /**
-        /**
-         * Converts SiYuan timestamp string to Date object
-         * @param timestr - SiYuan timestamp (yyyyMMddHHmmss)
-         * @returns Date object
+         * Converts an exact compact SiYuan string to SiYuanDate in the local time zone.
+         * An 8-digit `yyyyMMdd` input is a calendar date and maps to the start of that local date;
+         * a 14-digit `yyyyMMddHHmmss` input includes local time to second precision.
+         * Invalid formats and impossible calendar values throw an error.
+         * @param timestr - An 8-digit date or 14-digit local date-time string
+         * @returns The parsed SiYuanDate
          */
-        asDate: (timestr: string) => {
-            return SiYuanDate.fromString(timestr);
-        },
+        asDate: (timestr: string) => SiYuanDate.fromString(timestr),
 
         /**
-         * Converts Date object to SiYuan timestamp format
+         * Converts a valid Date to compact SiYuan local date format.
          * @param date - Date to convert
-         * @returns Timestamp string in yyyyMMddHHmmss format
+         * @param format - `'date'` returns `yyyyMMdd`; `'datetime'` (default) returns `yyyyMMddHHmmss`
+         * @returns An 8-digit date or 14-digit local date-time string
          */
-        asTimestr: (date: Date) => new SiYuanDate(date).toString(),
+        asTimestr: (date: Date, format: 'date' | 'datetime' = 'datetime') => {
+            return formatDateInput(date, format, 'Query.Utils.asTimestr');
+        },
 
         /**
          * Converts a block to a SiYuan link format
@@ -634,43 +743,45 @@ const Query = {
     },
 
     /**
-     * Find unsolved task blocks
+     * Finds unsolved task blocks, optionally updated on or after a local date boundary.
      * @param options - Options
-     * @param options.after - After which the blocks were updated
+     * @param options.after - Inclusive update boundary as Date, `yyyyMMdd`, or `yyyyMMddHHmmss`; dates map to local start of day
      * @param options.limit - Maximum number of results
      * @returns Array of unsolved task blocks
      * @example
      * Query.task()
-     * Query.task({ after: '2024101000' })
-     * Query.task({ limit: 32 })
+     * Query.task({ after: Query.Utils.thisMonth(), limit: 32 })
+     * Query.task({ after: new Date(2024, 9, 10) })
      */
-    task: async (options?: { limit?: number; after?: string }) => {
-        const { limit: lim, after: afterDate } = options ?? {};
+    task: async (options?: { limit?: number; after?: Date | string }) => {
+        const { limit: lim, after } = options ?? {};
+        const afterDate = after === undefined ? undefined : formatTaskAfter(after);
         const LIST_MARK = siyuanVersion().compare('3.1.29') >= 0 ? '-' : '*';
 
         return Query.sql(`
             select * from blocks
             where type = 'i' and subtype = 't'
             and markdown like '${LIST_MARK} [ ] %'
-            ${afterDate ? ` and updated >= ${afterDate}` : ''}
+            ${afterDate ? ` and updated >= '${afterDate}'` : ''}
             order by updated desc
             ${lim ? `limit ${lim}` : ''};
         `);
     },
 
     /**
-     * Gets daily note documents, optionally limited to an inclusive date range.
+     * Gets daily note documents, optionally limited to an inclusive local calendar-date range.
+     * Date objects and 14-digit date-times are reduced to their local `yyyyMMdd` date.
      * When `after` or `before` is specified, results are ordered by daily note date descending.
      * @param options - Options
-     * @param options.notebook - Notebook ID, if not specified, daily notes from all notebooks are returned
-     * @param options.after - Earliest daily note date to include, as a Date or `yyyyMMdd` string
-     * @param options.before - Latest daily note date to include, as a Date or `yyyyMMdd` string
+     * @param options.notebook - Notebook ID; all notebooks are searched when omitted
+     * @param options.after - Earliest date to include, as Date, `yyyyMMdd`, or `yyyyMMddHHmmss`
+     * @param options.before - Latest date to include, as Date, `yyyyMMdd`, or `yyyyMMddHHmmss`
      * @param options.limit - Maximum number of results, defaults to 64
      * @returns Array of daily note document blocks
      * @example
      * Query.dailynote()
      * Query.dailynote({ notebook: '20231224140619-bpyuay4' })
-     * Query.dailynote({ after: Query.utils.thisMonth(false), before: Query.utils.today(false) })
+     * Query.dailynote({ after: Query.Utils.thisMonth('date'), before: Query.Utils.today('date') })
      * Query.dailynote({ after: new Date(2024, 0, 1), limit: 32 })
      */
     dailynote: async (options?: {
@@ -680,11 +791,16 @@ const Query = {
         limit?: number
     }) => {
         const { notebook, after, before, limit = 64 } = options ?? {};
-        const toDailyNoteDate = (date: Date | string) => {
-            return typeof date === 'string' ? date : formatDateTime('yyyyMMdd', date);
-        };
-        const afterDate = after === undefined ? undefined : toDailyNoteDate(after);
-        const beforeDate = before === undefined ? undefined : toDailyNoteDate(before);
+        const afterDate = after === undefined
+            ? undefined
+            : formatDateInput(after, 'date', 'Query.dailynote(options.after)');
+        const beforeDate = before === undefined
+            ? undefined
+            : formatDateInput(before, 'date', 'Query.dailynote(options.before)');
+        if (afterDate !== undefined && beforeDate !== undefined && afterDate > beforeDate) {
+            throw new RangeError('Query.dailynote: options.after must not be later than options.before');
+        }
+
         const dateConditions = [
             afterDate === undefined ? '' : `AND A.value >= '${afterDate}'`,
             beforeDate === undefined ? '' : `AND A.value <= '${beforeDate}'`

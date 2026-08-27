@@ -7,6 +7,118 @@ Unreleased entries live under `[Unreleased]`; headings become version numbers on
 
 ## [2.0.0]
 
+### `Query.Utils` date output format parameters (Backward Compatible)
+
+**Interface change**:
+
+```ts
+// --- OLD ---
+now(offset?, hms?: boolean)
+today(hms?: boolean)
+thisWeek(hms?: boolean)
+lastWeek(hms?: boolean)
+thisMonth(hms?: boolean)
+lastMonth(hms?: boolean)
+thisYear(hms?: boolean)
+SiYuanDate.toString(hms?: boolean)
+
+// --- NEW ---
+now(offset?, format?: 'date' | 'datetime')
+today(format?: 'date' | 'datetime')
+thisWeek(format?: 'date' | 'datetime')
+lastWeek(format?: 'date' | 'datetime')
+thisMonth(format?: 'date' | 'datetime')
+lastMonth(format?: 'date' | 'datetime')
+thisYear(format?: 'date' | 'datetime')
+SiYuanDate.toString(format?: 'date' | 'datetime')
+asTimestr(date, format?: 'date' | 'datetime')
+```
+
+**Behavior changes**:
+
+- `'date'` returns the 8-digit calendar date `yyyyMMdd`; `'datetime'` returns the 14-digit local date-time `yyyyMMddHHmmss`
+- Omitting `format` still defaults to the 14-digit date-time
+- Legacy booleans retain their behavior: `false` maps to `'date'`, and `true` maps to `'datetime'`
+- `asTimestr` gains the same `format` parameter; calls without a second argument behave as before
+
+**Usage comparison**:
+
+```js
+// Old syntax (still supported)
+Query.Utils.today(false);                    // 20260827
+Query.Utils.thisMonth(true);                 // 20260801000000
+Query.Utils.Date().toString(false);          // 20260827
+
+// New syntax
+Query.Utils.today('date');                   // 20260827
+Query.Utils.thisMonth('datetime');           // 20260801000000
+Query.Utils.Date().toString('date');         // 20260827
+Query.Utils.asTimestr(new Date(), 'date');   // 20260827
+```
+
+**Compatibility statement**:
+
+Boolean parameters remain available in v2.0.0 with unchanged results, but every call logs a `console.warn`; they will be removed in a future version. Omitting the parameter remains supported and does not warn.
+
+### `Query.task` `options.after` date formats (Backward Compatible)
+
+**Interface change**:
+
+```ts
+// --- OLD ---
+task(options?: { after?: string, limit?: number })
+
+// --- NEW ---
+task(options?: { after?: Date | string, limit?: number })
+// strings formally support yyyyMMdd or yyyyMMddHHmmss
+```
+
+**Behavior changes**:
+
+- Date objects and 8-digit `yyyyMMdd` values become a 14-digit boundary at local `00:00:00`
+- A 14-digit `yyyyMMddHHmmss` value is used directly
+- Legacy 10-digit hour and 12-digit minute forms are still zero-padded to 14 digits, but are now deprecated
+- Invalid formats and impossible calendar dates throw instead of being inserted into SQL
+
+**Usage comparison**:
+
+```js
+// Old syntax (still supported)
+await Query.task({ after: '2024101000' });
+
+// New syntax
+await Query.task({ after: '20241010' });
+await Query.task({ after: '20241010000000' });
+await Query.task({ after: new Date(2024, 9, 10) });
+```
+
+**Compatibility statement**:
+
+10- and 12-digit date-time strings remain available in v2.0.0, but every call logs a `console.warn`; they will be removed in a future version. The 8-digit, 14-digit, and Date forms are fully supported.
+
+### `Query.dailynote` date range validation (Backward Compatible)
+
+**Behavior changes**:
+
+- `after` / `before` accept a `Date`, an 8-digit `yyyyMMdd`, or a 14-digit `yyyyMMddHHmmss`, all normalized to an 8-digit daily-note date before comparison; 14-digit input was previously inserted into SQL as-is, producing unreliable results
+- Invalid formats and impossible calendar dates throw instead of silently returning empty results
+- Passing `after` later than `before` throws a `RangeError` (previously returned an empty array silently)
+
+**Usage comparison**:
+
+```js
+// Old syntax (behavior unchanged)
+await Query.dailynote({ after: '20241010', before: '20241031' });
+await Query.dailynote({ after: new Date(2024, 9, 10) });
+
+// New syntax
+await Query.dailynote({ after: '20241010000000' }); // 14-digit input normalized to 20241010
+```
+
+**Compatibility statement**:
+
+Existing usage with 8-digit date strings and `Date` objects behaves the same. Calls where `after` is later than `before` now throw instead of returning an empty array — fix the arguments; the same applies to invalid date input.
+
 ### `Query.keywordDoc` (Backward Compatible)
 
 **Interface change**:

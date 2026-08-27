@@ -1,8 +1,8 @@
 /**
  * @name sy-query-view
  * @author frostime
- * @version 2.0.0-dev2
- * @updated 2026-08-27T10:54:16.836Z
+ * @version 2.0.0-dev3
+ * @updated 2026-08-27T13:54:35.103Z
  */
 
 declare module 'siyuan' {
@@ -22,22 +22,44 @@ import { IProtyle } from "siyuan";
 
 
 type DeprecatedParam<T> = T;
+type DateFormat = 'date' | 'datetime';
+type DateFormatInput = DateFormat | DeprecatedParam<boolean>;
+type DateOffsetUnit = 'd' | 'w' | 'm' | 'y';
+type DateOffset = number | `${bigint}${DateOffsetUnit}`;
+type SiYuanDateConstructorArgs = [] | [value: string | number | Date] | [year: number, monthIndex: number, date?: number, hours?: number, minutes?: number, seconds?: number, ms?: number];
 /**
- * Data class for SiYuan timestamp
- * In SiYuan, the timestamp is in the format of yyyyMMddHHmmss
+ * A local-calendar Date specialized for SiYuan date strings.
+ *
+ * An 8-digit `yyyyMMdd` value represents a calendar date without a time or time zone.
+ * Converting it to JavaScript Date maps it to the start of that date in the local time zone.
+ * A 14-digit `yyyyMMddHHmmss` value represents local date and time to second precision.
  */
 declare class SiYuanDate extends Date {
+    /** Returns a copy at the start of the same local calendar date. */
     beginOfDay(): SiYuanDate;
-    toString(hms?: boolean): string;
+    /**
+     * Converts this value to a compact SiYuan date string.
+     * @param format - `'date'` returns `yyyyMMdd`; `'datetime'` (default) returns `yyyyMMddHHmmss`; deprecated booleans map `false` to `'date'` and `true` to `'datetime'`
+     * @returns An 8-digit date or 14-digit local date-time string
+     */
+    toString(format?: DateFormatInput): string;
     [Symbol.toPrimitive](hint: string): any;
+    /**
+     * Parses an exact 8-digit SiYuan date or 14-digit SiYuan date-time string in the local time zone.
+     * Invalid formats and impossible calendar values throw instead of being silently normalized.
+     */
     static fromString(timestr: string): SiYuanDate;
     /**
-     * Format date
-     * @param fmt default as 'yyyy-MM-dd HH:mm:ss'
-     * @returns
+     * Formats this date with QV's date-time tokens; defaults to `yyyy-MM-dd HH:mm:ss`.
+     * @param fmt - Format containing `yyyy`, `yy`, `MM`, `dd`, `HH`, `mm`, or `ss`
      */
     format(fmt?: string): string;
-    add(days: number | string): SiYuanDate;
+    /**
+     * Returns a copy offset by calendar days, weeks, months, or years.
+     * Numeric values mean calendar days; strings must be an integer followed by `d`, `w`, `m`, or `y`.
+     * Month and year offsets retain JavaScript Date's overflow behavior.
+     */
+    add(offset?: DateOffset): SiYuanDate;
 }
 
 declare const Query: {
@@ -54,62 +76,72 @@ declare const Query: {
      * Every function here is sync function, no need to await
      */
     Utils: {
-        /** Creates a SiYuanDate using the native Date constructor arguments. */
-        Date: (value: string | number | Date) => SiYuanDate;
         /**
-         * Gets timestamp for current time with optional day offset
-         * @param days - Number of days to offset (positive or negative)
-         * - {number} 直接用数字
-         * - {string} 使用字符串，如 '1d' 表示 1 天，'2w' 表示 2 周，'3m' 表示 3 个月，'4y' 表示 4 年
-         * - 可以为负数
-         * @returns Timestamp string in yyyyMMddHHmmss format
+         * Creates a SiYuanDate using native Date constructor arguments.
+         * Exact `yyyyMMdd` and `yyyyMMddHHmmss` strings are parsed as local SiYuan dates instead of native date strings.
+         * @returns A SiYuanDate; call without arguments for the current local date and time
+         * @example Query.Utils.Date('20260827').add('1w').toString('date')
          */
-        now: (days?: number | string, hms?: boolean) => any;
+        Date: (...args: SiYuanDateConstructorArgs) => SiYuanDate;
         /**
-         * Gets the timestamp for the start of today
-         * @param {boolean} hms - Whether to include time (default: true), e.g today(false) returns 20241201, today(true) returns 20241201000000
-         * @returns Timestamp string in yyyyMMddHHmmss format
+         * Gets the current local date-time with an optional calendar offset.
+         * @param offset - Integer days, or an integer with `d`, `w`, `m`, or `y`, such as `-7d` or `2w`
+         * @param format - `'date'` returns `yyyyMMdd`; `'datetime'` (default) returns `yyyyMMddHHmmss`; deprecated booleans map `false` to `'date'` and `true` to `'datetime'`
+         * @returns An 8-digit date or 14-digit local date-time string
          */
-        today: (hms?: boolean) => any;
+        now: (offset?: DateOffset, format?: "date" | "datetime" | boolean) => string;
         /**
-         * Gets the timestamp for the start of current week
-         * @param {boolean} hms - Whether to include time (default: true), e.g thisWeek(false) returns 20241201, thisWeek(true) returns 20241201000000
-         * @returns Timestamp string in yyyyMMddHHmmss format
+         * Gets the start of the current local calendar date.
+         * @param format - `'date'` returns `yyyyMMdd`; `'datetime'` (default) returns `yyyyMMddHHmmss`; deprecated booleans map `false` to `'date'` and `true` to `'datetime'`
+         * @returns An 8-digit date or the same date at `000000`
          */
-        thisWeek: (hms?: boolean) => any;
+        today: (format?: "date" | "datetime" | boolean) => string;
         /**
-         * Gets the timestamp for the start of last week
-         * @returns Timestamp string in yyyyMMddHHmmss format
+         * Gets the start of the current local week; weeks start on Sunday.
+         * @param format - `'date'` returns `yyyyMMdd`; `'datetime'` (default) returns `yyyyMMddHHmmss`; deprecated booleans map `false` to `'date'` and `true` to `'datetime'`
+         * @returns An 8-digit date or that Sunday at `000000`
          */
-        lastWeek: (hms?: boolean) => any;
+        thisWeek: (format?: "date" | "datetime" | boolean) => string;
         /**
-         * Gets the timestamp for the start of current month
-         * @returns Timestamp string in yyyyMMddHHmmss format
+         * Gets the start of the previous local week; weeks start on Sunday.
+         * @param format - `'date'` returns `yyyyMMdd`; `'datetime'` (default) returns `yyyyMMddHHmmss`; deprecated booleans map `false` to `'date'` and `true` to `'datetime'`
+         * @returns An 8-digit date or that Sunday at `000000`
          */
-        thisMonth: (hms?: boolean) => any;
+        lastWeek: (format?: "date" | "datetime" | boolean) => string;
         /**
-         * Gets the timestamp for the start of last month
-         * @returns Timestamp string in yyyyMMddHHmmss format
+         * Gets the start of the current local calendar month.
+         * @param format - `'date'` returns `yyyyMMdd`; `'datetime'` (default) returns `yyyyMMddHHmmss`; deprecated booleans map `false` to `'date'` and `true` to `'datetime'`
+         * @returns An 8-digit date or the first day of the month at `000000`
          */
-        lastMonth: (hms?: boolean) => string;
+        thisMonth: (format?: "date" | "datetime" | boolean) => string;
         /**
-         * Gets the timestamp for the start of current year
-         * @returns Timestamp string in yyyyMMddHHmmss format
+         * Gets the start of the previous local calendar month.
+         * @param format - `'date'` returns `yyyyMMdd`; `'datetime'` (default) returns `yyyyMMddHHmmss`; deprecated booleans map `false` to `'date'` and `true` to `'datetime'`
+         * @returns An 8-digit date or the first day of the previous month at `000000`
          */
-        thisYear: (hms?: boolean) => string;
+        lastMonth: (format?: "date" | "datetime" | boolean) => string;
         /**
+         * Gets the start of the current local calendar year.
+         * @param format - `'date'` returns `yyyyMMdd`; `'datetime'` (default) returns `yyyyMMddHHmmss`; deprecated booleans map `false` to `'date'` and `true` to `'datetime'`
+         * @returns An 8-digit date or January 1 at `000000`
+         */
+        thisYear: (format?: "date" | "datetime" | boolean) => string;
         /**
-         * Converts SiYuan timestamp string to Date object
-         * @param timestr - SiYuan timestamp (yyyyMMddHHmmss)
-         * @returns Date object
+         * Converts an exact compact SiYuan string to SiYuanDate in the local time zone.
+         * An 8-digit `yyyyMMdd` input is a calendar date and maps to the start of that local date;
+         * a 14-digit `yyyyMMddHHmmss` input includes local time to second precision.
+         * Invalid formats and impossible calendar values throw an error.
+         * @param timestr - An 8-digit date or 14-digit local date-time string
+         * @returns The parsed SiYuanDate
          */
         asDate: (timestr: string) => SiYuanDate;
         /**
-         * Converts Date object to SiYuan timestamp format
+         * Converts a valid Date to compact SiYuan local date format.
          * @param date - Date to convert
-         * @returns Timestamp string in yyyyMMddHHmmss format
+         * @param format - `'date'` returns `yyyyMMdd`; `'datetime'` (default) returns `yyyyMMddHHmmss`
+         * @returns An 8-digit date or 14-digit local date-time string
          */
-        asTimestr: (date: Date) => any;
+        asTimestr: (date: Date, format?: "date" | "datetime") => string;
         /**
          * Converts a block to a SiYuan link format
          * @param b - Block to convert
@@ -273,33 +305,34 @@ declare const Query: {
         match?: "=" | "like";
     }) => Promise<IWrappedList<IWrappedBlock>>;
     /**
-     * Find unsolved task blocks
+     * Finds unsolved task blocks, optionally updated on or after a local date boundary.
      * @param options - Options
-     * @param options.after - After which the blocks were updated
+     * @param options.after - Inclusive update boundary as Date, `yyyyMMdd`, or `yyyyMMddHHmmss`; dates map to local start of day
      * @param options.limit - Maximum number of results
      * @returns Array of unsolved task blocks
      * @example
      * Query.task()
-     * Query.task({ after: '2024101000' })
-     * Query.task({ limit: 32 })
+     * Query.task({ after: Query.Utils.thisMonth(), limit: 32 })
+     * Query.task({ after: new Date(2024, 9, 10) })
      */
     task: (options?: {
         limit?: number;
-        after?: string;
+        after?: Date | string;
     }) => Promise<IWrappedList<IWrappedBlock>>;
     /**
-     * Gets daily note documents, optionally limited to an inclusive date range.
+     * Gets daily note documents, optionally limited to an inclusive local calendar-date range.
+     * Date objects and 14-digit date-times are reduced to their local `yyyyMMdd` date.
      * When `after` or `before` is specified, results are ordered by daily note date descending.
      * @param options - Options
-     * @param options.notebook - Notebook ID, if not specified, daily notes from all notebooks are returned
-     * @param options.after - Earliest daily note date to include, as a Date or `yyyyMMdd` string
-     * @param options.before - Latest daily note date to include, as a Date or `yyyyMMdd` string
+     * @param options.notebook - Notebook ID; all notebooks are searched when omitted
+     * @param options.after - Earliest date to include, as Date, `yyyyMMdd`, or `yyyyMMddHHmmss`
+     * @param options.before - Latest date to include, as Date, `yyyyMMdd`, or `yyyyMMddHHmmss`
      * @param options.limit - Maximum number of results, defaults to 64
      * @returns Array of daily note document blocks
      * @example
      * Query.dailynote()
      * Query.dailynote({ notebook: '20231224140619-bpyuay4' })
-     * Query.dailynote({ after: Query.utils.thisMonth(false), before: Query.utils.today(false) })
+     * Query.dailynote({ after: Query.Utils.thisMonth('date'), before: Query.Utils.today('date') })
      * Query.dailynote({ after: new Date(2024, 0, 1), limit: 32 })
      */
     dailynote: (options?: {

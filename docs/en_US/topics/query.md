@@ -41,15 +41,15 @@ tag: (tags: string | string[], options?: { join?: "or" | "and", limit?: number }
 /**
  * Find unsolved task blocks
  * @param options - Options
- * @param options.after - After which the blocks were updated
+ * @param options.after - Inclusive update boundary as a Date, `yyyyMMdd`, or `yyyyMMddHHmmss`
  * @param options.limit - Maximum number of results
  * @returns Array of unsolved task blocks
  * @example
  * Query.task()
- * Query.task({ after: '2024101000' })
+ * Query.task({ after: '20241010000000' })
  * Query.task({ after: Query.utils.thisMonth(), limit: 32 })
  */
-task: (options?: { after?: string, limit?: number }) => Promise<IWrappedList<IWrappedBlock>>;
+task: (options?: { after?: Date | string, limit?: number }) => Promise<IWrappedList<IWrappedBlock>>;
 /**
  * Randomly roam blocks
  * @param limit - Maximum number of results
@@ -69,7 +69,7 @@ random: (limit?: number, type?: BlockType) => Promise<IWrappedList<IWrappedBlock
  * @example
  * Query.dailynote()
  * Query.dailynote({ notebook: '20231224140619-bpyuay4' })
- * Query.dailynote({ after: Query.utils.thisMonth(false), before: Query.utils.today(false) })
+ * Query.dailynote({ after: Query.utils.thisMonth('date'), before: Query.utils.today('date') })
  * Query.dailynote({ after: new Date(2024, 0, 1), limit: 32 })
  */
 dailynote: (options?: {
@@ -385,28 +385,30 @@ Query.Utils contains some potentially useful utility functions.
 The most useful utility functions in utils are probably those related to time, with the most important being this API:
 
 ```ts
-Query.Utils.Date: (value?: any) => SiYuanDate;
+Query.Utils.Date: (...args: any[]) => SiYuanDate;
 ```
 
 Calling Date returns a SiYuanDate object, which is essentially a JavaScript Date class but specifically designed for SiYuan:
 
 ```ts
+type DateFormat = 'date' | 'datetime';
+
 declare class SiYuanDate extends Date {
-    // Returns the time at the beginning of the day
+    // Returns the start of the same date in the local time zone
     beginOfDay(): SiYuanDate;
-    // Formats to yyyyMMddHHmmss
-    toString(hms?: boolean): string;
+    // date → yyyyMMdd; datetime → yyyyMMddHHmmss
+    toString(format?: DateFormat): string;
     [Symbol.toPrimitive](hint: string): any;
+    // Accepts an 8-digit date or 14-digit local date-time
     static fromString(timestr: string): SiYuanDate;
-    // Calculates days, days can be a number (indicating days) or a string
-    // e.g., '1d' means 1 day, '2w' means 2 weeks, '3m' means 3 months, '4y' means 4 years
-    add(days: number | string): SiYuanDate;
+    // Numbers mean days; strings support d, w, m, and y, such as -7d or 2w
+    add(offset: number | string): SiYuanDate;
 }
 ```
 
 When formatting to a string, SiYuanDate converts to the same format as `created`​ and `updated`​; and you can use the `add`​ method to calculate dates.
 
-You can format to a string in two ways: one is direct string interpolation `${date}`​, and the other is calling the `toString()`​ method. The latter has an `hms`​ parameter; if set to false, it will only output the date part and omit the hours, minutes, and seconds.
+There are two ways to format a value: direct interpolation `${date}` produces the default 14-digit local date-time; `toString('date')` produces an 8-digit calendar date, while `toString('datetime')` produces the 14-digit form. Legacy booleans remain compatible but are deprecated.
 
 ```js
 //!js
@@ -420,7 +422,7 @@ Start of this day: ${date.beginOfDay()}
 1 month ago: ${date.add('-1m')}
 
 \`\`\`sql
-select * from blocks where created like '${date.add(-7).toString(false)}%'
+select * from blocks where created like '${date.add(-7).toString('date')}%'
 \`\`\`
 
 `);
@@ -433,46 +435,15 @@ Of course, if you're too lazy to instantiate a Date object every time, there are
 
 ```ts
 declare interface Partial<Query['Utils']> {
-    /**
-     * Gets timestamp for current time with optional day offset
-     * @param days - Number or string of days to offset (positive or negative)
-     * @returns Timestamp string in yyyyMMddHHmmss format
-     */
-    now: (days?: number | string, hms?: boolean) => string;
-    /**
-     * Gets the timestamp for the start of today
-     * @param {boolean} hms - Whether to include time, e.g today(false) returns 20241201, today(true) returns 20241201000000
-     * @returns Timestamp string in yyyyMMddHHmmss format
-     */
-    today: (hms?: boolean) => string;
-    /**
-     * Gets the timestamp for the start of current week
-     * @param {boolean} hms - Whether to include time, e.g thisWeek(false) returns 20241201, thisWeek(true) returns 20241201000000
-     * @returns Timestamp string in yyyyMMddHHmmss format
-     */
-    thisWeek: (hms?: boolean) => string;
-    /**
-     * Gets the timestamp for the start of current month
-     * @returns Timestamp string in yyyyMMddHHmmss format
-     */
-    thisMonth: (hms?: boolean) => string;
-    /**
-     * Gets the timestamp for the start of current year
-     * @returns Timestamp string in yyyyMMddHHmmss format
-     */
-    thisYear: (hms?: boolean) => string;
-    /**
-     * Converts SiYuan timestamp string to Date object
-     * @param timestr - SiYuan timestamp (yyyyMMddHHmmss)
-     * @returns Date object
-     */
-    asDate: (timestr: string) => SiYuanDate;
-    /**
-     * Converts Date object to SiYuan timestamp format
-     * @param date - Date to convert
-     * @returns Timestamp string in yyyyMMddHHmmss format
-     */
-    asTimestr: (date: Date) => string;
+    now: (offset?: number | string, format?: DateFormat) => string;
+    today: (format?: DateFormat) => string;
+    thisWeek: (format?: DateFormat) => string;   // Weeks start on Sunday
+    lastWeek: (format?: DateFormat) => string;
+    thisMonth: (format?: DateFormat) => string;
+    lastMonth: (format?: DateFormat) => string;
+    thisYear: (format?: DateFormat) => string;
+    asDate: (timestr: string) => SiYuanDate;     // yyyyMMdd or yyyyMMddHHmmss
+    asTimestr: (date: Date, format?: DateFormat) => string;
 }
 ```
 

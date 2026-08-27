@@ -20,7 +20,7 @@ Creates a new DataView instance for rendering data visualizations
 
 **Available names** (2, expanded from register()/addAlias() call sites): `DataView` · `Dataview`
 
-**Source** `src/core/query.ts:275`
+**Source** `src/core/query.ts:374`
 
 ---
 
@@ -41,7 +41,7 @@ Wraps blocks with additional functionality
 
 **Available names** (2, expanded from register()/addAlias() call sites): `wrapBlocks` · `wrapit`
 
-**Source** `src/core/query.ts:468`
+**Source** `src/core/query.ts:577`
 
 ---
 
@@ -63,7 +63,7 @@ await Query.request('/api/outline/getDocOutline', {
 });
 ```
 
-**Source** `src/core/query.ts:483`
+**Source** `src/core/query.ts:592`
 
 ---
 
@@ -85,7 +85,7 @@ Gets blocks by their IDs
 
 **Available names** (3, expanded from register()/addAlias() call sites): `getBlocksByIds` · `getBlockById` · `getBlocksById`
 
-**Source** `src/core/query.ts:492`
+**Source** `src/core/query.ts:601`
 
 ---
 
@@ -105,7 +105,7 @@ Similar to `getBlocksByIds`, but :
 
 **Returns**: Single block or array of blocks
 
-**Source** `src/core/query.ts:505`
+**Source** `src/core/query.ts:614`
 
 ---
 
@@ -125,7 +125,7 @@ Gets the current document's ID
 
 **Available names** (2, expanded from register()/addAlias() call sites): `root_id` · `docId`
 
-**Source** `src/core/query.ts:518`
+**Source** `src/core/query.ts:627`
 
 ---
 
@@ -143,7 +143,7 @@ Gets the current document as a block
 
 **Returns**: Wrapped document block
 
-**Source** `src/core/query.ts:525`
+**Source** `src/core/query.ts:634`
 
 ---
 
@@ -162,7 +162,7 @@ Executes SQL query and optionally wraps results
 
 **Returns**: Query results: an IWrappedList by default, plain Block[] when wrap is false
 
-**Source** `src/core/query.ts:537`
+**Source** `src/core/query.ts:646`
 
 ---
 
@@ -183,7 +183,7 @@ Finds backlinks to a specific block
 
 **Available names** (2, expanded from register()/addAlias() call sites): `backlink` · `backlinks`
 
-**Source** `src/core/query.ts:551`
+**Source** `src/core/query.ts:660`
 
 ---
 
@@ -205,7 +205,7 @@ Finds blocks with specific attributes
 
 **Returns**: Array of matching blocks
 
-**Source** `src/core/query.ts:568`
+**Source** `src/core/query.ts:677`
 
 ---
 
@@ -235,22 +235,22 @@ Query.tag(['tag1', 'tag2'], { join: 'or' }) // Search for blocks with 'tag1' or 
 Query.tag(['tag1', 'tag2'], { join: 'and' }) // Search for blocks with 'tag1' and 'tag2'
 ```
 
-**Source** `src/core/query.ts:602`
+**Source** `src/core/query.ts:711`
 
 ---
 
 ## Query.task(options?)
 
 ```ts
-task: (options?: { limit?: number; after?: string; }) => Promise<IWrappedList<IWrappedBlock>>
+task: (options?: { limit?: number; after?: Date | string; }) => Promise<IWrappedList<IWrappedBlock>>
 ```
 
-Find unsolved task blocks
+Finds unsolved task blocks, optionally updated on or after a local date boundary.
 
 **Params**
 
 - `options` — Options
-- `options.after` — After which the blocks were updated
+- `options.after` — Inclusive update boundary as Date, `yyyyMMdd`, or `yyyyMMddHHmmss`; dates map to local start of day
 - `options.limit` — Maximum number of results
 
 **Returns**: Array of unsolved task blocks
@@ -259,11 +259,11 @@ Find unsolved task blocks
 
 ```ts
 Query.task()
-Query.task({ after: '2024101000' })
-Query.task({ limit: 32 })
+Query.task({ after: Query.Utils.thisMonth(), limit: 32 })
+Query.task({ after: new Date(2024, 9, 10) })
 ```
 
-**Source** `src/core/query.ts:647`
+**Source** `src/core/query.ts:756`
 
 ---
 
@@ -273,15 +273,16 @@ Query.task({ limit: 32 })
 dailynote: (options?: { notebook?: NotebookId; after?: Date | string; before?: Date | string; limit?: number; }) => Promise<IWrappedList<IWrappedBlock>>
 ```
 
-Gets daily note documents, optionally limited to an inclusive date range.
+Gets daily note documents, optionally limited to an inclusive local calendar-date range.
+Date objects and 14-digit date-times are reduced to their local `yyyyMMdd` date.
 When `after` or `before` is specified, results are ordered by daily note date descending.
 
 **Params**
 
 - `options` — Options
-- `options.notebook` — Notebook ID, if not specified, daily notes from all notebooks are returned
-- `options.after` — Earliest daily note date to include, as a Date or `yyyyMMdd` string
-- `options.before` — Latest daily note date to include, as a Date or `yyyyMMdd` string
+- `options.notebook` — Notebook ID; all notebooks are searched when omitted
+- `options.after` — Earliest date to include, as Date, `yyyyMMdd`, or `yyyyMMddHHmmss`
+- `options.before` — Latest date to include, as Date, `yyyyMMdd`, or `yyyyMMddHHmmss`
 - `options.limit` — Maximum number of results, defaults to 64
 
 **Returns**: Array of daily note document blocks
@@ -291,11 +292,11 @@ When `after` or `before` is specified, results are ordered by daily note date de
 ```ts
 Query.dailynote()
 Query.dailynote({ notebook: '20231224140619-bpyuay4' })
-Query.dailynote({ after: Query.utils.thisMonth(false), before: Query.utils.today(false) })
+Query.dailynote({ after: Query.Utils.thisMonth('date'), before: Query.Utils.today('date') })
 Query.dailynote({ after: new Date(2024, 0, 1), limit: 32 })
 ```
 
-**Source** `src/core/query.ts:676`
+**Source** `src/core/query.ts:787`
 
 ---
 
@@ -313,7 +314,7 @@ Gets child documents of a block
 
 **Returns**: Array of child document blocks
 
-**Source** `src/core/query.ts:722`
+**Source** `src/core/query.ts:838`
 
 ---
 
@@ -360,7 +361,7 @@ await query.nearby('block123');
 await query.nearby('block123', { direction: 'previous', number: 3 });
 ```
 
-**Source** `src/core/query.ts:771`
+**Source** `src/core/query.ts:887`
 
 ---
 
@@ -381,7 +382,7 @@ Search blocks that contain the given keywords
 
 **Returns**: Array of blocks that contain the given keywords
 
-**Source** `src/core/query.ts:809`
+**Source** `src/core/query.ts:925`
 
 ---
 
@@ -411,7 +412,7 @@ let docs = await Query.keywordDoc(['Keywords A', 'Keywords B']);
 docs[0].keywords['Keywords A'] // get the matched keyword block by using `keywords` property
 ```
 
-**Source** `src/core/query.ts:855`
+**Source** `src/core/query.ts:971`
 
 ---
 
@@ -430,7 +431,7 @@ Randomly roam blocks
 
 **Returns**: Array of randomly roamed blocks
 
-**Source** `src/core/query.ts:914`
+**Source** `src/core/query.ts:1030`
 
 ---
 
@@ -449,7 +450,7 @@ Document and heading blocks include their child blocks; other block types return
 
 **Returns**: Markdown text
 
-**Source** `src/core/query.ts:928`
+**Source** `src/core/query.ts:1044`
 
 ---
 
@@ -467,7 +468,7 @@ Return the statistics of the document with given document ID
 
 **Returns**: The statistics of the document; .runeCount - The number of characters in the document; .wordCount - The number of words (Chinese characters are counted as one word) in the document; .linkCount - The number of links in the document; .imageCount - The number of images in the document; .refCount - The number of references in the document; .blockCount - The number of blocks in the document
 
-**Source** `src/core/query.ts:958`
+**Source** `src/core/query.ts:1074`
 
 ---
 
@@ -490,7 +491,7 @@ Redirects first block IDs to their parent containers
 
 **Available names** (2, expanded from register()/addAlias() call sites): `fb2p` · `redirect`
 
-**Source** `src/core/query.ts:981`
+**Source** `src/core/query.ts:1097`
 
 ---
 
@@ -527,7 +528,7 @@ This function resolves this duplication issue by merging related blocks based on
 
 **Available names** (4, expanded from register()/addAlias() call sites): `pruneBlocks` · `prune` · `mergeBlocks` · `merge`
 
-**Source** `src/core/query.ts:1102`
+**Source** `src/core/query.ts:1218`
 
 ---
 
@@ -556,7 +557,7 @@ Send GPT request, use AI configuration in `siyuan.config.ai.openAI` by default
 
 **Notes**: The only API that sends external HTTP(S) requests via fetch; every other Query API is a SiYuan kernel request.
 
-**Source** `src/core/query.ts:1124`
+**Source** `src/core/query.ts:1240`
 
 ---
 
@@ -569,129 +570,148 @@ Send GPT request, use AI configuration in `siyuan.config.ai.openAI` by default
 ### Query.Utils.Date(args)
 
 ```ts
-Date: (value: string | number | Date) => SiYuanDate
+Date: (...args: SiYuanDateConstructorArgs) => SiYuanDate
 ```
 
-Creates a SiYuanDate using the native Date constructor arguments.
+Creates a SiYuanDate using native Date constructor arguments.
+Exact `yyyyMMdd` and `yyyyMMddHHmmss` strings are parsed as local SiYuan dates instead of native date strings.
 
-**Source** `src/core/query.ts:286`
+**Returns**: A SiYuanDate; call without arguments for the current local date and time
+
+**Example**
+
+```ts
+Query.Utils.Date('20260827').add('1w').toString('date')
+```
+
+**Source** `src/core/query.ts:390`
 
 ---
 
-### Query.Utils.now(days?, hms)
+### Query.Utils.now(offset, format)
 
 ```ts
-now: (days?: number | string, hms?: boolean) => any
+now: (offset?: DateOffset, format?: "date" | "datetime" | boolean) => string
 ```
 
-Gets timestamp for current time with optional day offset
+Gets the current local date-time with an optional calendar offset.
 
 **Params**
 
-- `days` — Number of days to offset (positive or negative)
-  - {number} 直接用数字
-  - {string} 使用字符串，如 '1d' 表示 1 天，'2w' 表示 2 周，'3m' 表示 3 个月，'4y' 表示 4 年
-  - 可以为负数
+- `offset` — Integer days, or an integer with `d`, `w`, `m`, or `y`, such as `-7d` or `2w`
+- `format` — `'date'` returns `yyyyMMdd`; `'datetime'` (default) returns `yyyyMMddHHmmss`; deprecated booleans map `false` to `'date'` and `true` to `'datetime'`
 
-**Returns**: Timestamp string in yyyyMMddHHmmss format
+**Returns**: An 8-digit date or 14-digit local date-time string
 
-**Source** `src/core/query.ts:295`
+**Source** `src/core/query.ts:398`
 
 ---
 
-### Query.Utils.today(hms)
+### Query.Utils.today(format)
 
 ```ts
-today: (hms?: boolean) => any
+today: (format?: "date" | "datetime" | boolean) => string
 ```
 
-Gets the timestamp for the start of today
+Gets the start of the current local calendar date.
 
 **Params**
 
-- `hms` — Whether to include time (default: true), e.g today(false) returns 20241201, today(true) returns 20241201000000
+- `format` — `'date'` returns `yyyyMMdd`; `'datetime'` (default) returns `yyyyMMddHHmmss`; deprecated booleans map `false` to `'date'` and `true` to `'datetime'`
 
-**Returns**: Timestamp string in yyyyMMddHHmmss format
+**Returns**: An 8-digit date or the same date at `000000`
 
-> ⚠ Default `hms=true` returns a 14-digit full timestamp (yyyyMMddHHmmss); pass `false` for 8-digit; thisWeek starts on Sunday
-
-**Source** `src/core/query.ts:306`
+**Source** `src/core/query.ts:408`
 
 ---
 
-### Query.Utils.thisWeek(hms)
+### Query.Utils.thisWeek(format)
 
 ```ts
-thisWeek: (hms?: boolean) => any
+thisWeek: (format?: "date" | "datetime" | boolean) => string
 ```
 
-Gets the timestamp for the start of current week
+Gets the start of the current local week; weeks start on Sunday.
 
 **Params**
 
-- `hms` — Whether to include time (default: true), e.g thisWeek(false) returns 20241201, thisWeek(true) returns 20241201000000
+- `format` — `'date'` returns `yyyyMMdd`; `'datetime'` (default) returns `yyyyMMddHHmmss`; deprecated booleans map `false` to `'date'` and `true` to `'datetime'`
 
-**Returns**: Timestamp string in yyyyMMddHHmmss format
+**Returns**: An 8-digit date or that Sunday at `000000`
 
-> ⚠ Default `hms=true` returns a 14-digit full timestamp (yyyyMMddHHmmss); pass `false` for 8-digit; the week starts on Sunday
-
-**Source** `src/core/query.ts:313`
+**Source** `src/core/query.ts:417`
 
 ---
 
-### Query.Utils.lastWeek(hms)
+### Query.Utils.lastWeek(format)
 
 ```ts
-lastWeek: (hms?: boolean) => any
+lastWeek: (format?: "date" | "datetime" | boolean) => string
 ```
 
-Gets the timestamp for the start of last week
+Gets the start of the previous local week; weeks start on Sunday.
 
-**Returns**: Timestamp string in yyyyMMddHHmmss format
+**Params**
 
-**Source** `src/core/query.ts:323`
+- `format` — `'date'` returns `yyyyMMdd`; `'datetime'` (default) returns `yyyyMMddHHmmss`; deprecated booleans map `false` to `'date'` and `true` to `'datetime'`
+
+**Returns**: An 8-digit date or that Sunday at `000000`
+
+**Source** `src/core/query.ts:428`
 
 ---
 
-### Query.Utils.thisMonth(hms)
+### Query.Utils.thisMonth(format)
 
 ```ts
-thisMonth: (hms?: boolean) => any
+thisMonth: (format?: "date" | "datetime" | boolean) => string
 ```
 
-Gets the timestamp for the start of current month
+Gets the start of the current local calendar month.
 
-**Returns**: Timestamp string in yyyyMMddHHmmss format
+**Params**
 
-**Source** `src/core/query.ts:333`
+- `format` — `'date'` returns `yyyyMMdd`; `'datetime'` (default) returns `yyyyMMddHHmmss`; deprecated booleans map `false` to `'date'` and `true` to `'datetime'`
+
+**Returns**: An 8-digit date or the first day of the month at `000000`
+
+**Source** `src/core/query.ts:439`
 
 ---
 
-### Query.Utils.lastMonth(hms)
+### Query.Utils.lastMonth(format)
 
 ```ts
-lastMonth: (hms?: boolean) => string
+lastMonth: (format?: "date" | "datetime" | boolean) => string
 ```
 
-Gets the timestamp for the start of last month
+Gets the start of the previous local calendar month.
 
-**Returns**: Timestamp string in yyyyMMddHHmmss format
+**Params**
 
-**Source** `src/core/query.ts:344`
+- `format` — `'date'` returns `yyyyMMdd`; `'datetime'` (default) returns `yyyyMMddHHmmss`; deprecated booleans map `false` to `'date'` and `true` to `'datetime'`
+
+**Returns**: An 8-digit date or the first day of the previous month at `000000`
+
+**Source** `src/core/query.ts:450`
 
 ---
 
-### Query.Utils.thisYear(hms)
+### Query.Utils.thisYear(format)
 
 ```ts
-thisYear: (hms?: boolean) => string
+thisYear: (format?: "date" | "datetime" | boolean) => string
 ```
 
-Gets the timestamp for the start of current year
+Gets the start of the current local calendar year.
 
-**Returns**: Timestamp string in yyyyMMddHHmmss format
+**Params**
 
-**Source** `src/core/query.ts:355`
+- `format` — `'date'` returns `yyyyMMdd`; `'datetime'` (default) returns `yyyyMMddHHmmss`; deprecated booleans map `false` to `'date'` and `true` to `'datetime'`
+
+**Returns**: An 8-digit date or January 1 at `000000`
+
+**Source** `src/core/query.ts:462`
 
 ---
 
@@ -701,34 +721,37 @@ Gets the timestamp for the start of current year
 asDate: (timestr: string) => SiYuanDate
 ```
 
-/**
-  Converts SiYuan timestamp string to Date object
+Converts an exact compact SiYuan string to SiYuanDate in the local time zone.
+An 8-digit `yyyyMMdd` input is a calendar date and maps to the start of that local date;
+a 14-digit `yyyyMMddHHmmss` input includes local time to second precision.
+Invalid formats and impossible calendar values throw an error.
 
 **Params**
 
-- `timestr` — SiYuan timestamp (yyyyMMddHHmmss)
+- `timestr` — An 8-digit date or 14-digit local date-time string
 
-**Returns**: Date object
+**Returns**: The parsed SiYuanDate
 
-**Source** `src/core/query.ts:368`
+**Source** `src/core/query.ts:476`
 
 ---
 
-### Query.Utils.asTimestr(date)
+### Query.Utils.asTimestr(date, format)
 
 ```ts
-asTimestr: (date: Date) => any
+asTimestr: (date: Date, format?: "date" | "datetime") => string
 ```
 
-Converts Date object to SiYuan timestamp format
+Converts a valid Date to compact SiYuan local date format.
 
 **Params**
 
 - `date` — Date to convert
+- `format` — `'date'` returns `yyyyMMdd`; `'datetime'` (default) returns `yyyyMMddHHmmss`
 
-**Returns**: Timestamp string in yyyyMMddHHmmss format
+**Returns**: An 8-digit date or 14-digit local date-time string
 
-**Source** `src/core/query.ts:377`
+**Source** `src/core/query.ts:484`
 
 ---
 
@@ -746,7 +769,7 @@ Converts a block to a SiYuan link format
 
 **Returns**: String in markdown link format
 
-**Source** `src/core/query.ts:384`
+**Source** `src/core/query.ts:493`
 
 ---
 
@@ -764,7 +787,7 @@ Converts a block to a SiYuan reference format
 
 **Returns**: String in reference format ((id 'content'))
 
-**Source** `src/core/query.ts:391`
+**Source** `src/core/query.ts:500`
 
 ---
 
@@ -783,7 +806,7 @@ Converts blocks into an object keyed by a block property.
 
 **Returns**: Object whose keys are the selected property values
 
-**Source** `src/core/query.ts:399`
+**Source** `src/core/query.ts:508`
 
 ---
 
@@ -801,7 +824,7 @@ Gets notebook information from block or notebook ID
 
 **Returns**: Notebook information
 
-**Source** `src/core/query.ts:409`
+**Source** `src/core/query.ts:518`
 
 ---
 
@@ -825,7 +848,7 @@ Gets the name of a notebook by its ID; equivalent to `notebook(boxid).name`
 Query.Utils.boxName(block['box']) // 'Notebook 123'
 ```
 
-**Source** `src/core/query.ts:420`
+**Source** `src/core/query.ts:529`
 
 ---
 
@@ -849,7 +872,7 @@ Gets the readable name of the type of a block
 Query.Utils.typename(block['type']) // 'Heading'
 ```
 
-**Source** `src/core/query.ts:430`
+**Source** `src/core/query.ts:539`
 
 ---
 
@@ -867,7 +890,7 @@ Given a document block (type='d'), return its emoji icon
 
 **Returns**: emoji icon; if block is not with type='d', return null
 
-**Source** `src/core/query.ts:437`
+**Source** `src/core/query.ts:546`
 
 ---
 
@@ -885,7 +908,7 @@ Given emoji code, returl emoji icon
 
 **Returns**: 
 
-**Source** `src/core/query.ts:448`
+**Source** `src/core/query.ts:557`
 
 ---
 
@@ -897,7 +920,7 @@ renderAttr: (b: Block & { [key: string | number]: string | number; }, attr: (key
 
 Renders the value of a block attribute as markdown format
 
-**Source** `src/core/query.ts:457`
+**Source** `src/core/query.ts:566`
 
 ---
 
@@ -909,7 +932,7 @@ openBlock: (id: BlockId, options?: { zoomIn?: boolean; action?: import("siyuan")
 
 Opens a block in the current SiYuan UI.
 
-**Source** `src/core/query.ts:459`
+**Source** `src/core/query.ts:568`
 
 ---
 

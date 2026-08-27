@@ -7,6 +7,118 @@ Query&View 的破坏性变更与预告，面向脚本作者。
 
 ## [2.0.0]
 
+### `Query.Utils` 日期输出格式参数 (保持兼容)
+
+**接口变更**：
+
+```ts
+// --- OLD ---
+now(offset?, hms?: boolean)
+today(hms?: boolean)
+thisWeek(hms?: boolean)
+lastWeek(hms?: boolean)
+thisMonth(hms?: boolean)
+lastMonth(hms?: boolean)
+thisYear(hms?: boolean)
+SiYuanDate.toString(hms?: boolean)
+
+// --- NEW ---
+now(offset?, format?: 'date' | 'datetime')
+today(format?: 'date' | 'datetime')
+thisWeek(format?: 'date' | 'datetime')
+lastWeek(format?: 'date' | 'datetime')
+thisMonth(format?: 'date' | 'datetime')
+lastMonth(format?: 'date' | 'datetime')
+thisYear(format?: 'date' | 'datetime')
+SiYuanDate.toString(format?: 'date' | 'datetime')
+asTimestr(date, format?: 'date' | 'datetime')
+```
+
+**行为变更**：
+
+- `'date'` 返回 8 位日历日期 `yyyyMMdd`；`'datetime'` 返回 14 位本地日期时间 `yyyyMMddHHmmss`
+- 不传 `format` 时仍默认返回 14 位日期时间
+- 原布尔参数保持原行为：`false` 映射到 `'date'`，`true` 映射到 `'datetime'`
+- `asTimestr` 新增同名 `format` 参数；此前不传第二个参数的行为不变
+
+**用例对比**：
+
+```js
+// 旧写法（仍兼容）
+Query.Utils.today(false);                    // 20260827
+Query.Utils.thisMonth(true);                 // 20260801000000
+Query.Utils.Date().toString(false);          // 20260827
+
+// 新写法
+Query.Utils.today('date');                   // 20260827
+Query.Utils.thisMonth('datetime');           // 20260801000000
+Query.Utils.Date().toString('date');         // 20260827
+Query.Utils.asTimestr(new Date(), 'date');   // 20260827
+```
+
+**兼容性声明**:
+
+旧布尔参数在 v2.0.0 仍可用且返回结果不变，但每次调用会输出 `console.warn`，未来版本将移除。省略参数的默认行为不变，不会触发警告。
+
+### `Query.task` 的 `options.after` 日期格式 (保持兼容)
+
+**接口变更**：
+
+```ts
+// --- OLD ---
+task(options?: { after?: string, limit?: number })
+
+// --- NEW ---
+task(options?: { after?: Date | string, limit?: number })
+// string 正式支持 yyyyMMdd 或 yyyyMMddHHmmss
+```
+
+**行为变更**：
+
+- `Date` 和 8 位 `yyyyMMdd` 会转换成当天本地时间 `00:00:00` 对应的 14 位查询边界
+- 14 位 `yyyyMMddHHmmss` 直接作为查询边界
+- 旧的 10 位小时和 12 位分钟写法仍会补零成 14 位，但进入废弃期
+- 非法格式与不存在的日历日期会直接报错，不再拼入 SQL
+
+**用例对比**：
+
+```js
+// 旧写法（仍兼容）
+await Query.task({ after: '2024101000' });
+
+// 新写法
+await Query.task({ after: '20241010' });
+await Query.task({ after: '20241010000000' });
+await Query.task({ after: new Date(2024, 9, 10) });
+```
+
+**兼容性声明**:
+
+10 位和 12 位日期时间字符串在 v2.0.0 仍可用，但每次调用会输出 `console.warn`，未来版本将移除。8 位、14 位和 `Date` 输入是正式支持的写法。
+
+### `Query.dailynote` 的日期范围校验 (保持兼容)
+
+**行为变更**：
+
+- `after` / `before` 接受 `Date`、8 位 `yyyyMMdd`、14 位 `yyyyMMddHHmmss`，统一归一化为 8 位日记日期后参与比较；14 位输入在旧版会原样拼入 SQL，结果不可靠
+- 非法格式与不存在的日历日期会直接报错，不再静默返回空结果
+- `after` 晚于 `before` 时抛出 `RangeError`（旧版静默返回空数组）
+
+**用例对比**：
+
+```js
+// 旧写法（行为保持）
+await Query.dailynote({ after: '20241010', before: '20241031' });
+await Query.dailynote({ after: new Date(2024, 9, 10) });
+
+// 新写法
+await Query.dailynote({ after: '20241010000000' }); // 14 位输入归一化为 20241010
+```
+
+**兼容性声明**:
+
+8 位日期字符串与 `Date` 的既有用法行为不变。`after` 晚于 `before` 的调用由“返回空数组”变为“抛出异常”，请修正调用参数；非法日期输入同理。
+
 ### `Query.keywordDoc` (保持兼容)
 
 **接口变更**：

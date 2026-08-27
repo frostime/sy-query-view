@@ -112,8 +112,6 @@ const KNOWN_NOTES = {
   // ⚠ 只保留"仍为真"的行为警示；N6 已修复的条目（keywordDoc 假 OR、columns flex、
   // echartsTree layout、pick 类型）已移除——否则生成文档会反向误导。此类条目随代码
   // 修复须同步删除（对齐维护规则：KNOWN_NOTES 是注入口，内容必须与源码现状一致）。
-  "Query.Utils.today": ["Default `hms=true` returns a 14-digit full timestamp (yyyyMMddHHmmss); pass `false` for 8-digit; thisWeek starts on Sunday"],
-  "Query.Utils.thisWeek": ["Default `hms=true` returns a 14-digit full timestamp (yyyyMMddHHmmss); pass `false` for 8-digit; the week starts on Sunday"],
   "dv.render": ["**Not a pure render**: it persists the embed block (POST /api/search/updateEmbedBlock, content from the block's innerText). Call once at the end of a static view; do not call in loops/hot paths"],
   "dv.details": ["String content is inserted directly into `innerHTML` — raw HTML, not markdown; defaults to `open=true` (expanded)"],
 };

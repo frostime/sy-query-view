@@ -41,15 +41,15 @@ tag: (tags: string | string[], options?: { join?: "or" | "and", limit?: number }
 /**
  * Find unsolved task blocks
  * @param options - Options
- * @param options.after - After which the blocks were updated
+ * @param options.after - Inclusive update boundary as a Date, `yyyyMMdd`, or `yyyyMMddHHmmss`
  * @param options.limit - Maximum number of results
  * @returns Array of unsolved task blocks
  * @example
  * Query.task()
- * Query.task({ after: '2024101000' })
+ * Query.task({ after: '20241010000000' })
  * Query.task({ after: Query.utils.thisMonth(), limit: 32 })
  */
-task: (options?: { after?: string, limit?: number }) => Promise<IWrappedList<IWrappedBlock>>;
+task: (options?: { after?: Date | string, limit?: number }) => Promise<IWrappedList<IWrappedBlock>>;
 /**
  * Randomly roam blocks
  * @param limit - Maximum number of results
@@ -69,7 +69,7 @@ random: (limit?: number, type?: BlockType) => Promise<IWrappedList<IWrappedBlock
  * @example
  * Query.dailynote()
  * Query.dailynote({ notebook: '20231224140619-bpyuay4' })
- * Query.dailynote({ after: Query.utils.thisMonth(false), before: Query.utils.today(false) })
+ * Query.dailynote({ after: Query.utils.thisMonth('date'), before: Query.utils.today('date') })
  * Query.dailynote({ after: new Date(2024, 0, 1), limit: 32 })
  */
 dailynote: (options?: {
@@ -385,28 +385,30 @@ Query.Utils 内包含了一些可能会比较有用的工具函数。
 utils 下最有用的可能就是时间相关的函数了，其中的重中之重是这个 API
 
 ```ts
-Query.Utils.Date: (value?: any) => SiYuanDate;
+Query.Utils.Date: (...args: any[]) => SiYuanDate;
 ```
 
 调用 Date 将返回一个 SiYuanDate 对象，他本质上是一个 javascript 的 Date 类，但是针对思源做了专门的设计：
 
 ```ts
+type DateFormat = 'date' | 'datetime';
+
 declare class SiYuanDate extends Date {
-    //返回当天零点时刻的时间
+    // 返回同一日期在本地时区的起始时刻
     beginOfDay(): SiYuanDate;
-    //格式化为 yyyyMMddHHmmss
-    toString(hms?: boolean): string;
+    // date → yyyyMMdd；datetime → yyyyMMddHHmmss
+    toString(format?: DateFormat): string;
     [Symbol.toPrimitive](hint: string): any;
+    // 支持 8 位日期与 14 位本地日期时间
     static fromString(timestr: string): SiYuanDate;
-    //计算天数, days 可以是number （表示天数）, 也可以是字符串
-    //如 '1d' 表示 1 天，'2w' 表示 2 周，'3m' 表示 3 个月，'4y' 表示 4 年
-    add(days: number | string): SiYuanDate;
+    // 数字表示日；字符串支持 d、w、m、y，例如 -7d、2w
+    add(offset: number | string): SiYuanDate;
 }
 ```
 
 SiYuanDate 在格式化为字符串的时候，会转换成和 `created`​ `updated`​ 同样格式的字符串；并且还可以使用 `add`​ 方法进行日期的计算。
 
-你可以使用两种方式格式化为字符串，一种是直接字符串插值 `${date}`​，另一种是调用 `toString()`​ 方法。其中后者有一个 `hms`​ 参数，如果设置为 false 将只输出日期部分而去掉时分秒部分。
+你可以使用两种方式格式化为字符串：直接字符串插值 `${date}`​ 默认得到 14 位本地日期时间；调用 `toString('date')` 得到 8 位日历日期，调用 `toString('datetime')` 得到 14 位本地日期时间。旧布尔参数仍兼容，但已进入废弃期。
 
 ```js
 //!js
@@ -420,7 +422,7 @@ Start of this day: ${date.beginOfDay()}
 1 month ago: ${date.add('-1m')}
 
 \`\`\`sql
-select * from blocks where created like '${date.add(-7).toString(false)}%'
+select * from blocks where created like '${date.add(-7).toString('date')}%'
 \`\`\`
 
 `);
@@ -433,46 +435,15 @@ dv.render();
 
 ```ts
 declare interface Partial<Query['Utils']> {
-    /**
-     * Gets timestamp for current time with optional day offset
-     * @param days - Number or string of days to offset (positive or negative)
-     * @returns Timestamp string in yyyyMMddHHmmss format
-     */
-    now: (days?: number | string, hms?: boolean) => string;
-    /**
-     * Gets the timestamp for the start of today
-     * @param {boolean} hms - Whether to include time, e.g today(false) returns 20241201, today(true) returns 20241201000000
-     * @returns Timestamp string in yyyyMMddHHmmss format
-     */
-    today: (hms?: boolean) => string;
-    /**
-     * Gets the timestamp for the start of current week
-     * @param {boolean} hms - Whether to include time, e.g thisWeek(false) returns 20241201, thisWeek(true) returns 20241201000000
-     * @returns Timestamp string in yyyyMMddHHmmss format
-     */
-    thisWeek: (hms?: boolean) => string;
-    /**
-     * Gets the timestamp for the start of current month
-     * @returns Timestamp string in yyyyMMddHHmmss format
-     */
-    thisMonth: (hms?: boolean) => string;
-    /**
-     * Gets the timestamp for the start of current year
-     * @returns Timestamp string in yyyyMMddHHmmss format
-     */
-    thisYear: (hms?: boolean) => string;
-    /**
-     * Converts SiYuan timestamp string to Date object
-     * @param timestr - SiYuan timestamp (yyyyMMddHHmmss)
-     * @returns Date object
-     */
-    asDate: (timestr: string) => SiYuanDate;
-    /**
-     * Converts Date object to SiYuan timestamp format
-     * @param date - Date to convert
-     * @returns Timestamp string in yyyyMMddHHmmss format
-     */
-    asTimestr: (date: Date) => string;
+    now: (offset?: number | string, format?: DateFormat) => string;
+    today: (format?: DateFormat) => string;
+    thisWeek: (format?: DateFormat) => string;   // 周日起算
+    lastWeek: (format?: DateFormat) => string;
+    thisMonth: (format?: DateFormat) => string;
+    lastMonth: (format?: DateFormat) => string;
+    thisYear: (format?: DateFormat) => string;
+    asDate: (timestr: string) => SiYuanDate;     // yyyyMMdd 或 yyyyMMddHHmmss
+    asTimestr: (date: Date, format?: DateFormat) => string;
 }
 ```
 
