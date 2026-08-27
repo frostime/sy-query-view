@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2024 by frostime. All Rights Reserved.
  * @Author       : frostime
- * @Date         : 2026-XX-XX
+ * @Date         : 2026-08-27
  * @FilePath     : /src/core/agent-debug-tools.ts
  * @Description  : Agent 调试工具：debug-qv.view
  */
