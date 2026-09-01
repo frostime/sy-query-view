@@ -75,6 +75,10 @@ src_docsite_indexts:
   nav_breakchange: Breaking Changes
   copy: Copy
   copied: Copied
+  copy_document: Copy document
+  copy_agent_prompt: Copy Agent prompt
+  agent_read_prompt: Please use the file.read tool to read `{0}` for the current Query&View documentation.
+  document_actions: Document actions
   outline: Outline
   outline_title: Page outline
   outline_close: Close

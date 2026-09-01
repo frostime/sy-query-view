@@ -7,11 +7,10 @@
 
 import { Custom, openTab } from "siyuan";
 import type QueryViewPlugin from "@/index";
-import { setting } from "@/setting";
-import { canOpenLocally, downloadDts, getPluginInfo, openDtsLocally } from "@/user-help/dts-actions";
-import { PAGE_TREE, type Lang, type NavItem, type NavLabelKey, type PageId } from "./nav";
+import { getPluginInfo } from "@/user-help/dts-actions";
+import { PAGE_TREE, pageFile, type Lang, type NavItem, type NavLabelKey, type PageId } from "./nav";
 import { createContent, type ContentApi, type PageLoadResult } from "./content";
-import { extractOutline, renderPage, type OutlineEntry, type RenderCtx, type RenderUi } from "./render";
+import { copyText, extractOutline, renderPage, type OutlineEntry, type RenderCtx, type RenderUi } from "./render";
 import styles from "./index.module.scss";
 
 export interface DocsSite {
@@ -19,16 +18,11 @@ export interface DocsSite {
     dispose: () => void;
 }
 
-interface PageAction {
-    label: string;
-    run: () => void;
-}
-
 export const load = async (plugin: QueryViewPlugin): Promise<DocsSite> => {
     const i18n = plugin.i18n as unknown as I18n;
     // 站点生命周期代数：dispose 时自增，使所有在途 Tab 请求失效（即使 SiYuan 未先调 destroy）
     let siteGeneration = 0;
-    let outlinePanelSequence = 0;
+    let actionPanelSequence = 0;
     // 每个 Tab 实例的清理函数按实例存储（destroy 只清理自己的实例）
     const tabCleanups = new WeakMap<Custom, () => void>();
 
@@ -53,9 +47,6 @@ export const load = async (plugin: QueryViewPlugin): Promise<DocsSite> => {
 
     const loadPluginVersion = async (): Promise<string> => (await ensurePluginInfo()).version;
     const content: ContentApi = createContent(plugin.name, loadPluginVersion);
-
-    // API 页动作：依赖叶 dts-actions，与既有菜单共用实现
-    const pageActions: Partial<Record<PageId, PageAction[]>> = {};
 
     plugin.addTab({
         type: "docs-site",
@@ -87,60 +78,95 @@ export const load = async (plugin: QueryViewPlugin): Promise<DocsSite> => {
             const contentHost = document.createElement("div");
             main.appendChild(contentHost);
 
-            // ---- 页面大纲：右下角按钮 + 向上展开的悬浮标题树 ----
+            // ---- 文档操作：复制动作与页面大纲共用右下角浮层 ----
+            let currentMarkdown = "";
+            let currentPageFile = "";
             let outlineEntries: OutlineEntry[] = [];
             const outlineButtons = new Map<string, HTMLButtonElement>();
-            const outlinePanelId = `docs-site-outline-panel-${++outlinePanelSequence}`;
+            const actionPanelId = `docs-site-action-panel-${++actionPanelSequence}`;
 
-            const outlineToggle = document.createElement("button");
-            outlineToggle.type = "button";
-            outlineToggle.className = styles["outlineToggle"];
-            outlineToggle.dataset["outlineToggle"] = "";
-            outlineToggle.hidden = true;
-            outlineToggle.setAttribute("aria-expanded", "false");
-            outlineToggle.setAttribute("aria-controls", outlinePanelId);
-            outlineToggle.title = i18n.src_docsite_indexts.outline;
+            const actionToggle = document.createElement("button");
+            actionToggle.type = "button";
+            actionToggle.className = styles["actionToggle"];
+            actionToggle.dataset["actionToggle"] = "";
+            actionToggle.hidden = true;
+            actionToggle.setAttribute("aria-expanded", "false");
+            actionToggle.setAttribute("aria-controls", actionPanelId);
+            actionToggle.title = i18n.src_docsite_indexts.document_actions;
 
-            const outlineIcon = document.createElement("span");
-            outlineIcon.className = styles["outlineIcon"];
-            outlineIcon.textContent = "☷";
-            outlineIcon.setAttribute("aria-hidden", "true");
-            outlineToggle.appendChild(outlineIcon);
+            const actionIcon = document.createElement("span");
+            actionIcon.className = styles["actionIcon"];
+            actionIcon.textContent = "☷";
+            actionIcon.setAttribute("aria-hidden", "true");
+            actionToggle.appendChild(actionIcon);
 
-            const outlineToggleLabel = document.createElement("span");
-            outlineToggleLabel.textContent = i18n.src_docsite_indexts.outline;
-            outlineToggle.appendChild(outlineToggleLabel);
+            const actionToggleLabel = document.createElement("span");
+            actionToggleLabel.textContent = i18n.src_docsite_indexts.document_actions;
+            actionToggle.appendChild(actionToggleLabel);
 
-            const outlinePanel = document.createElement("section");
-            outlinePanel.id = outlinePanelId;
-            outlinePanel.className = styles["outlinePanel"];
-            outlinePanel.hidden = true;
-            outlinePanel.setAttribute("aria-label", i18n.src_docsite_indexts.outline_title);
+            const actionPanel = document.createElement("section");
+            actionPanel.id = actionPanelId;
+            actionPanel.className = styles["actionPanel"];
+            actionPanel.dataset["actionPanel"] = "";
+            actionPanel.hidden = true;
+            actionPanel.setAttribute("aria-label", i18n.src_docsite_indexts.document_actions);
 
-            const outlineHeader = document.createElement("div");
-            outlineHeader.className = styles["outlineHeader"];
-            const outlineTitle = document.createElement("span");
-            outlineTitle.textContent = i18n.src_docsite_indexts.outline_title;
-            outlineHeader.appendChild(outlineTitle);
+            const actionHeader = document.createElement("div");
+            actionHeader.className = styles["actionHeader"];
+            const actionTitle = document.createElement("span");
+            actionTitle.textContent = i18n.src_docsite_indexts.document_actions;
+            actionHeader.appendChild(actionTitle);
 
-            const outlineClose = document.createElement("button");
-            outlineClose.type = "button";
-            outlineClose.className = styles["outlineClose"];
-            outlineClose.dataset["outlineClose"] = "";
-            outlineClose.setAttribute("aria-label", i18n.src_docsite_indexts.outline_close);
-            outlineClose.textContent = "×";
-            outlineHeader.appendChild(outlineClose);
-            outlinePanel.appendChild(outlineHeader);
+            const actionClose = document.createElement("button");
+            actionClose.type = "button";
+            actionClose.className = styles["actionClose"];
+            actionClose.dataset["actionClose"] = "";
+            actionClose.setAttribute("aria-label", i18n.src_docsite_indexts.outline_close);
+            actionClose.textContent = "×";
+            actionHeader.appendChild(actionClose);
+            actionPanel.appendChild(actionHeader);
+
+            const quickActions = document.createElement("div");
+            quickActions.className = styles["quickActions"];
+            const addCopyAction = (label: string, getText: () => string): void => {
+                const button = document.createElement("button");
+                button.type = "button";
+                button.className = styles["quickAction"];
+                button.textContent = label;
+                button.addEventListener("click", async () => {
+                    const copied = await copyText(getText());
+                    if (!copied) return;
+                    button.textContent = i18n.src_docsite_indexts.copied;
+                    setTimeout(() => {
+                        button.textContent = label;
+                    }, 1500);
+                });
+                quickActions.appendChild(button);
+            };
+            addCopyAction(
+                i18n.src_docsite_indexts.copy_document,
+                () => currentMarkdown,
+            );
+            addCopyAction(
+                i18n.src_docsite_indexts.copy_agent_prompt,
+                () => i18n.src_docsite_indexts.agent_read_prompt.replace("{0}", currentPageFile),
+            );
+            actionPanel.appendChild(quickActions);
+
+            const outlineSectionTitle = document.createElement("div");
+            outlineSectionTitle.className = styles["outlineSectionTitle"];
+            outlineSectionTitle.textContent = i18n.src_docsite_indexts.outline_title;
+            actionPanel.appendChild(outlineSectionTitle);
 
             const outlineList = document.createElement("nav");
             outlineList.className = styles["outlineList"];
             outlineList.setAttribute("aria-label", i18n.src_docsite_indexts.outline_title);
-            outlinePanel.appendChild(outlineList);
-            root.append(outlineToggle, outlinePanel);
+            actionPanel.appendChild(outlineList);
+            root.append(actionToggle, actionPanel);
 
-            const setOutlineOpen = (open: boolean): void => {
-                outlinePanel.hidden = !open;
-                outlineToggle.setAttribute("aria-expanded", String(open));
+            const setActionPanelOpen = (open: boolean): void => {
+                actionPanel.hidden = !open;
+                actionToggle.setAttribute("aria-expanded", String(open));
             };
 
             const updateOutlineActive = (): void => {
@@ -176,8 +202,8 @@ export const load = async (plugin: QueryViewPlugin): Promise<DocsSite> => {
                 });
 
                 const hasOutline = entries.length > 0;
-                outlineToggle.hidden = !hasOutline;
-                if (!hasOutline) setOutlineOpen(false);
+                outlineSectionTitle.hidden = !hasOutline;
+                outlineList.hidden = !hasOutline;
                 updateOutlineActive();
             };
 
@@ -229,17 +255,18 @@ export const load = async (plugin: QueryViewPlugin): Promise<DocsSite> => {
             // ---- 事件委托（单一监听器）----
             const onClick = (ev: MouseEvent): void => {
                 const target = ev.target as HTMLElement;
-                if (target.closest<HTMLElement>("[data-outline-toggle]")) {
-                    setOutlineOpen(Boolean(outlinePanel.hidden));
+                if (target.closest<HTMLElement>("[data-action-toggle]")) {
+                    setActionPanelOpen(Boolean(actionPanel.hidden));
                     return;
                 }
-                if (target.closest<HTMLElement>("[data-outline-close]")) {
-                    setOutlineOpen(false);
+                if (target.closest<HTMLElement>("[data-action-close]")) {
+                    setActionPanelOpen(false);
                     return;
                 }
                 const outlineEl = target.closest<HTMLElement>("[data-outline-id]");
                 if (outlineEl?.dataset["outlineId"]) {
                     scrollToOutline(outlineEl.dataset["outlineId"]);
+                    setActionPanelOpen(false);
                     return;
                 }
                 const navEl = target.closest<HTMLElement>("[data-page-id]");
@@ -250,6 +277,10 @@ export const load = async (plugin: QueryViewPlugin): Promise<DocsSite> => {
                 const retryEl = target.closest<HTMLElement>("[data-retry]");
                 if (retryEl) {
                     navigate(state.lang, state.pageId);
+                    return;
+                }
+                if (!target.closest<HTMLElement>("[data-action-panel]")) {
+                    setActionPanelOpen(false);
                 }
             };
             root.addEventListener("click", onClick);
@@ -264,22 +295,11 @@ export const load = async (plugin: QueryViewPlugin): Promise<DocsSite> => {
                         .replace("{1}", langName(result.lang));
                 }
 
-                contentHost.textContent = "";
-                const actions = pageActions[result.pageId];
-                if (actions && actions.length > 0) {
-                    const toolbar = document.createElement("div");
-                    toolbar.className = styles["toolbar"];
-                    for (const action of actions) {
-                        const btn = document.createElement("button");
-                        btn.type = "button";
-                        btn.className = styles["action"];
-                        btn.textContent = action.label;
-                        btn.addEventListener("click", () => action.run());
-                        toolbar.appendChild(btn);
-                    }
-                    contentHost.appendChild(toolbar);
-                }
+                currentMarkdown = md.replace(/\r\n?/g, "\n");
+                currentPageFile = pageFile(result.pageId, result.lang);
+                actionToggle.hidden = false;
 
+                contentHost.textContent = "";
                 const ctx: RenderCtx = {
                     baseUrl: window.location.origin + result.baseUrl,
                     ui,
@@ -294,6 +314,8 @@ export const load = async (plugin: QueryViewPlugin): Promise<DocsSite> => {
                 if (result.status !== "error") return;
                 noticeBar.hidden = true;
                 contentHost.textContent = "";
+                actionToggle.hidden = true;
+                setActionPanelOpen(false);
                 setOutline([]);
                 const err = document.createElement("div");
                 err.className = styles["error"];
@@ -317,6 +339,8 @@ export const load = async (plugin: QueryViewPlugin): Promise<DocsSite> => {
                 const gen = siteGeneration;
                 state.lang = lang;
                 state.pageId = pageId;
+                actionToggle.hidden = true;
+                setActionPanelOpen(false);
                 setActiveNav(pageId);
 
                 const result = await content.loadPage(lang, pageId);
@@ -329,13 +353,6 @@ export const load = async (plugin: QueryViewPlugin): Promise<DocsSite> => {
                 let md = content.stripDocsOnlyMarkers(result.markdown);
                 md = await content.expandExamples(md);
                 if (seq !== requestSeq || gen !== siteGeneration || disposed) return;
-
-                // 首页动作（d.ts 打开/下载）初始化与渲染串行化：动作未就绪时先等待（含请求令牌检查），
-                // 避免首页作为首屏时工具条永久缺失；初始化失败保持未定义，下次渲染重试
-                if (result.pageId === "index" && !pageActions["index"]) {
-                    await ensurePageActions();
-                    if (seq !== requestSeq || gen !== siteGeneration || disposed) return;
-                }
 
                 renderContent(result, md);
             };
@@ -358,29 +375,6 @@ export const load = async (plugin: QueryViewPlugin): Promise<DocsSite> => {
             tabCleanups.delete(this);
         },
     });
-
-    // 首页动作（懒初始化 + 失败重试；版本信息缓存）
-    const ensurePageActions = async (): Promise<void> => {
-        if (pageActions["index"]) return;
-        try {
-            const info = await ensurePluginInfo();
-            const actions: PageAction[] = [
-                {
-                    label: i18n.src_userhelp_indexts.download,
-                    run: () => downloadDts(info.name, info.version),
-                },
-            ];
-            if (canOpenLocally()) {
-                actions.push({
-                    label: i18n.src_userhelp_indexts.open_locally,
-                    run: () => openDtsLocally(plugin.name, setting.codeEditor),
-                });
-            }
-            pageActions["index"] = actions;
-        } catch (e) {
-            console.warn("[docs-site] build page actions failed", e);
-        }
-    };
 
     return {
         open(initialPageId?: PageId) {

@@ -65,6 +65,10 @@ src_docsite_indexts:
   nav_breakchange: 破坏性变更
   copy: 复制
   copied: 已复制
+  copy_document: 复制文档
+  copy_agent_prompt: 复制 Agent Prompt
+  agent_read_prompt: 请使用 file.read 工具阅读 `{0}`，以获取当前 Query&View 文档内容。
+  document_actions: 文档操作
   outline: 大纲
   outline_title: 页面大纲
   outline_close: 关闭

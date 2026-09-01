@@ -142,7 +142,7 @@ const handleLinks = (container: HTMLElement, baseUrl: string): void => {
     });
 };
 
-const copyText = async (text: string): Promise<boolean> => {
+export const copyText = async (text: string): Promise<boolean> => {
     try {
         await navigator.clipboard.writeText(text);
         return true;

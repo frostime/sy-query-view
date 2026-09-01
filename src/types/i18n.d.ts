@@ -42,6 +42,10 @@ interface I18n {
         nav_skill: string;
         copy: string;
         copied: string;
+        copy_document: string;
+        copy_agent_prompt: string;
+        agent_read_prompt: string;
+        document_actions: string;
         outline: string;
         outline_title: string;
         outline_close: string;
