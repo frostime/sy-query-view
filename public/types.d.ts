@@ -2,7 +2,7 @@
  * @name sy-query-view
  * @author frostime
  * @version 2.0.0-dev3
- * @updated 2026-09-01T10:56:30.265Z
+ * @updated 2026-09-01T11:52:18.574Z
  */
 
 declare module 'siyuan' {
@@ -287,17 +287,30 @@ declare const Query: {
         limit?: number;
     }) => Promise<IWrappedList<IWrappedBlock>>;
     /**
-     * Search blocks by tags
+     * Lists the complete SiYuan tag tree using the current tag-panel sorting.
+     * Names and labels are returned as decoded text, and leaf nodes always have an empty `children` array.
+     * A node's `count` is the number of direct occurrences of that exact tag; it does not include descendants.
+     * Parent nodes synthesized only to represent a hierarchy therefore have a count of zero.
+     * @returns Complete hierarchical tag list, or an empty array when the kernel request fails
+     * @example
+     * const tags = await Query.listTags();
+     * const projectTag = tags.find(tag => tag.label === 'project');
+     */
+    listTags: () => Promise<QueryTagNode[]>;
+    /**
+     * Search blocks by tags.
+     * Exact matching treats `%` and `_` as literal tag characters; `like` matching treats them as SQL wildcards.
      * @param tags - Tags to search for; can provide multiple tags
      * @param options - Additional options
      * @param options.join - Join type ('or' or 'and')
      * @param options.limit - Maximum number of results
-     * @param options.match - Match type ('=' or 'like'), if `like` the tags will be automatically add % as prefix and suffix
+     * @param options.match - Match type ('=' or 'like'); `like` searches within tag labels and allows `%` / `_` wildcards
      * @returns Array of blocks matching the tags
      * @example
-     * Query.tag('tag1') // Search for blocks with 'tag1'
+     * Query.tag('tag1') // Search for blocks with the exact tag 'tag1'
      * Query.tag(['tag1', 'tag2'], { join: 'or' }) // Search for blocks with 'tag1' or 'tag2'
-     * Query.tag(['tag1', 'tag2'], { join: 'and' }) // Search for blocks with 'tag1' and 'tag2'
+     * Query.tag(['tag1', 'tag2'], { join: 'and' }) // Search for blocks with both 'tag1' and 'tag2'
+     * Query.tag('project/%', { match: 'like' }) // Search hierarchical tags under 'project'
      */
     tag: (tags: string | string[], options?: {
         join?: "or" | "and";
@@ -1221,6 +1234,17 @@ type NotebookConf = {
     createDocNameTemplate: string;
     dailyNoteSavePath: string;
     dailyNoteTemplatePath: string;
+}
+
+type QueryTagNode = {
+    /** Tag segment name. */
+    name: string;
+    /** Full tag path, including parent segments separated by `/`. */
+    label: string;
+    depth: number;
+    /** Number of direct occurrences of this exact tag; excludes descendants. */
+    count: number;
+    children: QueryTagNode[];
 }
 
 type BlockType = 
