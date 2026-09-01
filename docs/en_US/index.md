@@ -59,15 +59,11 @@ And more rich rendering components.
 
 ![image](../assets/image-20241130151900-0n7ku7o.png)
 
-3️⃣ Simplify the processing and access of query results.
+3️⃣ Integrate with SiYuan's built-in Agent.
 
-The results obtained using the Query API have some additional convenient properties beyond the basic block attributes. For example, in the following example, we can directly use `aslink` to get a block's SiYuan link.
+The plugin registers its bundled Agent Skill with SiYuan's built-in Agent, so the Agent can write Query&View embed blocks and insert them directly into your documents:
 
-![image](../assets/image-20241025223457-hi94ial.png)
-
-4️⃣ Edit the code of embedded blocks in an external code editor and automatically update the source code as it is edited externally.
-
-![image](../assets/image-20241130145358-bqvwgmb.png)
+![image](../assets/image-integrate-with-agent.png "The built-in Agent inserts and renders a Query&View embed block")
 
 > 🖋️ **Start Learning from Examples**
 >

@@ -59,15 +59,11 @@
 
 ![image](../assets/image-20241130151900-0n7ku7o.png)
 
-3️⃣ 简化对查询结果的处理、访问。
+3️⃣ 和思源内置 Agent 集成。
 
-使用 Query API 查询到的结果，在普通的块属性的基础上有一些别的方便的属性。比如在下面这个例子中，我们可以直接使用 `aslink` 获取一个块的思源链接等。
+插件将随包发布的 Agent Skill 注册给思源内置 Agent，Agent 可据此在文档中直接编写并插入 Query&View 嵌入块：
 
-![image](../assets/image-20241025223457-hi94ial.png)
-
-4️⃣ 在外部代码编辑器中编辑嵌入块的代码，并随着外部的编辑自动更新源代码。
-
-![image](../assets/image-20241130145358-bqvwgmb.png)
+![image](../assets/image-integrate-with-agent.png "思源内置 Agent 插入并渲染 Query&View 嵌入块")
 
 > 🖋️ **从案例开始学习**
 >

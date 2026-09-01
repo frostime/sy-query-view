@@ -44,15 +44,11 @@ Example: query the backlinks of the current document and render them in the embe
 
 ![image](docs/assets/image-20241025221628-8bslxks.png "Shows backlinks")
 
-3️⃣ Simplify the processing and access of query results.
+3️⃣ Integrate with SiYuan's built-in Agent.
 
-Results returned by the Query API carry some convenient properties and methods on top of the raw block attributes. For example, you can directly use `aslink` to get the SiYuan link of a block, etc.:
+The plugin registers its bundled Agent Skill with SiYuan's built-in Agent, so the Agent can write Query&View embed blocks and insert them directly into your documents:
 
-![image](docs/assets/image-20241025223457-hi94ial.png)
-
-4️⃣ Edit embedded block code in an external code editor, and the source is updated automatically as you edit externally.
-
-![image](docs/assets/image-20241130145358-bqvwgmb.png)
+![image](docs/assets/image-integrate-with-agent.png "The built-in Agent inserts and renders a Query&View embed block")
 
 > 🖋️ **Learn from examples**
 >

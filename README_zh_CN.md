@@ -44,15 +44,11 @@ dv.render();
 
 ![image](docs/assets/image-20241025221628-8bslxks.png "展示反向链接")
 
-3️⃣ 简化对查询结果的处理、访问。
+3️⃣ 和思源内置 Agent 集成。
 
-使用 Query API 查询到的结果，在普通块属性的基础之上，会附带一些方便的属性与方法。例如可以直接使用 `aslink` 获取一个块的思源链接等：
+插件将随包发布的 Agent Skill 注册给思源内置 Agent，Agent 可据此在文档中直接编写并插入 Query&View 嵌入块：
 
-![image](docs/assets/image-20241025223457-hi94ial.png)
-
-4️⃣ 在外部代码编辑器中编辑嵌入块的代码，并随着外部编辑自动更新。
-
-![image](docs/assets/image-20241130145358-bqvwgmb.png)
+![image](docs/assets/image-integrate-with-agent.png "思源内置 Agent 插入并渲染 Query&View 嵌入块")
 
 > 🖋️ **从示例开始学习**
 >
