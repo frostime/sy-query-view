@@ -26,7 +26,6 @@ interface PageAction {
 
 export const load = async (plugin: QueryViewPlugin): Promise<DocsSite> => {
     const i18n = plugin.i18n as unknown as I18n;
-    const content: ContentApi = createContent(plugin.name);
     // 站点生命周期代数：dispose 时自增，使所有在途 Tab 请求失效（即使 SiYuan 未先调 destroy）
     let siteGeneration = 0;
     let outlinePanelSequence = 0;
@@ -51,6 +50,9 @@ export const load = async (plugin: QueryViewPlugin): Promise<DocsSite> => {
         }
         return pluginInfoCache;
     };
+
+    const loadPluginVersion = async (): Promise<string> => (await ensurePluginInfo()).version;
+    const content: ContentApi = createContent(plugin.name, loadPluginVersion);
 
     // API 页动作：依赖叶 dts-actions，与既有菜单共用实现
     const pageActions: Partial<Record<PageId, PageAction[]>> = {};

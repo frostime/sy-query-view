@@ -1,7 +1,14 @@
 # BREAKCHANGE
 
-Breaking changes and their announcements for Query&View, intended for script authors.
-Unreleased entries live under `[Unreleased]`; headings become version numbers on release.
+This document records the breaking changes in each Query View version. Refer to it when the qv code you have written stops working.
+
+Breaking updates of the plugin generally follow these conventions:
+
+1. A change is first marked as a breaking update, with compatibility for the old version kept
+2. The compatibility period lasts for a while; migrate on your own during it
+3. Legacy usage will be fully removed in some future version
+
+Current Query View version: **`${{PLUGIN_VERSION}}`**
 
 ## [Unreleased]
 

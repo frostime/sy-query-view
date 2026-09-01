@@ -1,6 +1,7 @@
 /*
  * Copyright (c) 2024 by frostime. All Rights Reserved.
  * @Description  : 文档站内容读取与故障处理（工厂，插件名透传，状态化加载结果）。
+ *                 取页时替换站点变量（${{PLUGIN_VERSION}} → 运行时读取的 plugin.json 版本）。
  *                 契约见 .dev/changes/query-view-docs-portal/nodes/shape-docs-gui/docs-site.LAND.md §3.2/§5。
  */
 
@@ -17,7 +18,7 @@ export interface ContentApi {
     otherLang(l: Lang): Lang;
     /** "/plugins/{pluginName}/<pageFile>，如 docs/zh_CN/topics/query.md 或 BREAKCHANGE/zh_CN.md */
     pageUrl(lang: Lang, id: PageId): string;
-    /** 状态化加载；成功（ok/fallback）内容入 Map 缓存 (lang,id)，失败不缓存 */
+    /** 状态化加载；成功（ok/fallback）内容入 Map 缓存 (lang,id)，失败不缓存；内容含站点变量替换 */
     loadPage(lang: Lang, id: PageId): Promise<PageLoadResult>;
     /** 仅删除 docs-only 标记行、保留内容，供文档站只读渲染 */
     stripDocsOnlyMarkers(md: string): string;
@@ -29,7 +30,13 @@ export interface ContentApi {
 /** 仅归一化行尾（\r\n 与 \r → \n），用于展示与复制的一致性 */
 const normalizeNewlines = (s: string): string => s.replace(/\r\n?/g, "\n");
 
-export const createContent = (pluginName: string): ContentApi => {
+/** 页面内容变量：当前插件版本，如 BREAKCHANGE 开头的「当前版本」行 */
+const PLUGIN_VERSION_VAR = "${{PLUGIN_VERSION}}";
+
+export const createContent = (
+    pluginName: string,
+    getPluginVersion: () => Promise<string>,
+): ContentApi => {
     const pageCache = new Map<string, string>();   // key: `${lang}/${pageId}`
     const exampleCache = new Map<string, string>(); // key: file
 
@@ -43,6 +50,13 @@ export const createContent = (pluginName: string): ContentApi => {
     const pageUrl = (lang: Lang, id: PageId): string =>
         `${base}/${pageFile(id, lang)}`;
 
+    /** 仅在页面含占位符时读取版本，避免普通页面增加一次 plugin.json 请求 */
+    const expandVersionVar = async (md: string): Promise<string> => {
+        if (!md.includes(PLUGIN_VERSION_VAR)) return md;
+        const version = await getPluginVersion();
+        return md.split(PLUGIN_VERSION_VAR).join(version);
+    };
+
     const loadPage = async (lang: Lang, id: PageId): Promise<PageLoadResult> => {
         const cacheKey = `${lang}/${id}`;
         const cached = pageCache.get(cacheKey);
@@ -54,7 +68,7 @@ export const createContent = (pluginName: string): ContentApi => {
             try {
                 const res = await fetch(pageUrl(l, id));
                 if (res.ok) {
-                    return { ok: true, status: res.status, text: await res.text() };
+                    return { ok: true, status: res.status, text: await expandVersionVar(await res.text()) };
                 }
                 return { ok: false, status: res.status, text: "" };
             } catch (e) {
