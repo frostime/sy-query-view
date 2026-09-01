@@ -21,6 +21,7 @@
     "export-types": "node scripts/export-types.js",
     "gen-ref": "npm run export-types && node scripts/gen-agent-ref.mjs",
     "gen-ref:check": "node scripts/gen-agent-ref.mjs --check",
+    "check-query-tag": "node scripts/check-query-tag.mjs",
     "git-tag": "node scripts/git-tag.js"
   },
   "devDependencies": {

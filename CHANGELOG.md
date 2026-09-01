@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- 新增 `Query.listTags()`，用于获取完整、已解码的层级标签列表。
 - `Query.dailynote` 支持通过 `after` / `before` 按日记日期划定包含边界的检索范围。
 - 时间转换与查询边界支持 8 位 `yyyyMMdd`、14 位 `yyyyMMddHHmmss` 和 JavaScript `Date`，由对应 API 自动归一化。
 
@@ -18,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- 修复 `Query.tag()` 精确匹配将 `%`、`_` 误作通配符，以及单引号标签无法查询的问题。
 - 修复 `Query.Utils.lastMonth()` 在部分月末错误返回本月月初的问题。
 - 修复 `Query.Utils.asDate()` 无法解析同组 API 产生的 8 位日期的问题。
 

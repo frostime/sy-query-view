@@ -32,6 +32,17 @@ type NotebookConf = {
     dailyNoteTemplatePath: string;
 }
 
+type QueryTagNode = {
+    /** Tag segment name. */
+    name: string;
+    /** Full tag path, including parent segments separated by `/`. */
+    label: string;
+    depth: number;
+    /** Number of direct occurrences of this exact tag; excludes descendants. */
+    count: number;
+    children: QueryTagNode[];
+}
+
 type BlockType = 
     | 'd'
     | 'p'

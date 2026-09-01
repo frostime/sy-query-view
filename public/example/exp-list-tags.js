@@ -10,11 +10,9 @@ const useButton = (title, onclick) => {
 
 let dv = Query.DataView(protyle, item, top);
 dv.render();
-let tags = await Query.request('/api/tag/getTag', {
-    sort: 4
-});
+let tags = await Query.listTags();
 
-tags = tags.sort((a, b) => - a.count + b.count);
+tags = tags.sort((a, b) => b.count - a.count);
 
 const onclick = (tag) => {
     Query.tag(tag.label).then(async (blocks) => {

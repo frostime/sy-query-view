@@ -20,7 +20,7 @@ Creates a new DataView instance for rendering data visualizations
 
 **Available names** (2, expanded from register()/addAlias() call sites): `DataView` · `Dataview`
 
-**Source** `src/core/query.ts:374`
+**Source** `src/core/query.ts:375`
 
 ---
 
@@ -41,7 +41,7 @@ Wraps blocks with additional functionality
 
 **Available names** (2, expanded from register()/addAlias() call sites): `wrapBlocks` · `wrapit`
 
-**Source** `src/core/query.ts:577`
+**Source** `src/core/query.ts:578`
 
 ---
 
@@ -63,7 +63,7 @@ await Query.request('/api/outline/getDocOutline', {
 });
 ```
 
-**Source** `src/core/query.ts:592`
+**Source** `src/core/query.ts:593`
 
 ---
 
@@ -85,7 +85,7 @@ Gets blocks by their IDs
 
 **Available names** (3, expanded from register()/addAlias() call sites): `getBlocksByIds` · `getBlockById` · `getBlocksById`
 
-**Source** `src/core/query.ts:601`
+**Source** `src/core/query.ts:602`
 
 ---
 
@@ -105,7 +105,7 @@ Similar to `getBlocksByIds`, but :
 
 **Returns**: Single block or array of blocks
 
-**Source** `src/core/query.ts:614`
+**Source** `src/core/query.ts:615`
 
 ---
 
@@ -125,7 +125,7 @@ Gets the current document's ID
 
 **Available names** (2, expanded from register()/addAlias() call sites): `root_id` · `docId`
 
-**Source** `src/core/query.ts:627`
+**Source** `src/core/query.ts:628`
 
 ---
 
@@ -143,7 +143,7 @@ Gets the current document as a block
 
 **Returns**: Wrapped document block
 
-**Source** `src/core/query.ts:634`
+**Source** `src/core/query.ts:635`
 
 ---
 
@@ -162,7 +162,7 @@ Executes SQL query and optionally wraps results
 
 **Returns**: Query results: an IWrappedList by default, plain Block[] when wrap is false
 
-**Source** `src/core/query.ts:646`
+**Source** `src/core/query.ts:647`
 
 ---
 
@@ -183,7 +183,7 @@ Finds backlinks to a specific block
 
 **Available names** (2, expanded from register()/addAlias() call sites): `backlink` · `backlinks`
 
-**Source** `src/core/query.ts:660`
+**Source** `src/core/query.ts:661`
 
 ---
 
@@ -205,7 +205,31 @@ Finds blocks with specific attributes
 
 **Returns**: Array of matching blocks
 
-**Source** `src/core/query.ts:677`
+**Source** `src/core/query.ts:678`
+
+---
+
+## Query.listTags()
+
+```ts
+listTags: () => Promise<QueryTagNode[]>
+```
+
+Lists the complete SiYuan tag tree using the current tag-panel sorting.
+Names and labels are returned as decoded text, and leaf nodes always have an empty `children` array.
+A node's `count` is the number of direct occurrences of that exact tag; it does not include descendants.
+Parent nodes synthesized only to represent a hierarchy therefore have a count of zero.
+
+**Returns**: Complete hierarchical tag list, or an empty array when the kernel request fails
+
+**Example**
+
+```ts
+const tags = await Query.listTags();
+const projectTag = tags.find(tag => tag.label === 'project');
+```
+
+**Source** `src/core/query.ts:709`
 
 ---
 
@@ -215,7 +239,8 @@ Finds blocks with specific attributes
 tag: (tags: string | string[], options?: { join?: "or" | "and"; limit?: number; match?: "=" | "like"; }) => Promise<IWrappedList<IWrappedBlock>>
 ```
 
-Search blocks by tags
+Search blocks by tags.
+Exact matching treats `%` and `_` as literal tag characters; `like` matching treats them as SQL wildcards.
 
 **Params**
 
@@ -223,19 +248,20 @@ Search blocks by tags
 - `options` — Additional options
 - `options.join` — Join type ('or' or 'and')
 - `options.limit` — Maximum number of results
-- `options.match` — Match type ('=' or 'like'), if `like` the tags will be automatically add % as prefix and suffix
+- `options.match` — Match type ('=' or 'like'); `like` searches within tag labels and allows `%` / `_` wildcards
 
 **Returns**: Array of blocks matching the tags
 
 **Example**
 
 ```ts
-Query.tag('tag1') // Search for blocks with 'tag1'
+Query.tag('tag1') // Search for blocks with the exact tag 'tag1'
 Query.tag(['tag1', 'tag2'], { join: 'or' }) // Search for blocks with 'tag1' or 'tag2'
-Query.tag(['tag1', 'tag2'], { join: 'and' }) // Search for blocks with 'tag1' and 'tag2'
+Query.tag(['tag1', 'tag2'], { join: 'and' }) // Search for blocks with both 'tag1' and 'tag2'
+Query.tag('project/%', { match: 'like' }) // Search hierarchical tags under 'project'
 ```
 
-**Source** `src/core/query.ts:711`
+**Source** `src/core/query.ts:732`
 
 ---
 
@@ -263,7 +289,7 @@ Query.task({ after: Query.Utils.thisMonth(), limit: 32 })
 Query.task({ after: new Date(2024, 9, 10) })
 ```
 
-**Source** `src/core/query.ts:756`
+**Source** `src/core/query.ts:766`
 
 ---
 
@@ -296,7 +322,7 @@ Query.dailynote({ after: Query.Utils.thisMonth('date'), before: Query.Utils.toda
 Query.dailynote({ after: new Date(2024, 0, 1), limit: 32 })
 ```
 
-**Source** `src/core/query.ts:787`
+**Source** `src/core/query.ts:797`
 
 ---
 
@@ -314,7 +340,7 @@ Gets child documents of a block
 
 **Returns**: Array of child document blocks
 
-**Source** `src/core/query.ts:838`
+**Source** `src/core/query.ts:848`
 
 ---
 
@@ -361,7 +387,7 @@ await query.nearby('block123');
 await query.nearby('block123', { direction: 'previous', number: 3 });
 ```
 
-**Source** `src/core/query.ts:887`
+**Source** `src/core/query.ts:897`
 
 ---
 
@@ -382,7 +408,7 @@ Search blocks that contain the given keywords
 
 **Returns**: Array of blocks that contain the given keywords
 
-**Source** `src/core/query.ts:925`
+**Source** `src/core/query.ts:935`
 
 ---
 
@@ -412,7 +438,7 @@ let docs = await Query.keywordDoc(['Keywords A', 'Keywords B']);
 docs[0].keywords['Keywords A'] // get the matched keyword block by using `keywords` property
 ```
 
-**Source** `src/core/query.ts:971`
+**Source** `src/core/query.ts:981`
 
 ---
 
@@ -431,7 +457,7 @@ Randomly roam blocks
 
 **Returns**: Array of randomly roamed blocks
 
-**Source** `src/core/query.ts:1030`
+**Source** `src/core/query.ts:1040`
 
 ---
 
@@ -450,7 +476,7 @@ Document and heading blocks include their child blocks; other block types return
 
 **Returns**: Markdown text
 
-**Source** `src/core/query.ts:1044`
+**Source** `src/core/query.ts:1054`
 
 ---
 
@@ -468,7 +494,7 @@ Return the statistics of the document with given document ID
 
 **Returns**: The statistics of the document; .runeCount - The number of characters in the document; .wordCount - The number of words (Chinese characters are counted as one word) in the document; .linkCount - The number of links in the document; .imageCount - The number of images in the document; .refCount - The number of references in the document; .blockCount - The number of blocks in the document
 
-**Source** `src/core/query.ts:1074`
+**Source** `src/core/query.ts:1084`
 
 ---
 
@@ -491,7 +517,7 @@ Redirects first block IDs to their parent containers
 
 **Available names** (2, expanded from register()/addAlias() call sites): `fb2p` · `redirect`
 
-**Source** `src/core/query.ts:1097`
+**Source** `src/core/query.ts:1107`
 
 ---
 
@@ -528,7 +554,7 @@ This function resolves this duplication issue by merging related blocks based on
 
 **Available names** (4, expanded from register()/addAlias() call sites): `pruneBlocks` · `prune` · `mergeBlocks` · `merge`
 
-**Source** `src/core/query.ts:1218`
+**Source** `src/core/query.ts:1228`
 
 ---
 
@@ -557,7 +583,7 @@ Send GPT request, use AI configuration in `siyuan.config.ai.openAI` by default
 
 **Notes**: The only API that sends external HTTP(S) requests via fetch; every other Query API is a SiYuan kernel request.
 
-**Source** `src/core/query.ts:1240`
+**Source** `src/core/query.ts:1250`
 
 ---
 
@@ -584,7 +610,7 @@ Exact `yyyyMMdd` and `yyyyMMddHHmmss` strings are parsed as local SiYuan dates i
 Query.Utils.Date('20260827').add('1w').toString('date')
 ```
 
-**Source** `src/core/query.ts:390`
+**Source** `src/core/query.ts:391`
 
 ---
 
@@ -603,7 +629,7 @@ Gets the current local date-time with an optional calendar offset.
 
 **Returns**: An 8-digit date or 14-digit local date-time string
 
-**Source** `src/core/query.ts:398`
+**Source** `src/core/query.ts:399`
 
 ---
 
@@ -621,7 +647,7 @@ Gets the start of the current local calendar date.
 
 **Returns**: An 8-digit date or the same date at `000000`
 
-**Source** `src/core/query.ts:408`
+**Source** `src/core/query.ts:409`
 
 ---
 
@@ -639,7 +665,7 @@ Gets the start of the current local week; weeks start on Sunday.
 
 **Returns**: An 8-digit date or that Sunday at `000000`
 
-**Source** `src/core/query.ts:417`
+**Source** `src/core/query.ts:418`
 
 ---
 
@@ -657,7 +683,7 @@ Gets the start of the previous local week; weeks start on Sunday.
 
 **Returns**: An 8-digit date or that Sunday at `000000`
 
-**Source** `src/core/query.ts:428`
+**Source** `src/core/query.ts:429`
 
 ---
 
@@ -675,7 +701,7 @@ Gets the start of the current local calendar month.
 
 **Returns**: An 8-digit date or the first day of the month at `000000`
 
-**Source** `src/core/query.ts:439`
+**Source** `src/core/query.ts:440`
 
 ---
 
@@ -693,7 +719,7 @@ Gets the start of the previous local calendar month.
 
 **Returns**: An 8-digit date or the first day of the previous month at `000000`
 
-**Source** `src/core/query.ts:450`
+**Source** `src/core/query.ts:451`
 
 ---
 
@@ -711,7 +737,7 @@ Gets the start of the current local calendar year.
 
 **Returns**: An 8-digit date or January 1 at `000000`
 
-**Source** `src/core/query.ts:462`
+**Source** `src/core/query.ts:463`
 
 ---
 
@@ -732,7 +758,7 @@ Invalid formats and impossible calendar values throw an error.
 
 **Returns**: The parsed SiYuanDate
 
-**Source** `src/core/query.ts:476`
+**Source** `src/core/query.ts:477`
 
 ---
 
@@ -751,7 +777,7 @@ Converts a valid Date to compact SiYuan local date format.
 
 **Returns**: An 8-digit date or 14-digit local date-time string
 
-**Source** `src/core/query.ts:484`
+**Source** `src/core/query.ts:485`
 
 ---
 
@@ -769,7 +795,7 @@ Converts a block to a SiYuan link format
 
 **Returns**: String in markdown link format
 
-**Source** `src/core/query.ts:493`
+**Source** `src/core/query.ts:494`
 
 ---
 
@@ -787,7 +813,7 @@ Converts a block to a SiYuan reference format
 
 **Returns**: String in reference format ((id 'content'))
 
-**Source** `src/core/query.ts:500`
+**Source** `src/core/query.ts:501`
 
 ---
 
@@ -806,7 +832,7 @@ Converts blocks into an object keyed by a block property.
 
 **Returns**: Object whose keys are the selected property values
 
-**Source** `src/core/query.ts:508`
+**Source** `src/core/query.ts:509`
 
 ---
 
@@ -824,7 +850,7 @@ Gets notebook information from block or notebook ID
 
 **Returns**: Notebook information
 
-**Source** `src/core/query.ts:518`
+**Source** `src/core/query.ts:519`
 
 ---
 
@@ -848,7 +874,7 @@ Gets the name of a notebook by its ID; equivalent to `notebook(boxid).name`
 Query.Utils.boxName(block['box']) // 'Notebook 123'
 ```
 
-**Source** `src/core/query.ts:529`
+**Source** `src/core/query.ts:530`
 
 ---
 
@@ -872,7 +898,7 @@ Gets the readable name of the type of a block
 Query.Utils.typename(block['type']) // 'Heading'
 ```
 
-**Source** `src/core/query.ts:539`
+**Source** `src/core/query.ts:540`
 
 ---
 
@@ -890,7 +916,7 @@ Given a document block (type='d'), return its emoji icon
 
 **Returns**: emoji icon; if block is not with type='d', return null
 
-**Source** `src/core/query.ts:546`
+**Source** `src/core/query.ts:547`
 
 ---
 
@@ -908,7 +934,7 @@ Given emoji code, returl emoji icon
 
 **Returns**: 
 
-**Source** `src/core/query.ts:557`
+**Source** `src/core/query.ts:558`
 
 ---
 
@@ -920,7 +946,7 @@ renderAttr: (b: Block & { [key: string | number]: string | number; }, attr: (key
 
 Renders the value of a block attribute as markdown format
 
-**Source** `src/core/query.ts:566`
+**Source** `src/core/query.ts:567`
 
 ---
 
@@ -932,7 +958,7 @@ openBlock: (id: BlockId, options?: { zoomIn?: boolean; action?: import("siyuan")
 
 Opens a block in the current SiYuan UI.
 
-**Source** `src/core/query.ts:568`
+**Source** `src/core/query.ts:569`
 
 ---
 

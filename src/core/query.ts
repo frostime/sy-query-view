@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-12-01 22:34:55
  * @FilePath     : /src/core/query.ts
- * @LastEditTime : 2025-05-16 22:37:26
+ * @LastEditTime : 2026-09-01 19:59:58
  * @Description  :
  */
 import { IProtyle, showMessage } from "siyuan";
@@ -20,6 +20,7 @@ import { BlockTypeShort } from "@/utils/const";
 import PromiseLimitPool from "@/libs/promise-pool";
 import { i18n } from "..";
 import { getBlockByID, id2block, siyuanVersion } from "@frostime/siyuan-plugin-kits";
+import { buildTagSqlCondition, normalizeTagTree } from "./tag";
 
 // import { getSessionStorageSize } from "./gc";
 
@@ -696,17 +697,37 @@ const Query = {
     },
 
     /**
-     * Search blocks by tags
+     * Lists the complete SiYuan tag tree using the current tag-panel sorting.
+     * Names and labels are returned as decoded text, and leaf nodes always have an empty `children` array.
+     * A node's `count` is the number of direct occurrences of that exact tag; it does not include descendants.
+     * Parent nodes synthesized only to represent a hierarchy therefore have a count of zero.
+     * @returns Complete hierarchical tag list, or an empty array when the kernel request fails
+     * @example
+     * const tags = await Query.listTags();
+     * const projectTag = tags.find(tag => tag.label === 'project');
+     */
+    listTags: async (): Promise<QueryTagNode[]> => {
+        const tags = await request('/api/tag/getTag', {
+            sort: window.siyuan.config.tag.sort,
+            ignoreMaxListHint: true
+        });
+        return normalizeTagTree(tags, value => window.Lute.UnEscapeHTMLStr(value));
+    },
+
+    /**
+     * Search blocks by tags.
+     * Exact matching treats `%` and `_` as literal tag characters; `like` matching treats them as SQL wildcards.
      * @param tags - Tags to search for; can provide multiple tags
      * @param options - Additional options
      * @param options.join - Join type ('or' or 'and')
      * @param options.limit - Maximum number of results
-     * @param options.match - Match type ('=' or 'like'), if `like` the tags will be automatically add % as prefix and suffix
+     * @param options.match - Match type ('=' or 'like'); `like` searches within tag labels and allows `%` / `_` wildcards
      * @returns Array of blocks matching the tags
      * @example
-     * Query.tag('tag1') // Search for blocks with 'tag1'
+     * Query.tag('tag1') // Search for blocks with the exact tag 'tag1'
      * Query.tag(['tag1', 'tag2'], { join: 'or' }) // Search for blocks with 'tag1' or 'tag2'
-     * Query.tag(['tag1', 'tag2'], { join: 'and' }) // Search for blocks with 'tag1' and 'tag2'
+     * Query.tag(['tag1', 'tag2'], { join: 'and' }) // Search for blocks with both 'tag1' and 'tag2'
+     * Query.tag('project/%', { match: 'like' }) // Search hierarchical tags under 'project'
      */
     tag: async (
         tags: string | string[],
@@ -717,23 +738,12 @@ const Query = {
         }
     ) => {
         const { join = 'or', limit: lim, match = '=' } = options ?? {};
+        const tagList = Array.isArray(tags) ? tags : [tags];
+        if (tagList.length === 0) return wrapList([]);
 
-        // 格式化标签函数
-        const formatTag = (tag: string, isLike: boolean) => {
-
-            tag = tag.replace(/^[#%]+/, '').replace(/[#%]+$/, '');
-
-            return isLike ? `%#%${tag}%#%` : `%#${tag}#%`;
-        };
-
-        // 将单个标签转换为数组
-        tags = Array.isArray(tags) ? tags : [tags];
-
-        // 构建标签条件
-        const tagConditions = tags.map(tag => {
-            const formattedTag = formatTag(tag, match === 'like');
-            return `tag like '${formattedTag}'`;
-        }).join(` ${join} `);
+        const tagConditions = tagList
+            .map(tag => buildTagSqlCondition(tag, match))
+            .join(` ${join} `);
 
         return Query.sql(`select * from blocks where
             (type='d' or type='p' or type='h') and
@@ -855,23 +865,23 @@ const Query = {
 
     /**
      * Get nearby blocks relative to the specified block within the same container.
-     * 
+     *
      * The search is limited to blocks within the same hierarchy level() container or heading section ).
      * Example: For the following structure, para 2's nearby blocks would be:
      * previous: [para 1], next: [para 3, para 4]; because `### Title` is outof the same hierarchy level.
-     * 
+     *
      * ```
      * ### Title
-     * 
+     *
      * para 1
-     * 
+     *
      * para 2
-     * 
+     *
      * para 3
-     * 
+     *
      * para 4
      * ```
-     * 
+     *
      * @param id - Target block ID to find neighbors for
      * @param options - Search options
      * @param options.direction - Which direction to search ('previous', 'next' or 'both'), defaults to 'both'
@@ -880,14 +890,14 @@ const Query = {
      * @example
      * // Get both previous and next blocks
      * await query.nearby('block123');
-     * 
+     *
      * // Get 3 previous blocks only
      * await query.nearby('block123', { direction: 'previous', number: 3 });
      */
     nearby: async (id: BlockId, options?: {
         direction?: 'previous' | 'next' | 'both',
         number?: number
-    }): Promise<{ 
+    }): Promise<{
         previous?: { id: BlockId, markdown: string }[],
         next?: { id: BlockId, markdown: string }[]
     }> => {
