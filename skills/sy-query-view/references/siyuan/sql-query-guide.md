@@ -41,6 +41,9 @@ For agent usage, **treat SQL as a read-only query interface**:
 | `created` | creation time |
 | `updated` | update time |
 
+**Note**: 
+- `created` and `updated` are strings like `'20220322160253'`, do not compare to integers in SQL
+
 ## 2. Most common query patterns
 
 Run these through `Query.sql` in an embedded block, for example:
