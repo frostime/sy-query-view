@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- 集成思源 Agent 系统: 增加了内置 SKILL，以及 debug qv 的 tool。
+- 增加内部参考文档面板
+- BREAKCHANGE 文档
 - 新增 `Query.listTags()`，用于获取完整、已解码的层级标签列表。
 - `Query.dailynote` 支持通过 `after` / `before` 按日记日期划定包含边界的检索范围。
 - 时间转换与查询边界支持 8 位 `yyyyMMdd`、14 位 `yyyyMMddHHmmss` 和 JavaScript `Date`，由对应 API 自动归一化。
