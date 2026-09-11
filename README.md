@@ -89,6 +89,14 @@ You can also open or download the `types.d.ts` type declaration of the installed
 
 - [Agent Skill](skills/sy-query-view/SKILL.md) — the Agent Skill shipped with the plugin, providing rules and references for AI agents working with Query&View.
 
+**BREAKCHANGE**
+
+The plugin avoids breaking existing API usage and does not introduce breaking updates casually. When a breaking update does happen, it is announced in the [BREAKCHANGE document](public/BREAKCHANGE/en_US.md), and legacy usage keeps working with compatibility support for several versions before the actual breaking change lands.
+
+If you hit a deprecated or unsupported API, refer to the BREAKCHANGE document, or copy the "Copy Agent prompt" action at the bottom-right of the documentation site and hand it to SiYuan's built-in Agent.
+
+![image](docs/assets/image-agent-prompt.png "The BREAKCHANGE page of the documentation site, with the Copy Agent prompt action at the bottom-right")
+
 ## Technical Details
 
 ### What `return` Returns

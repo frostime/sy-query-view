@@ -91,6 +91,14 @@ Agent Reference 为自动生成的新版分级参考（当前仅提供英文，�
 
 - [智能体技能](skills/sy-query-view/SKILL.md) —— 随插件发布的 Agent Skill，为 AI 代理提供使用与查证 Query&View 的规则和参考。
 
+**BREAKCHANGE**
+
+插件会尽量避免破坏已有 API 用法，不随意引入破坏性更新。若发生了破坏性更新，会在 [BREAKCHANGE 文档](public/BREAKCHANGE/zh_CN.md) 中声明，并且在后续若干版本内对旧版用法做兼容支持，此后才实施真正的破坏性变更。
+
+若遇到了废弃、不支持的 API，可以参考 BREAKCHANGE 文档，也可以直接复制右下角的「复制 Agent Prompt」交给思源内置 Agent 处理。
+
+![image](docs/assets/image-agent-prompt.png "文档站 BREAKCHANGE 页与右下角的「复制 Agent Prompt」")
+
 ## 技术细节说明
 
 ### `return` 返回什么
