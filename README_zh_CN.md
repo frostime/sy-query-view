@@ -58,6 +58,8 @@ dv.render();
 
 完整的说明文档分为「快速开始、主题、案例、Agent Reference」等部分，提供中英双语。以下页面即为插件内文档站的源内容（文档站直接渲染这些页面），可在 GitHub 上直接浏览：
 
+![image](docs/assets/image-docs-site.png "顶栏插件菜单 Help Document 打开内置文档站")
+
 **快速开始**
 
 - [基本概念：什么是 JS 嵌入块](docs/zh_CN/quickstart/concepts.md) —— 嵌入块、执行环境，以及 `protyle`/`item`/`top` 变量。

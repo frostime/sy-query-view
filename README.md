@@ -58,6 +58,8 @@ The plugin registers its bundled Agent Skill with SiYuan's built-in Agent, so th
 
 The full documentation is organized into Quickstart, Topics, Examples, and Agent Reference, available in both Chinese and English. The pages below are exactly what the in-plugin documentation site renders (the site renders these pages directly), and can be browsed right here on GitHub:
 
+![image](docs/assets/image-docs-site.png "Open the documentation site from the Help item in the top-bar plugin menu")
+
 **Quickstart**
 
 - [Basic Concepts: What is a JS Embedded Block](docs/en_US/quickstart/concepts.md) — embedded blocks, the execution environment, and the `protyle`/`item`/`top` variables.
