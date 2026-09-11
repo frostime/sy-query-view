@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - 修复废弃参数警告文案：消除 `Query.Query.` 双前缀，提示改为指向 BREAKCHANGE 文档。
+- 修复文档站「复制 Agent Prompt」：路径改为内核文件路径（`/data/plugins/<插件名>/…`），思源内置 Agent 的 file.read 可直接读取。
 - 修复 `Query.tag()` 精确匹配将 `%`、`_` 误作通配符，以及单引号标签无法查询的问题。
 - 修复 `Query.Utils.lastMonth()` 在部分月末错误返回本月月初的问题。
 - 修复 `Query.Utils.asDate()` 无法解析同组 API 产生的 8 位日期的问题。

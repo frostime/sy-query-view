@@ -8,7 +8,7 @@
 import { Custom, openTab } from "siyuan";
 import type QueryViewPlugin from "@/index";
 import { getPluginInfo } from "@/user-help/dts-actions";
-import { PAGE_TREE, pageFile, type Lang, type NavItem, type NavLabelKey, type PageId } from "./nav";
+import { PAGE_TREE, type Lang, type NavItem, type NavLabelKey, type PageId } from "./nav";
 import { createContent, type ContentApi, type PageLoadResult } from "./content";
 import { copyText, extractOutline, renderPage, type OutlineEntry, type RenderCtx, type RenderUi } from "./render";
 import styles from "./index.module.scss";
@@ -296,7 +296,9 @@ export const load = async (plugin: QueryViewPlugin): Promise<DocsSite> => {
                 }
 
                 currentMarkdown = md.replace(/\r\n?/g, "\n");
-                currentPageFile = pageFile(result.pageId, result.lang);
+                // 复制 Agent Prompt 用内核文件路径（相对工作区 data 根），思源内置 Agent 的 file.read 才能解析；
+                // result.baseUrl 是 HTTP 静态前缀 /plugins/<name>/<pageFile>，加 /data 即 kernel 文件路径。
+                currentPageFile = `/data/plugins/${plugin.name}${result.baseUrl}`;
                 actionToggle.hidden = false;
 
                 contentHost.textContent = "";
