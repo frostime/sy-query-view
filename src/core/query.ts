@@ -252,7 +252,7 @@ class SiYuanDate extends Date {
      */
     toString(format: DateFormatInput = 'datetime') {
         assertValidDate(this, 'SiYuanDate.toString');
-        const normalizedFormat = normalizeDateFormat('SiYuanDate.toString', format);
+        const normalizedFormat = normalizeDateFormat('Query.SiYuanDate.toString', format);
         return formatDateTime(normalizedFormat === 'date' ? 'yyyyMMdd' : 'yyyyMMddHHmmss', this) as string;
     }
 
@@ -934,7 +934,7 @@ const Query = {
      */
     keyword: async (keywords: string | string[], options?: { relation?: 'any' | 'all', limit?: number } | DeprecatedParam<'any' | 'all'> | { join?: 'or' | 'and', limit?: number } | DeprecatedParam<'or' | 'and'>) => {
         const opts = handleOptions(
-            'keyword',
+            'Query.keyword',
             { relation: 'any' as 'any' | 'all', limit: 999 as number },
             options as any,
             {},
@@ -946,7 +946,7 @@ const Query = {
             if (oldJoin === 'or' || oldJoin === 'and') {
                 opts.relation = oldJoin === 'or' ? 'any' : 'all';
                 const msg = i18n.src_core_queryts.query_obsolete_params;
-                console.warn(msg.replace('{0}', 'keyword: join → relation'));
+                console.warn(msg.replace('{0}', 'Query.keyword: join → relation'));
             }
         }
         // 旧式字符串形态（keyword(kw, 'or')）同样映射
@@ -980,7 +980,7 @@ const Query = {
      */
     keywordDoc: async (keywords: string | string[], options?: { relation?: 'any' | 'all', limit?: number } | DeprecatedParam<'any' | 'all'> | { join?: 'or' | 'and', limit?: number } | DeprecatedParam<'or' | 'and'>) => {
         const opts = handleOptions(
-            'keywordDoc',
+            'Query.keywordDoc',
             { relation: 'all' as 'any' | 'all', limit: 999 as number },
             options as any,
             {},
@@ -992,7 +992,7 @@ const Query = {
             if (oldJoin === 'or' || oldJoin === 'and') {
                 opts.relation = oldJoin === 'or' ? 'any' : 'all';
                 const msg = i18n.src_core_queryts.query_obsolete_params;
-                console.warn(msg.replace('{0}', 'keywordDoc: join → relation'));
+                console.warn(msg.replace('{0}', 'Query.keywordDoc: join → relation'));
             }
         }
         // 旧式字符串形态（keywordDoc(kw, 'or')）同样映射
