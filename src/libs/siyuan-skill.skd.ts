@@ -518,7 +518,10 @@ async function putBytes(path: string, bytes: Uint8Array): Promise<void> {
   f.append("path", path);
   f.append("isDir", "false");
   f.append("modTime", now());
-  f.append("file", new Blob([bytes]), base(path));
+  // TS 5.9 起 BlobPart 要求 ArrayBufferView<ArrayBuffer>；Uint8Array 默认
+  // 泛型是 ArrayBufferLike（可能是 SharedArrayBuffer）。拷贝一份得到确定的
+  // ArrayBuffer 后端，避免使用泛型语法以兼容旧版 TypeScript。
+  f.append("file", new Blob([new Uint8Array(bytes)]), base(path));
   await postForm("/api/file/putFile", f);
 }
 

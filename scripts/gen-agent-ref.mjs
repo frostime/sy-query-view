@@ -15,8 +15,7 @@
  *   WrappedList / WrappedBlock → docs/en_US/agent-ref/wrapped-list.md
  *   类型参考（手写 interface）   → docs/en_US/agent-ref/types.md
  */
-import { Project, SyntaxKind, Node } from "ts-morph";
-import ts from "typescript";
+import { Project, SyntaxKind, Node, ts } from "ts-morph";
 import fs from "fs";
 import path from "path";
 

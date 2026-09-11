@@ -5,68 +5,70 @@ on:
     tags:
       - "v*"
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       # Checkout
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      # Install Node.js
-      - name: Install Node.js
-        uses: actions/setup-node@v3
-        with:
-          # pnpm 11 要求 Node >= 22.13 (node:sqlite), 与本地工具链保持一致用 24
-          node-version: 24
-          registry-url: "https://registry.npmjs.org"
-
-      # Install pnpm
+      # Install pnpm（版本随 package.json 的 packageManager 字段）
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         id: pnpm-install
         with:
-          # 必须 >= 10: 仓库使用 pnpm-workspace.yaml(allowBuilds), 且本地工具链为 pnpm 11
-          version: 11
+          version: 11.4.0
           run_install: false
 
-      # Get pnpm store directory
-      - name: Get pnpm store directory
-        id: pnpm-cache
+      # Install Node.js
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          # pnpm 11 要求 Node >= 22.13 (node:sqlite), 与本地工具链保持一致用 24
+          node-version: 24
+          registry-url: "https://registry.npmjs.org"
+          cache: pnpm
+
+      # Validate release version（对照官方模板：tag 必须与 package.json / plugin.json 一致）
+      - name: Validate release version
         shell: bash
         run: |
-          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+          tag_version="${GITHUB_REF_NAME#v}"
+          package_version="$(node -p "require('./package.json').version")"
+          plugin_version="$(node -p "require('./plugin.json').version")"
 
-      # Setup pnpm cache
-      - name: Setup pnpm cache
-        uses: actions/cache@v3
-        with:
-          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
+          if [[ "$GITHUB_REF_NAME" != v* || -z "$tag_version" ]]; then
+            echo "Invalid release tag: $GITHUB_REF_NAME (expected v<version>)"
+            exit 1
+          fi
 
-      # Install dependencies
+          if [[ "$tag_version" != "$package_version" ]]; then
+            echo "Tag version ($tag_version) does not match package.json ($package_version)"
+            exit 1
+          fi
+
+          if [[ "$tag_version" != "$plugin_version" ]]; then
+            echo "Tag version ($tag_version) does not match plugin.json ($plugin_version)"
+            exit 1
+          fi
+
+          echo "Release version validated: $tag_version"
+
+      # Install dependencies（lockfile 已入库，frozen 安装保证与本地一致）
       - name: Install dependencies
-        run: |
-          pnpm install
-          # 检查 typescript 是否正确安装
-          pnpm list typescript
-          # 打印当前目录
-          pwd
-          # 显示当前工作目录结构
-          ls -la
+        run: pnpm install --frozen-lockfile
 
       # Build for production
       - name: Build for production
         run: |
-          # 显示 TypeScript 配置
-          cat tsconfig.json
-          # 执行构建并捕获所有输出
-          pnpm run build || { echo "Build failed"; exit 1; }
+          # 执行构建（export-types → tsc 声明 → vite build → zip 打包）
+          pnpm run build
           # 检查构建后的文件
           ls -la dist
-          ls -la types || true
 
       - name: Release
         uses: ncipollo/release-action@v1
