@@ -136,14 +136,6 @@ writer.append('\n');
 
 writer.close();
 
-const cache = {
-    '{{Query}}': query,
-    '{{DataView}}': dataview + '\n\n' + dataviewdts,
-    '{{Proxy}}': proxy,
-}
-// 写入 json
-fs.writeFileSync('./types/types.d.ts.json', JSON.stringify(cache, null, 2));
-
 //format
 let content = fs.readFileSync(path.join(outputDir, 'types.d.ts'), 'utf8');
 const ERASED_LINES = [

@@ -15,7 +15,8 @@ const blankContent = `
 This script is used for sy-query-view plugin to define user's customized view components. Type declarations as follows:
 
 interface ICustomView {
-    use: (dv: IDataView) => {
+    // dv 参数声明为 any；实际运行时是一个 DataView 实例（期望的 dv interface）
+    use: (dv: any) => {
         render: (container: HTMLElement, ...args: any[]) => HTMLElement; //Create the user custom view.
         dispose?: () => void;  // Unmount hook for the user custom view.
     },

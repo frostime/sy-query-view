@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-12-01 22:34:55
  * @FilePath     : /src/core/query.ts
- * @LastEditTime : 2025-05-16 22:37:26
+ * @LastEditTime : 2026-09-01 19:59:58
  * @Description  :
  */
 import { IProtyle, showMessage } from "siyuan";
@@ -20,12 +20,22 @@ import { BlockTypeShort } from "@/utils/const";
 import PromiseLimitPool from "@/libs/promise-pool";
 import { i18n } from "..";
 import { getBlockByID, id2block, siyuanVersion } from "@frostime/siyuan-plugin-kits";
+import { buildTagSqlCondition, normalizeTagTree } from "./tag";
 
 // import { getSessionStorageSize } from "./gc";
 
 type DeprecatedParam<T> = T;
 
 const hasWarnMsgAPI = new Set();
+
+function warnDeprecatedUsage(apiName: string) {
+    const msg = i18n.src_core_queryts.query_obsolete_params.replace('{0}', apiName);
+    console.warn(msg);
+    if (!hasWarnMsgAPI.has(apiName)) {
+        showMessage(msg, 7000, 'error');
+        hasWarnMsgAPI.add(apiName);
+    }
+}
 
 function handleOptions<T extends Record<string, any>, K extends keyof T>(
     apiName: string,
@@ -56,12 +66,7 @@ function handleOptions<T extends Record<string, any>, K extends keyof T>(
     }
 
     if (isDepecatedUsage) {
-        const msg = i18n.src_core_queryts.query_obsolete_params;
-        console.warn(msg.replace('{0}', apiName));
-        if (!hasWarnMsgAPI.has(apiName)) {
-            showMessage(msg.replace('{0}', apiName), 7000, 'error');
-            hasWarnMsgAPI.add(apiName);
-        }
+        warnDeprecatedUsage(apiName);
     }
 
     return opts;
@@ -196,30 +201,62 @@ const cond = async (cond: string) => {
     return globalThis.Query.sql(`select * from blocks where ${cond}`);
 }
 
-const beginOfDay = (date: Date) => {
-    date.setHours(0, 0, 0, 0);
-    return date;
+type DateFormat = 'date' | 'datetime';
+type DateFormatInput = DateFormat | DeprecatedParam<boolean>;
+type DateOffsetUnit = 'd' | 'w' | 'm' | 'y';
+type DateOffset = number | `${bigint}${DateOffsetUnit}`;
+type SiYuanDateConstructorArgs =
+    | []
+    | [value: string | number | Date]
+    | [year: number, monthIndex: number, date?: number, hours?: number, minutes?: number, seconds?: number, ms?: number];
+type DateInput = Date | string;
+
+function normalizeDateFormat(apiName: string, format: DateFormatInput = 'datetime'): DateFormat {
+    if (typeof format === 'boolean') {
+        warnDeprecatedUsage(apiName);
+        return format ? 'datetime' : 'date';
+    }
+    if (format !== 'date' && format !== 'datetime') {
+        throw new TypeError(`${apiName}: format must be "date" or "datetime"`);
+    }
+    return format;
 }
 
+function assertValidDate(date: Date, apiName: string) {
+    if (Number.isNaN(date.getTime())) {
+        throw new RangeError(`${apiName}: invalid date`);
+    }
+}
 
 /**
- * Data class for SiYuan timestamp
- * In SiYuan, the timestamp is in the format of yyyyMMddHHmmss
+ * A local-calendar Date specialized for SiYuan date strings.
+ *
+ * An 8-digit `yyyyMMdd` value represents a calendar date without a time or time zone.
+ * Converting it to JavaScript Date maps it to the start of that date in the local time zone.
+ * A 14-digit `yyyyMMddHHmmss` value represents local date and time to second precision.
  */
 class SiYuanDate extends Date {
 
+    /** Returns a copy at the start of the same local calendar date. */
     beginOfDay() {
         const date = new SiYuanDate(this.getTime());
+        assertValidDate(date, 'SiYuanDate.beginOfDay');
         date.setHours(0, 0, 0, 0);
         return date;
     }
 
-    toString(hms: boolean = true) {
-        return formatDateTime('yyyyMMdd' + (hms ? 'HHmmss' : ''), this) as string;
+    /**
+     * Converts this value to a compact SiYuan date string.
+     * @param format - `'date'` returns `yyyyMMdd`; `'datetime'` (default) returns `yyyyMMddHHmmss`; deprecated booleans map `false` to `'date'` and `true` to `'datetime'`
+     * @returns An 8-digit date or 14-digit local date-time string
+     */
+    toString(format: DateFormatInput = 'datetime') {
+        assertValidDate(this, 'SiYuanDate.toString');
+        const normalizedFormat = normalizeDateFormat('Query.SiYuanDate.toString', format);
+        return formatDateTime(normalizedFormat === 'date' ? 'yyyyMMdd' : 'yyyyMMddHHmmss', this) as string;
     }
 
-    // primitimive of string
-    //@ts-ignore
+    //@ts-ignore Date's primitive conversion signature does not expose its implementation to subclasses.
     [Symbol.toPrimitive](hint: string) {
         switch (hint) {
             case 'string': return this.toString();
@@ -227,31 +264,70 @@ class SiYuanDate extends Date {
         }
     }
 
+    /**
+     * Parses an exact 8-digit SiYuan date or 14-digit SiYuan date-time string in the local time zone.
+     * Invalid formats and impossible calendar values throw instead of being silently normalized.
+     */
     static fromString(timestr: string) {
-        return new SiYuanDate(timestr.replace(/(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})/, '$1-$2-$3 $4:$5:$6'));
+        if (typeof timestr !== 'string') {
+            throw new TypeError('SiYuanDate.fromString: value must be a string');
+        }
+        const match = timestr.match(/^(\d{4})(\d{2})(\d{2})(?:(\d{2})(\d{2})(\d{2}))?$/);
+        if (!match) {
+            throw new TypeError('SiYuanDate.fromString: expected yyyyMMdd or yyyyMMddHHmmss');
+        }
+
+        const [, yearText, monthText, dayText, hourText = '00', minuteText = '00', secondText = '00'] = match;
+        const [year, month, day, hour, minute, second] = [
+            yearText, monthText, dayText, hourText, minuteText, secondText
+        ].map(Number);
+        const date = new SiYuanDate(0);
+        date.setFullYear(year, month - 1, day);
+        date.setHours(hour, minute, second, 0);
+
+        const isExactCalendarValue = date.getFullYear() === year
+            && date.getMonth() === month - 1
+            && date.getDate() === day
+            && date.getHours() === hour
+            && date.getMinutes() === minute
+            && date.getSeconds() === second;
+        if (!isExactCalendarValue) {
+            throw new RangeError(`SiYuanDate.fromString: invalid calendar value "${timestr}"`);
+        }
+        return date;
     }
 
     /**
-     * Format date
-     * @param fmt default as 'yyyy-MM-dd HH:mm:ss'
-     * @returns
+     * Formats this date with QV's date-time tokens; defaults to `yyyy-MM-dd HH:mm:ss`.
+     * @param fmt - Format containing `yyyy`, `yy`, `MM`, `dd`, `HH`, `mm`, or `ss`
      */
     format(fmt: string = 'yyyy-MM-dd HH:mm:ss') {
+        assertValidDate(this, 'SiYuanDate.format');
         return formatDateTime(fmt, this);
     }
 
-
-    add(days: number | string) {
-        const parseDelta = (): { unit: 'd' | 'w' | 'm' | 'y', delta: number } => {
-            if (typeof days === 'string') {
-                const match = days.match(/^(-?\d+)(d|w|m|y)$/);
-                if (match) {
-                    return { unit: match[2] as 'd' | 'w' | 'm' | 'y', delta: parseInt(match[1]) };
+    /**
+     * Returns a copy offset by calendar days, weeks, months, or years.
+     * Numeric values mean calendar days; strings must be an integer followed by `d`, `w`, `m`, or `y`.
+     * Month and year offsets retain JavaScript Date's overflow behavior.
+     */
+    add(offset: DateOffset = 0) {
+        const parseOffset = (): { unit: DateOffsetUnit, delta: number } => {
+            if (typeof offset === 'number') {
+                if (!Number.isSafeInteger(offset)) {
+                    throw new TypeError('SiYuanDate.add: numeric offsets must be safe integers');
                 }
+                return { unit: 'd', delta: offset };
             }
-            return { unit: 'd', delta: days as number ?? 0 };
-        }
-        const { unit, delta } = parseDelta();
+            const match = offset.match(/^(-?\d+)(d|w|m|y)$/);
+            if (!match) {
+                throw new TypeError('SiYuanDate.add: expected an integer or a value such as "-7d", "2w", "1m", or "1y"');
+            }
+            return { unit: match[2] as DateOffsetUnit, delta: Number(match[1]) };
+        };
+
+        assertValidDate(this, 'SiYuanDate.add');
+        const { unit, delta } = parseOffset();
         const newDate = new SiYuanDate(this.getTime());
         switch (unit) {
             case 'd': newDate.setDate(newDate.getDate() + delta); break;
@@ -259,8 +335,32 @@ class SiYuanDate extends Date {
             case 'm': newDate.setMonth(newDate.getMonth() + delta); break;
             case 'y': newDate.setFullYear(newDate.getFullYear() + delta); break;
         }
+        assertValidDate(newDate, 'SiYuanDate.add');
         return newDate;
     }
+}
+
+function createSiYuanDate(args: SiYuanDateConstructorArgs): SiYuanDate {
+    if (args.length === 1 && typeof args[0] === 'string' && /^(?:\d{8}|\d{14})$/.test(args[0])) {
+        return SiYuanDate.fromString(args[0]);
+    }
+    return Reflect.construct(SiYuanDate, args) as SiYuanDate;
+}
+
+function formatDateInput(input: DateInput, format: DateFormat, apiName: string): string {
+    const date = typeof input === 'string'
+        ? SiYuanDate.fromString(input)
+        : new SiYuanDate(input);
+    assertValidDate(date, apiName);
+    return date.toString(format);
+}
+
+function formatTaskAfter(input: DateInput): string {
+    if (typeof input === 'string' && /^(?:\d{10}|\d{12})$/.test(input)) {
+        warnDeprecatedUsage('Query.task(options.after)');
+        return SiYuanDate.fromString(input.padEnd(14, '0')).toString('datetime');
+    }
+    return formatDateInput(input, 'datetime', 'Query.task(options.after)');
 }
 
 
@@ -282,98 +382,109 @@ const Query = {
      * Every function here is sync function, no need to await
      */
     Utils: {
-        Date: (...args: ConstructorParameters<typeof SiYuanDate>) => new SiYuanDate(...args),
         /**
-         * Gets timestamp for current time with optional day offset
-         * @param days - Number of days to offset (positive or negative)
-         * - {number} 直接用数字
-         * - {string} 使用字符串，如 '1d' 表示 1 天，'2w' 表示 2 周，'3m' 表示 3 个月，'4y' 表示 4 年
-         * - 可以为负数
-         * @returns Timestamp string in yyyyMMddHHmmss format
+         * Creates a SiYuanDate using native Date constructor arguments.
+         * Exact `yyyyMMdd` and `yyyyMMddHHmmss` strings are parsed as local SiYuan dates instead of native date strings.
+         * @returns A SiYuanDate; call without arguments for the current local date and time
+         * @example Query.Utils.Date('20260827').add('1w').toString('date')
          */
-        now: (days?: number | string, hms: boolean = true) => {
-            let date = new SiYuanDate();
-            date = date.add(days);
-            return date.toString(hms);
+        Date: (...args: SiYuanDateConstructorArgs) => createSiYuanDate(args),
+
+        /**
+         * Gets the current local date-time with an optional calendar offset.
+         * @param offset - Integer days, or an integer with `d`, `w`, `m`, or `y`, such as `-7d` or `2w`
+         * @param format - `'date'` returns `yyyyMMdd`; `'datetime'` (default) returns `yyyyMMddHHmmss`; deprecated booleans map `false` to `'date'` and `true` to `'datetime'`
+         * @returns An 8-digit date or 14-digit local date-time string
+         */
+        now: (offset: DateOffset = 0, format: 'date' | 'datetime' | boolean = 'datetime'): string => {
+            const date = new SiYuanDate().add(offset);
+            return date.toString(normalizeDateFormat('Query.Utils.now', format));
         },
 
         /**
-         * Gets the timestamp for the start of today
-         * @param {boolean} hms - Whether to include time, e.g today(false) returns 20241201, today(true) returns 20241201000000
-         * @returns Timestamp string in yyyyMMddHHmmss format
+         * Gets the start of the current local calendar date.
+         * @param format - `'date'` returns `yyyyMMdd`; `'datetime'` (default) returns `yyyyMMddHHmmss`; deprecated booleans map `false` to `'date'` and `true` to `'datetime'`
+         * @returns An 8-digit date or the same date at `000000`
          */
-        today: (hms: boolean = true) => new SiYuanDate().beginOfDay().toString(hms),
+        today: (format: 'date' | 'datetime' | boolean = 'datetime'): string => {
+            return new SiYuanDate().beginOfDay().toString(normalizeDateFormat('Query.Utils.today', format));
+        },
 
         /**
-         * Gets the timestamp for the start of current week
-         * @param {boolean} hms - Whether to include time, e.g thisWeek(false) returns 20241201, thisWeek(true) returns 20241201000000
-         * @returns Timestamp string in yyyyMMddHHmmss format
+         * Gets the start of the current local week; weeks start on Sunday.
+         * @param format - `'date'` returns `yyyyMMdd`; `'datetime'` (default) returns `yyyyMMddHHmmss`; deprecated booleans map `false` to `'date'` and `true` to `'datetime'`
+         * @returns An 8-digit date or that Sunday at `000000`
          */
-        thisWeek: (hms: boolean = true) => {
-            let date = new SiYuanDate().beginOfDay();
+        thisWeek: (format: 'date' | 'datetime' | boolean = 'datetime'): string => {
+            const date = new SiYuanDate().beginOfDay();
             date.setDate(date.getDate() - date.getDay());
-            return date.toString(hms);
+            return date.toString(normalizeDateFormat('Query.Utils.thisWeek', format));
         },
 
         /**
-         * Gets the timestamp for the start of next week
-         * @returns Timestamp string in yyyyMMddHHmmss format
+         * Gets the start of the previous local week; weeks start on Sunday.
+         * @param format - `'date'` returns `yyyyMMdd`; `'datetime'` (default) returns `yyyyMMddHHmmss`; deprecated booleans map `false` to `'date'` and `true` to `'datetime'`
+         * @returns An 8-digit date or that Sunday at `000000`
          */
-        lastWeek: (hms: boolean = true) => {
-            let date = new SiYuanDate().beginOfDay();
+        lastWeek: (format: 'date' | 'datetime' | boolean = 'datetime'): string => {
+            const date = new SiYuanDate().beginOfDay();
             date.setDate(date.getDate() - 7 - date.getDay());
-            return date.toString(hms);
+            return date.toString(normalizeDateFormat('Query.Utils.lastWeek', format));
         },
 
         /**
-         * Gets the timestamp for the start of current month
-         * @returns Timestamp string in yyyyMMddHHmmss format
+         * Gets the start of the current local calendar month.
+         * @param format - `'date'` returns `yyyyMMdd`; `'datetime'` (default) returns `yyyyMMddHHmmss`; deprecated booleans map `false` to `'date'` and `true` to `'datetime'`
+         * @returns An 8-digit date or the first day of the month at `000000`
          */
-        thisMonth: (hms: boolean = true) => {
-            let date = new SiYuanDate();
+        thisMonth: (format: 'date' | 'datetime' | boolean = 'datetime'): string => {
+            const date = new SiYuanDate();
             date.setDate(1);
-            date = date.beginOfDay();
-            return date.toString(hms);
+            return date.beginOfDay().toString(normalizeDateFormat('Query.Utils.thisMonth', format));
         },
 
         /**
-         * Gets the timestamp for the start of last month
-         * @returns Timestamp string in yyyyMMddHHmmss format
+         * Gets the start of the previous local calendar month.
+         * @param format - `'date'` returns `yyyyMMdd`; `'datetime'` (default) returns `yyyyMMddHHmmss`; deprecated booleans map `false` to `'date'` and `true` to `'datetime'`
+         * @returns An 8-digit date or the first day of the previous month at `000000`
          */
-        lastMonth: (hms: boolean = true) => {
-            let date = new SiYuanDate().beginOfDay();
+        lastMonth: (format: 'date' | 'datetime' | boolean = 'datetime'): string => {
+            const date = new SiYuanDate().beginOfDay();
+            date.setDate(1);
             date.setMonth(date.getMonth() - 1);
-            date.setDate(1);
-            return formatDateTime('yyyyMMdd' + (hms ? 'HHmmss' : ''), date);
+            return date.toString(normalizeDateFormat('Query.Utils.lastMonth', format));
         },
 
         /**
-         * Gets the timestamp for the start of current year
-         * @returns Timestamp string in yyyyMMddHHmmss format
+         * Gets the start of the current local calendar year.
+         * @param format - `'date'` returns `yyyyMMdd`; `'datetime'` (default) returns `yyyyMMddHHmmss`; deprecated booleans map `false` to `'date'` and `true` to `'datetime'`
+         * @returns An 8-digit date or January 1 at `000000`
          */
-        thisYear: (hms: boolean = true) => {
-            let date = new SiYuanDate().beginOfDay();
-            date.setMonth(0);
-            date.setDate(1);
-            return formatDateTime('yyyyMMdd' + (hms ? 'HHmmss' : ''), date);
+        thisYear: (format: 'date' | 'datetime' | boolean = 'datetime'): string => {
+            const date = new SiYuanDate().beginOfDay();
+            date.setMonth(0, 1);
+            return date.toString(normalizeDateFormat('Query.Utils.thisYear', format));
         },
 
         /**
-        /**
-         * Converts SiYuan timestamp string to Date object
-         * @param timestr - SiYuan timestamp (yyyyMMddHHmmss)
-         * @returns Date object
+         * Converts an exact compact SiYuan string to SiYuanDate in the local time zone.
+         * An 8-digit `yyyyMMdd` input is a calendar date and maps to the start of that local date;
+         * a 14-digit `yyyyMMddHHmmss` input includes local time to second precision.
+         * Invalid formats and impossible calendar values throw an error.
+         * @param timestr - An 8-digit date or 14-digit local date-time string
+         * @returns The parsed SiYuanDate
          */
-        asDate: (timestr: string) => {
-            return SiYuanDate.fromString(timestr);
-        },
+        asDate: (timestr: string) => SiYuanDate.fromString(timestr),
 
         /**
-         * Converts Date object to SiYuan timestamp format
+         * Converts a valid Date to compact SiYuan local date format.
          * @param date - Date to convert
-         * @returns Timestamp string in yyyyMMddHHmmss format
+         * @param format - `'date'` returns `yyyyMMdd`; `'datetime'` (default) returns `yyyyMMddHHmmss`
+         * @returns An 8-digit date or 14-digit local date-time string
          */
-        asTimestr: (date: Date) => new SiYuanDate(date).toString(),
+        asTimestr: (date: Date, format: 'date' | 'datetime' = 'datetime') => {
+            return formatDateInput(date, format, 'Query.Utils.asTimestr');
+        },
 
         /**
          * Converts a block to a SiYuan link format
@@ -389,6 +500,12 @@ const Query = {
          */
         asRef: (b: Block) => `((${b.id} '${b.fcontent || b.content}'))`,
 
+        /**
+         * Converts blocks into an object keyed by a block property.
+         * @param blocks - Blocks to index
+         * @param key - Property used as the key; defaults to `id`
+         * @returns Object whose keys are the selected property values
+         */
         asMap: (blocks: Block[], key: string = 'id') => blocks.reduce((map, block) => {
             map[block[key]] = block;
             return map;
@@ -448,6 +565,7 @@ const Query = {
          * Renders the value of a block attribute as markdown format
          */
         renderAttr: renderAttr,
+        /** Opens a block in the current SiYuan UI. */
         openBlock: openBlock
     },
 
@@ -466,6 +584,7 @@ const Query = {
 
     /**
      * SiYuan Kernel Request API
+     * @note Kernel request only — NOT arbitrary HTTP. Use Query.gpt for external HTTP(S) fetch.
      * @example
      * await Query.request('/api/outline/getDocOutline', {
      *     id: docId
@@ -475,7 +594,7 @@ const Query = {
 
     /**
      * Gets blocks by their IDs
-     * @note This API recieve sequence of block IDs, and always return an array of Block.
+     * @note This API receives a sequence of block IDs and always returns an array of wrapped blocks.
      * @param ids - Block IDs to retrieve
      * @returns Array of wrapped blocks
      * @alias `getBlocksById`
@@ -522,16 +641,15 @@ const Query = {
     /**
      * Executes SQL query and optionally wraps results
      * @param fmt - SQL query string
-     * @param wrap - Whether to wrap results
-     * @returns Query results
+     * @param wrap - Whether to wrap results; defaults to true when omitted
+     * @returns Query results: an IWrappedList by default, plain Block[] when wrap is false
      */
-    sql: async (fmt: string, wrap: boolean = true): Promise<IWrappedList<IWrappedBlock>> => {
+    sql: async <W extends boolean = true>(fmt: string, wrap?: W): Promise<W extends false ? Block[] : IWrappedList<IWrappedBlock>> => {
         fmt = fmt.trim();
         let data = await sql(fmt);
-        if (data === null || data === undefined) return [] as IWrappedList<IWrappedBlock>;
-        // return wrap ? data.map(wrapBlock) : data;
+        if (data === null || data === undefined) data = [];
         //@ts-ignore
-        return wrap ? wrapList(data) : data;
+        return (wrap ?? true) ? wrapList(data) : data as any;
     },
 
     /**
@@ -555,25 +673,16 @@ const Query = {
      * @param options - Options
      * @param options.valMatch - Match type ('=' or 'like')
      * @param options.limit - Maximum number of results
-     * @param limit - (Deprecated) Maximum number of results
      * @returns Array of matching blocks
      */
     attr: async (
         name: string,
         val?: string,
-        optionDeprecatedAsValMatch?: {
+        options?: {
             valMatch?: '=' | 'like', limit?: number
-        } | DeprecatedParam<"=" | 'like'>,
-        limit?: DeprecatedParam<number>
+        }
     ) => {
-        const options = handleOptions(
-            'attr',
-            { valMatch: '=' as '=' | 'like', limit: undefined as number | undefined },
-            optionDeprecatedAsValMatch,
-            { limit },
-            'valMatch'
-        );
-        const { valMatch: match, limit: lim } = options;
+        const { valMatch: match = '=', limit: lim } = options ?? {};
         return Query.sql(`
         SELECT B.*
         FROM blocks AS B
@@ -588,53 +697,53 @@ const Query = {
     },
 
     /**
-     * Search blocks by tags
+     * Lists the complete SiYuan tag tree using the current tag-panel sorting.
+     * Names and labels are returned as decoded text, and leaf nodes always have an empty `children` array.
+     * A node's `count` is the number of direct occurrences of that exact tag; it does not include descendants.
+     * Parent nodes synthesized only to represent a hierarchy therefore have a count of zero.
+     * @returns Complete hierarchical tag list, or an empty array when the kernel request fails
+     * @example
+     * const tags = await Query.listTags();
+     * const projectTag = tags.find(tag => tag.label === 'project');
+     */
+    listTags: async (): Promise<QueryTagNode[]> => {
+        const tags = await request('/api/tag/getTag', {
+            sort: window.siyuan.config.tag.sort,
+            ignoreMaxListHint: true
+        });
+        return normalizeTagTree(tags, value => window.Lute.UnEscapeHTMLStr(value));
+    },
+
+    /**
+     * Search blocks by tags.
+     * Exact matching treats `%` and `_` as literal tag characters; `like` matching treats them as SQL wildcards.
      * @param tags - Tags to search for; can provide multiple tags
      * @param options - Additional options
      * @param options.join - Join type ('or' or 'and')
      * @param options.limit - Maximum number of results
-     * @param options.match - Match type ('=' or 'like'), if `like` the tags will be automatically add % as prefix and suffix
-     * @param limit - (Deprecated) Maximum number of results
+     * @param options.match - Match type ('=' or 'like'); `like` searches within tag labels and allows `%` / `_` wildcards
      * @returns Array of blocks matching the tags
      * @example
-     * Query.tag('tag1') // Search for blocks with 'tag1'
+     * Query.tag('tag1') // Search for blocks with the exact tag 'tag1'
      * Query.tag(['tag1', 'tag2'], { join: 'or' }) // Search for blocks with 'tag1' or 'tag2'
-     * Query.tag(['tag1', 'tag2'], { join: 'and' }) // Search for blocks with 'tag1' and 'tag2'
+     * Query.tag(['tag1', 'tag2'], { join: 'and' }) // Search for blocks with both 'tag1' and 'tag2'
+     * Query.tag('project/%', { match: 'like' }) // Search hierarchical tags under 'project'
      */
     tag: async (
         tags: string | string[],
-        optionDeprecatedAsJoin?: {
+        options?: {
             join?: 'or' | 'and',
             limit?: number,
             match?: '=' | 'like'
-        } | DeprecatedParam<'or' | 'and'>,
-        limit?: DeprecatedParam<number>
+        }
     ) => {
-        const opts = handleOptions(
-            'tag',
-            { join: 'or' as 'or' | 'and', limit: undefined as number | undefined, match: '=' as '=' | 'like' },
-            optionDeprecatedAsJoin,
-            { limit },
-            'join'
-        );
-        const { join, limit: lim, match } = opts;
+        const { join = 'or', limit: lim, match = '=' } = options ?? {};
+        const tagList = Array.isArray(tags) ? tags : [tags];
+        if (tagList.length === 0) return wrapList([]);
 
-        // 格式化标签函数
-        const formatTag = (tag: string, isLike: boolean) => {
-
-            tag = tag.replace(/^[#%]+/, '').replace(/[#%]+$/, '');
-
-            return isLike ? `%#%${tag}%#%` : `%#${tag}#%`;
-        };
-
-        // 将单个标签转换为数组
-        tags = Array.isArray(tags) ? tags : [tags];
-
-        // 构建标签条件
-        const tagConditions = tags.map(tag => {
-            const formattedTag = formatTag(tag, match === 'like');
-            return `tag like '${formattedTag}'`;
-        }).join(` ${join} `);
+        const tagConditions = tagList
+            .map(tag => buildTagSqlCondition(tag, match))
+            .join(` ${join} `);
 
         return Query.sql(`select * from blocks where
             (type='d' or type='p' or type='h') and
@@ -644,69 +753,77 @@ const Query = {
     },
 
     /**
-     * Find unsolved task blocks
+     * Finds unsolved task blocks, optionally updated on or after a local date boundary.
      * @param options - Options
-     * @param options.after - After which the blocks were updated
+     * @param options.after - Inclusive update boundary as Date, `yyyyMMdd`, or `yyyyMMddHHmmss`; dates map to local start of day
      * @param options.limit - Maximum number of results
-     * @param limit - (Deprecated) Maximum number of results
      * @returns Array of unsolved task blocks
      * @example
      * Query.task()
-     * Query.task({ after: '2024101000' })
-     * Query.task({ limit: 32 })
+     * Query.task({ after: Query.Utils.thisMonth(), limit: 32 })
+     * Query.task({ after: new Date(2024, 9, 10) })
      */
-    task: async (
-        optionDeprecatedAsAfter?: { limit?: number; after?: string } | DeprecatedParam<string>,
-        limit?: DeprecatedParam<number>
-    ) => {
-        const options = handleOptions(
-            'task',
-            { limit: undefined as number | undefined, after: undefined as string | undefined },
-            optionDeprecatedAsAfter,
-            { limit },
-            'after'
-        );
-        const { limit: lim, after: afterDate } = options;
+    task: async (options?: { limit?: number; after?: Date | string }) => {
+        const { limit: lim, after } = options ?? {};
+        const afterDate = after === undefined ? undefined : formatTaskAfter(after);
         const LIST_MARK = siyuanVersion().compare('3.1.29') >= 0 ? '-' : '*';
 
         return Query.sql(`
             select * from blocks
             where type = 'i' and subtype = 't'
             and markdown like '${LIST_MARK} [ ] %'
-            ${afterDate ? ` and updated >= ${afterDate}` : ''}
+            ${afterDate ? ` and updated >= '${afterDate}'` : ''}
             order by updated desc
             ${lim ? `limit ${lim}` : ''};
         `);
     },
 
     /**
-     * Gets the daily notes document
+     * Gets daily note documents, optionally limited to an inclusive local calendar-date range.
+     * Date objects and 14-digit date-times are reduced to their local `yyyyMMdd` date.
+     * When `after` or `before` is specified, results are ordered by daily note date descending.
      * @param options - Options
-     * @param options.notebook - Notebook ID, if not specified, all daily notes documents will be returned
-     * @param options.limit - Maximum number of results
-     * @returns Array of daily notes document blocks
+     * @param options.notebook - Notebook ID; all notebooks are searched when omitted
+     * @param options.after - Earliest date to include, as Date, `yyyyMMdd`, or `yyyyMMddHHmmss`
+     * @param options.before - Latest date to include, as Date, `yyyyMMdd`, or `yyyyMMddHHmmss`
+     * @param options.limit - Maximum number of results, defaults to 64
+     * @returns Array of daily note document blocks
      * @example
      * Query.dailynote()
      * Query.dailynote({ notebook: '20231224140619-bpyuay4' })
-     * Query.dailynote({ limit: 32 })
+     * Query.dailynote({ after: Query.Utils.thisMonth('date'), before: Query.Utils.today('date') })
+     * Query.dailynote({ after: new Date(2024, 0, 1), limit: 32 })
      */
-    dailynote: async (
-        optionsDeprecatedAsNotebook?: { notebook?: NotebookId, limit?: number } | DeprecatedParam<NotebookId>,
-        limitDeprecated?: DeprecatedParam<number>
-    ) => {
-        const opts = handleOptions(
-            'dailynote',
-            { notebook: undefined as NotebookId | undefined, limit: 64 as number },
-            optionsDeprecatedAsNotebook,
-            { limit: limitDeprecated },
-            'notebook'
-        );
-        let { notebook, limit } = opts;
-        //@ts-ignore
-        if (optionsDeprecatedAsNotebook.box && !notebook) {
-            //@ts-ignore
-            notebook = optionsDeprecatedAsNotebook.box;
+    dailynote: async (options?: {
+        notebook?: NotebookId,
+        after?: Date | string,
+        before?: Date | string,
+        limit?: number
+    }) => {
+        const { notebook, after, before, limit = 64 } = options ?? {};
+        const afterDate = after === undefined
+            ? undefined
+            : formatDateInput(after, 'date', 'Query.dailynote(options.after)');
+        const beforeDate = before === undefined
+            ? undefined
+            : formatDateInput(before, 'date', 'Query.dailynote(options.before)');
+        if (afterDate !== undefined && beforeDate !== undefined && afterDate > beforeDate) {
+            throw new RangeError('Query.dailynote: options.after must not be later than options.before');
         }
+
+        const dateConditions = [
+            afterDate === undefined ? '' : `AND A.value >= '${afterDate}'`,
+            beforeDate === undefined ? '' : `AND A.value <= '${beforeDate}'`
+        ].filter(Boolean).join('\n            ');
+        const hasDateRange = afterDate !== undefined || beforeDate !== undefined;
+        const dateOrder = hasDateRange ? `
+        ORDER BY (
+            SELECT MAX(A.value)
+            FROM attributes AS A
+            WHERE A.block_id = B.id
+              AND A.name like 'custom-dailynote-%'
+              ${dateConditions}
+        ) DESC` : '';
 
         const sql = `
         SELECT B.*
@@ -715,7 +832,9 @@ const Query = {
             SELECT A.block_id
             FROM attributes AS A
             WHERE A.name like 'custom-dailynote-%'
+            ${dateConditions}
         ) AND B.type = 'd' ${notebook ? `AND B.box = '${notebook}'` : ''}
+        ${dateOrder}
         limit ${limit};
         `
         return Query.sql(sql);
@@ -746,23 +865,23 @@ const Query = {
 
     /**
      * Get nearby blocks relative to the specified block within the same container.
-     * 
+     *
      * The search is limited to blocks within the same hierarchy level() container or heading section ).
      * Example: For the following structure, para 2's nearby blocks would be:
      * previous: [para 1], next: [para 3, para 4]; because `### Title` is outof the same hierarchy level.
-     * 
+     *
      * ```
      * ### Title
-     * 
+     *
      * para 1
-     * 
+     *
      * para 2
-     * 
+     *
      * para 3
-     * 
+     *
      * para 4
      * ```
-     * 
+     *
      * @param id - Target block ID to find neighbors for
      * @param options - Search options
      * @param options.direction - Which direction to search ('previous', 'next' or 'both'), defaults to 'both'
@@ -771,16 +890,16 @@ const Query = {
      * @example
      * // Get both previous and next blocks
      * await query.nearby('block123');
-     * 
+     *
      * // Get 3 previous blocks only
      * await query.nearby('block123', { direction: 'previous', number: 3 });
      */
     nearby: async (id: BlockId, options?: {
         direction?: 'previous' | 'next' | 'both',
         number?: number
-    }): Promise<{ 
-        previous?: { id: Block, markdown: string }[],
-        next?: { id: Block, markdown: string }[]
+    }): Promise<{
+        previous?: { id: BlockId, markdown: string }[],
+        next?: { id: BlockId, markdown: string }[]
     }> => {
         options = options ?? {};
         const { direction = 'both', number = 3 } = options;
@@ -808,22 +927,38 @@ const Query = {
      * Search blocks that contain the given keywords
      * @param keywords {string | string[]} - Keywords to search for; can provide multiple keywords
      * @param options - Options
-     * @param options.join - Join type ('or' or 'and')
+     * @param options.relation - Relation between keywords at block level: 'any' — blocks containing at least one keyword; 'all' — blocks containing every keyword (default: 'any')
      * @param options.limit - Maximum number of results to return, default is 999
-     * @param limit - (Deprecated) Maximum number of results to return, default is 999
      * @returns Array of blocks that contain the given keywords
+     * @deprecated-key join: 旧版参数名（'or' | 'and'），语义映射：'or' → 'any'，'and' → 'all'；兼容保留
      */
-    keyword: async (keywords: string | string[], options?: { join?: 'or' | 'and', limit?: number } | DeprecatedParam<'or' | 'and'>, limit?: DeprecatedParam<number>) => {
+    keyword: async (keywords: string | string[], options?: { relation?: 'any' | 'all', limit?: number } | DeprecatedParam<'any' | 'all'> | { join?: 'or' | 'and', limit?: number } | DeprecatedParam<'or' | 'and'>) => {
         const opts = handleOptions(
-            'keyword',
-            { join: 'or' as 'or' | 'and', limit: 999 as number },
-            options,
-            { limit },
-            'join'
+            'Query.keyword',
+            { relation: 'any' as 'any' | 'all', limit: 999 as number },
+            options as any,
+            {},
+            'relation'
         );
-        const { join, limit: lim } = opts;
-        keywords = Array.isArray(keywords) ? keywords : [keywords];
-        const sql = `select * from blocks where ${keywords.map(keyword => `content like '%${keyword}%'`).join(` ${join} `)} limit ${lim}`;
+        // 旧版兼容：join → relation（'or' → 'any'，'and' → 'all'）
+        if (options && typeof options === 'object' && 'join' in options) {
+            const oldJoin = (options as any).join;
+            if (oldJoin === 'or' || oldJoin === 'and') {
+                opts.relation = oldJoin === 'or' ? 'any' : 'all';
+                const msg = i18n.src_core_queryts.query_obsolete_params;
+                console.warn(msg.replace('{0}', 'Query.keyword: join → relation'));
+            }
+        }
+        // 旧式字符串形态（keyword(kw, 'or')）同样映射
+        const rel: any = opts.relation;
+        if (rel === 'or' || rel === 'and') {
+            opts.relation = rel === 'or' ? 'any' : 'all';
+        }
+        const { relation, limit: lim } = opts;
+        keywords = (Array.isArray(keywords) ? keywords : [keywords]).filter(keyword => keyword !== '');
+        // 空关键词（或全部为空字符串）→ 空结果，避免生成非法 SQL
+        if (keywords.length === 0) return [] as IWrappedList<IWrappedBlock>;
+        const sql = `select * from blocks where ${keywords.map(keyword => `content like '%${keyword}%'`).join(` ${relation === 'all' ? 'and' : 'or'} `)} limit ${lim}`;
         let results = await Query.sql(sql);
         return results;
     },
@@ -834,51 +969,61 @@ const Query = {
      * @param options - Options
      * @param options.join - Join type ('or' or 'and')
      * @param options.limit - Maximum number of results to return, default is 999
-     * @returns The document blocks that contains all the given keywords; the blocks will attached a 'keywords' property, which is the matched keyword blocks
+     * @param options.relation - Relation between keywords: 'any' — documents containing at least one keyword; 'all' — documents containing every keyword (default: 'all')
+     * @returns The document blocks matching the keywords; the blocks will attached a 'keywords' property, which is the matched keyword blocks
      * @example
      * let docs = await Query.keywordDoc(['Keywords A', 'Keywords B']);
      * //each block in docs is a document block that contains all the keywords
      * docs[0].keywords['Keywords A'] // get the matched keyword block by using `keywords` property
+     * @deprecated-key join: 旧版参数名（'or' | 'and'），语义映射：'or' → 'any'，'and' → 'all'；兼容保留
+     * @deprecated-key 旧式字符串形态（第二个参数直接传 'or'/'and'）同样兼容
      */
-    keywordDoc: async (keywords: string | string[], options?: { join?: 'or' | 'and', limit?: number } | DeprecatedParam<'or' | 'and'>, limit?: DeprecatedParam<number>) => {
+    keywordDoc: async (keywords: string | string[], options?: { relation?: 'any' | 'all', limit?: number } | DeprecatedParam<'any' | 'all'> | { join?: 'or' | 'and', limit?: number } | DeprecatedParam<'or' | 'and'>) => {
         const opts = handleOptions(
-            'keywordDoc',
-            { join: 'or' as 'or' | 'and', limit: 999 as number },
-            options,
-            { limit },
-            'join'
+            'Query.keywordDoc',
+            { relation: 'all' as 'any' | 'all', limit: 999 as number },
+            options as any,
+            {},
+            'relation'
         );
-        const { join, limit: lim } = opts;
-        keywords = Array.isArray(keywords) ? keywords : [keywords];
-        const sql = `select * from blocks where ${keywords.map(keyword => `content like '%${keyword}%'`).join(` ${join} `)} limit ${lim}`;
-        let results = await Query.sql(sql);
+        // 旧版兼容：join → relation（'or' → 'any'，'and' → 'all'）
+        if (options && typeof options === 'object' && 'join' in options) {
+            const oldJoin = (options as any).join;
+            if (oldJoin === 'or' || oldJoin === 'and') {
+                opts.relation = oldJoin === 'or' ? 'any' : 'all';
+                const msg = i18n.src_core_queryts.query_obsolete_params;
+                console.warn(msg.replace('{0}', 'Query.keywordDoc: join → relation'));
+            }
+        }
+        // 旧式字符串形态（keywordDoc(kw, 'or')）同样映射
+        const rel: any = opts.relation;
+        if (rel === 'or' || rel === 'and') {
+            opts.relation = rel === 'or' ? 'any' : 'all';
+        }
+        const { relation, limit: lim } = opts;
+        keywords = (Array.isArray(keywords) ? keywords : [keywords]).filter(keyword => keyword !== '');
+        // 空关键词（或全部为空字符串）→ 空结果，避免生成非法 SQL
+        if (keywords.length === 0) return [];
 
+        // 文档级聚合：先在块表上按 root_id 分组，HAVING 判定满足 relation 的文档，
+        // limit 作用于文档数（语义：返回的文档数上限，而非 v1.x 的块数上限）
+        const likeClauses = keywords.map(keyword => `content like '%${keyword}%'`);
+        const havingClauses = keywords.map(keyword => `sum(case when content like '%${keyword}%' then 1 else 0 end) > 0`);
+        const sql = `select root_id from blocks where ${likeClauses.join(' or ')} group by root_id having ${havingClauses.join(relation === 'any' ? ' or ' : ' and ')} limit ${lim}`;
+        let rows = await Query.sql(sql);
+        if (rows.length === 0) return [];
+        const rootIds = rows.pick('root_id');
+
+        // 取出这些文档的所有匹配块，构造每个文档的 keywords 属性（关键词 → 命中块）
+        const blocksSql = `select * from blocks where root_id in (${rootIds.map((id: string) => `'${id}'`).join(',')}) and (${likeClauses.join(' or ')})`;
+        let matchedBlocks = await Query.sql(blocksSql);
         let matchedDocs = {};
-        results.groupby(b => b.root_id, (root_id: string, blocks: Block[]) => {
-            // root_id 中检索到的含有关键字的块
-            // 检查一下是不是所有的关键字都有匹配到
-            let contains = Object.fromEntries(keywords.map(keyword => [keyword, null]));
-            blocks.forEach(block => {
-                keywords.forEach(keyword => {
-                    if (block.content.includes(keyword)) {
-                        contains[keyword] = block;
-                    }
-                });
-            });
-            let matched = true;
-            for (let keyword of keywords) {
-                if (!contains[keyword]) {
-                    matched = false;
-                    break;
-                }
-            }
-            if (matched) {
-                // matchedDocs.push(root_id);
-                matchedDocs[root_id] = contains;
-            }
+        matchedBlocks.groupby(b => b.root_id, (root_id: string, blocks: Block[]) => {
+            const contains = Object.fromEntries(keywords.map(keyword => [keyword, blocks.find(b => b.content.includes(keyword)) ?? null]));
+            matchedDocs[root_id] = contains;
         });
-        let matchedDocsRootIds = Object.keys(matchedDocs);
-        let documents: Block[] = await Query.getBlocksByIds(...matchedDocsRootIds);
+
+        let documents = await Query.getBlocksByIds(...Object.keys(matchedDocs));
         for (let i = 0; i < documents.length; i++) {
             const doc = documents[i];
             doc['keywords'] = matchedDocs[doc.root_id];
@@ -900,6 +1045,12 @@ const Query = {
         return Query.sql(sql);
     },
 
+    /**
+     * Returns the markdown content represented by a block or block ID.
+     * Document and heading blocks include their child blocks; other block types return their own markdown.
+     * @param input - Block ID or block object
+     * @returns Markdown text
+     */
     markdown: async (input: BlockId | Block) => {
         let block: Block = null;
         if (typeof input === 'string') {
@@ -953,15 +1104,15 @@ const Query = {
      * @returns Processed blocks or block IDs
      * @alias `redirect`
      */
-    fb2p: async (inputs: Block[], enable?: { heading?: boolean, doc?: boolean }) => {
+    fb2p: async (inputs: Block[] | BlockId[], enable?: { heading?: boolean, doc?: boolean }) => {
         // 深度拷贝，防止修改原始输入
         // inputs = structuredClone(inputs);
-        inputs = [...inputs];
+        inputs = [...inputs] as Block[] | BlockId[];
         /**
          * 处理输入参数
          */
         let types = typeof inputs[0] === 'string' ? 'id' : 'block';
-        let ids = types === 'id' ? inputs : (inputs as Block[]).map(b => b.id);
+        let ids = types === 'id' ? (inputs as BlockId[]) : (inputs as Block[]).map(b => b.id);
         let blocks: Block[] = inputs as Block[];
         enable = { heading: true, doc: true, ...(enable ?? {}) };
 
@@ -1083,7 +1234,7 @@ const Query = {
 
     /**
      * Send GPT request, use AI configuration in `siyuan.config.ai.openAI` by default
-     * @param prompt - Prompt
+     * @param input - Prompt text or a user/assistant message history
      * @param options - Options
      * @param options.url - Custom API URL
      * @param options.model - Custom API model
@@ -1094,6 +1245,7 @@ const Query = {
      * @param options.streamMsg - Callback function for streaming messages, only works when options.stream is true
      * @param options.streamInterval - Interval for calling options.streamMsg on each chunk, default: 1
      * @returns GPT response
+     * @note The only API that sends external HTTP(S) requests via fetch; every other Query API is a SiYuan kernel request.
      */
     gpt: async (input: string | { role: 'user' | 'assistant', content: string }[], options?: {
         url?: string,

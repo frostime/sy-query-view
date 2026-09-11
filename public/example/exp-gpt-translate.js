@@ -7,35 +7,31 @@ Maintain the markdown format of the original text.
 
 ${text}
 `;
-const query = async () => {
-    let dv = Query.DataView(protyle, item, top);
-    dv.render();
-    //任意选择一个不为空的段落
-    let block = (await Query.random(10, 'p')).find(b => b.markdown !== '');
+let dv = Query.DataView(protyle, item, top);
+dv.render();
+//任意选择一个不为空的段落
+let block = (await Query.random(10, 'p')).find(b => b.markdown !== '');
 
-    let md = block.markdown;
-    dv.addmd(`
+let md = block.markdown;
+dv.addmd(`
 ## Original Text
 
 ${md}
 
 ----
 `);
-    const div = document.createElement('div');
-    let tempid = (dv.addele(div)).dataset.id;
-    const translated = await Query.gpt(prompt(md), {
-        stream: true,
-        streamMsg: (content) => {
-            div.innerText = content;
-        }
-    });
-    dv.removeView(tempid);
+const div = document.createElement('div');
+let tempid = (dv.addele(div)).dataset.id;
+const translated = await Query.gpt(prompt(md), {
+    stream: true,
+    streamMsg: (content) => {
+        div.innerText = content;
+    }
+});
+dv.removeView(tempid);
 
-    dv.addmd(`
+dv.addmd(`
 ## Translated Text
 
 ${translated}
 `.trim());
-}
-
-return query();

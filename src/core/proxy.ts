@@ -10,12 +10,18 @@ export interface IWrappedBlock extends Block {
 
     /** Block's URI link in format: siyuan://blocks/xxx */
     asurl: string;
+    /** Runtime-compatible alias of asurl */
+    tourl: string;
 
     /** Block's Markdown format link [content](siyuan://blocks/xxx) */
     aslink: string;
+    /** Runtime-compatible alias of aslink */
+    tolink: string;
 
     /** Block's SiYuan reference format text */
     asref: string;
+    /** Runtime-compatible alias of asref */
+    toref: string;
 
     /** Blocks's ial list, as object
      * @example
@@ -52,7 +58,7 @@ export interface IWrappedBlock extends Block {
 }
 
 /** Wrapped array interface with extended convenient methods */
-export interface IWrappedList<T> extends Array<T> {
+export interface IWrappedList<T = Block> extends Array<T> {
     /** Method to return the original array */
     unwrap(): T[];
 
@@ -62,16 +68,20 @@ export interface IWrappedList<T> extends Array<T> {
     /**
      * Converts the array to a map object, where the key is specified by the key parameter.
      * Equivalent to calling `array.reduce((acc, cur) => ({...acc, [cur[key]]: cur }), {})`
-     * @param key 
+     * @param key - Key attribute, defaults to 'id'
      * @returns 
      */
-    asMap: (key: string) => Record<string, Block>;
+    asMap: (key?: string) => Record<string, Block>;
 
     /**
      * Returns a new array containing only specified properties
+     * NOTE: a single attribute returns a wrapped array of scalar values
+     * (`pick('id')` → `IWrappedList<T['id']>`); multiple attributes return objects
      * @param attrs - Property names to keep
      */
-    pick(...attrs: (keyof T)[]): IWrappedList<Partial<T>>;
+    pick<A extends keyof T>(attr: A): IWrappedList<T[A]>;
+    /** Selects multiple properties and returns wrapped objects containing only those properties. */
+    pick<A extends keyof T>(...attrs: A[]): IWrappedList<Pick<T, A>>;
 
     /**
      * Returns a new array excluding specified properties
@@ -82,7 +92,7 @@ export interface IWrappedList<T> extends Array<T> {
     /**
      * Returns a new array sorted by specified property
      * @param attr - Property to sort by
-     * @param order - Sort direction, defaults to 'asc'
+     * @param order - Sort direction, defaults to 'desc'
      */
     sorton(attr: keyof T, order?: 'asc' | 'desc'): IWrappedList<T>;
 
@@ -102,6 +112,11 @@ export interface IWrappedList<T> extends Array<T> {
      */
     filter(predicate: (value: T, index: number, array: T[]) => boolean): IWrappedList<T>;
     /**
+     * Returns a new array with filtered elements; the wrapper is preserved
+     * @param predicate - Filter function
+     */
+    filter(predicate: (value: T, index: number, array: T[]) => boolean): IWrappedList<T>;
+    /**
      * Returns a new array containing elements in the specified range
      * @param start - Start index
      * @param end - End index
@@ -118,7 +133,6 @@ export interface IWrappedList<T> extends Array<T> {
     /**
      * Returns a new array with added rows
      * @alias addrows
-     * @alias concat: modify the default method of Array
      */
     addrow(newItems: T[]): IWrappedList<T>;
 
@@ -251,9 +265,12 @@ export const wrapBlock = (block: Block): IWrappedBlock => {
  * @param list 
  * @returns 
  */
-export const wrapList = (list: Block[], useWrapBlock: boolean = true) => {
+// overload：默认（useWrapBlock=true）元素为 IWrappedBlock；显式 false 时元素为裸 Block
+export function wrapList(list: Block[], useWrapBlock?: boolean): IWrappedList<IWrappedBlock>;
+export function wrapList(list: Block[], useWrapBlock: false): IWrappedList<Block>;
+export function wrapList(list: Block[], useWrapBlock: boolean = true): IWrappedList<Block> | IWrappedList<IWrappedBlock> {
     if (list?.['unwrapped']) {
-        return list
+        return list as IWrappedList<Block> | IWrappedList<IWrappedBlock>
     }
 
     // let wrappedBlocks = list.map(block => wrapBlock(block as Block));
@@ -261,6 +278,8 @@ export const wrapList = (list: Block[], useWrapBlock: boolean = true) => {
 
     let proxy = new Proxy(list, {
         get(target: Block[], prop: any) {
+            // 数组原生方法若在 switch 中有覆盖意图，必须在此排除，否则前置分支直接命中导致 case 不可达
+            if (typeof prop === 'symbol') return Reflect.get(target, prop);
             if (prop in target && !['filter', 'slice'].includes(prop)) {
                 return Reflect.get(target, prop);
             }
@@ -350,7 +369,7 @@ export const wrapList = (list: Block[], useWrapBlock: boolean = true) => {
                     /**
                      * 返回按指定属性排序的新数组
                      * @param {keyof Block} attr - 排序依据的属性
-                     * @param {'asc'|'desc'} [order='asc'] - 排序方向
+                     * @param {'asc'|'desc'} [order='desc'] - 排序方向（默认降序，与实现一致）
                      * @returns {ProxyList} 排序后的新代理数组
                      * @example list.sorton('updated', 'desc')
                      */
@@ -446,7 +465,6 @@ export const wrapList = (list: Block[], useWrapBlock: boolean = true) => {
                     }
                 case 'addrow':
                 case 'addrows':
-                case 'concat':
                     /**
                      * 返回连接多个数组的新数组
                      */
@@ -517,5 +535,5 @@ export const wrapList = (list: Block[], useWrapBlock: boolean = true) => {
         }
     });
     //@ts-ignore
-    return proxy;
+    return proxy as IWrappedList<Block> | IWrappedList<IWrappedBlock>;
 }

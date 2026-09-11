@@ -15,11 +15,7 @@ const buildTree = async (docId, depth = 1) => {
     return children;
 };
 
-const query = async () => {
-    let dv = Query.DataView(protyle, item, top);
-    dv.render();
-    const tree = await buildTree(dv.root_id, 1);
-    dv.addlist(tree, { type: 'o' });
-};
-
-return query();
+let dv = Query.DataView(protyle, item, top);
+dv.render();
+const tree = await buildTree(dv.root_id, 1);
+dv.addlist(tree, { type: 'o' });

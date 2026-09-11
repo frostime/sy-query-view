@@ -32,66 +32,62 @@ const ui = () => {
 }
 
 
-const chat = async () => {
-    let dv = Query.DataView(protyle, item, top);
-    const messages = dv.useState('messages', []);
+let dv = Query.DataView(protyle, item, top);
+const messages = dv.useState('messages', []);
 
-    dv.addmd(`#### GPT Chat`);
-    const msgIds = [];
-    messages().forEach(msg => {
-        let el = dv.addmd(`**${msg.role === 'user' ? 'You' : 'GPT'}**: ${msg.content}`);
-        msgIds.push(el.dataset.id);
-    });
+dv.addmd(`#### GPT Chat`);
+const msgIds = [];
+messages().forEach(msg => {
+    let el = dv.addmd(`**${msg.role === 'user' ? 'You' : 'GPT'}**: ${msg.content}`);
+    msgIds.push(el.dataset.id);
+});
 
-    dv.addmd('---');
+dv.addmd('---');
 
-    const { textarea, buttonContainer, sendButton, removeLastButton } = ui();
+const { textarea, buttonContainer, sendButton, removeLastButton } = ui();
 
-    dv.addele(textarea);
+dv.addele(textarea);
 
-    dv.addele(buttonContainer);
+dv.addele(buttonContainer);
 
-    sendButton.onclick = async () => {
-        const prompt = textarea.value.trim();
-        if (!prompt) return;
+sendButton.onclick = async () => {
+    const prompt = textarea.value.trim();
+    if (!prompt) return;
 
-        messages([...messages(), { role: 'user', content: prompt }]);
-        textarea.value = '';
-        sendButton.disabled = true;
-        removeLastButton.disabled = true;
-        let respond = dv.addmd(`**GPT**: `);
-        let id = respond.dataset.id;
+    messages([...messages(), { role: 'user', content: prompt }]);
+    textarea.value = '';
+    sendButton.disabled = true;
+    removeLastButton.disabled = true;
+    let respond = dv.addmd(`**GPT**: `);
+    let id = respond.dataset.id;
 
-        try {
-            const response = await Query.gpt(prompt, {
-                stream: true,
-                streamInterval: 3,
-                streamMsg: (content) => {
-                    dv.replaceView(id, dv.md(`**GPT**: ${content}`));
-                }
-            });
-            messages([...messages(), { role: 'assistant', content: response }]);
-        } catch (error) {
-            dv.addmd(`Error: ${error.message}`);
-        }
+    try {
+        const response = await Query.gpt(prompt, {
+            stream: true,
+            streamInterval: 3,
+            streamMsg: (content) => {
+                dv.replaceView(id, dv.md(`**GPT**: ${content}`));
+            }
+        });
+        messages([...messages(), { role: 'assistant', content: response }]);
+    } catch (error) {
+        dv.addmd(`Error: ${error.message}`);
+    }
 
-        sendButton.disabled = false;
-        removeLastButton.disabled = false;
-        dv.repaint();
-    };
+    sendButton.disabled = false;
+    removeLastButton.disabled = false;
+    dv.repaint();
+};
 
-    removeLastButton.onclick = () => {
-        if (msgIds.length < 2) return;
+removeLastButton.onclick = () => {
+    if (msgIds.length < 2) return;
 
-        // 删除最后两条消息
-        messages(messages().slice(0, -2));
+    // 删除最后两条消息
+    messages(messages().slice(0, -2));
 
-        // 删除最后两个消息的 DOM 元素
-        dv.removeView(msgIds.pop());
-        dv.removeView(msgIds.pop());
-    };
+    // 删除最后两个消息的 DOM 元素
+    dv.removeView(msgIds.pop());
+    dv.removeView(msgIds.pop());
+};
 
-    dv.render();
-}
-
-return chat();
+dv.render();

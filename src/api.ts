@@ -15,6 +15,15 @@ export async function request(url: string, data: any) {
     return res;
 }
 
+/**
+ * Identifies this frontend instance so storage-change broadcasts can exclude their sender.
+ * Without this field, putFile/removeFile calls under data/storage/petal may trigger the
+ * calling plugin's own onDataChanged handler (siyuan-note/siyuan#19187).
+ */
+function currentAppId(): string | undefined {
+    return window.siyuan?.ws?.app?.appId;
+}
+
 
 // **************************************** Noteboook ****************************************
 
@@ -371,14 +380,17 @@ export async function putFile(path: string, isDir: boolean, file: any) {
     // https://github.com/terwer/siyuan-plugin-importer/blob/v1.4.1/src/api/kernel-api.ts
     form.append('modTime', Math.floor(Date.now() / 1000).toString());
     form.append('file', file);
+    const appId = currentAppId();
+    if (appId) {
+        form.append('app', appId);
+    }
     let url = '/api/file/putFile';
     return request(url, form);
 }
 
 export async function removeFile(path: string) {
-    let data = {
-        path: path
-    }
+    const appId = currentAppId();
+    let data = appId ? { path: path, app: appId } : { path: path };
     let url = '/api/file/removeFile';
     return request(url, data);
 }

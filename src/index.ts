@@ -18,8 +18,8 @@ import "@/index.scss";
 import * as DataQuery from "./core";
 import * as Setting from "./setting";
 import * as UserHelp from "./user-help";
-import { confirmDialog, siyuanVersion } from "@frostime/siyuan-plugin-kits";
-import { simpleDialog } from "./libs/dialog";
+import { confirmDialog } from "@frostime/siyuan-plugin-kits";
+import { createSiYuanSkillRuntime } from "./libs/siyuan-skill.skd";
 
 let i18n: I18n;
 let app: App;
@@ -95,27 +95,20 @@ export default class QueryViewPlugin extends Plugin {
 
     async onload() {
         i18n = this.i18n as unknown as I18n;
-        //@ts-ignore
-        const version = siyuanVersion();
-        // if (version.version === '3.1.25' || version.version === '3.1.26') {
-        if (version.version === '3.1.25' || version.version === '3.1.26') {
-            const text = '⚠️' + i18n.src_indexts.incompatible_version.replace('{0}', version.version);
-            if (version.version === '3.1.25') {
-                simpleDialog({
-                    title: i18n.src_indexts.plugin_not_working,
-                    ele: `<div class="b3-label">${text}</div>`
-                });
-                return;
-            } else {
-                showMessage(text, -1, 'error');
-            }
-        }
         app = this.app;
         this.init();
 
         Setting.load(this);
         DataQuery.load(this);
         UserHelp.load(this);
+
+        // 注册插件自带的 Agent Skill（skills/ 目录随插件包分发）
+        const skills = createSiYuanSkillRuntime({ pluginName: this.name });
+        const skill = await skills.registerPluginSkill("skills/sy-query-view");
+        // 注意：项目 tsconfig 为 strict:false，`ok` 判别无法窄化，改用 `action` 存在性判别
+        if (!("action" in skill)) {
+            console.warn(`[sy-query-view] skill register failed: ${skill.code} ${skill.error ?? ""}`);
+        }
     }
 
     async onunload() {

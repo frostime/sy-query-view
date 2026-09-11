@@ -32,12 +32,15 @@ export default defineConfig({
         }),
 
         viteStaticCopy({
+            structured: true,
             targets: [
                 { src: "./README*.md", dest: "./" },
                 { src: "./CHANGELOG.md", dest: "./" },
                 { src: "./plugin.json", dest: "./" },
                 { src: "./preview.png", dest: "./" },
-                { src: "./icon.png", dest: "./" }
+                { src: "./icon.png", dest: "./" },
+                { src: "./docs/**", dest: "./" },
+                { src: "./skills/**", dest: "./" }
             ],
         }),
 
@@ -69,23 +72,25 @@ export default defineConfig({
                             const files = await fg([
                                 'public/i18n/**',
                                 './README*.md',
-                                './plugin.json'
+                                './plugin.json',
+                                './docs/**',
+                                './skills/**'
                             ]);
                             for (let file of files) {
                                 this.addWatchFile(file);
                             }
                         }
                     },
-                    replaceMDVars(outputDir),
-                    replaceMDImgUrl(outputDir)
+                    replaceMDImgUrl(outputDir),
+                    copySkillReferences(outputDir)
                 ] : [
                     // Clean up unnecessary files under dist dir
                     cleanupDistFiles({
                         patterns: ['i18n/*.yaml', 'i18n/*.md'],
                         distDir: outputDir
                     }),
-                    replaceMDVars(outputDir),
                     replaceMDImgUrl(outputDir),
+                    copySkillReferences(outputDir),
                     zipPack({
                         inDir: './dist',
                         outDir: './',
@@ -166,48 +171,37 @@ function cleanupDistFiles(options: { patterns: string[], distDir: string }) {
 }
 
 
-function replaceMDVars(dirname: string) {
-
+function copySkillReferences(dirname: string) {
     return {
-        name: 'rollup-plugin-replace-md-vars',
+        name: 'rollup-plugin-copy-skill-references',
         enforce: 'post',
         writeBundle: {
             sequential: true,
             order: 'post' as 'post',
             async handler() {
-                const path = await import('path');
                 const fs = await import('fs');
-
-                const readFile = (filepath: string) => {
-                    return fs.readFileSync(filepath, 'utf8');
+                const path = await import('path');
+                // 真相源：docs/en_US/agent-ref（文档站体系的一部分）；
+                // 产物：技能包内 references/（SDK 整目录同步，SKILL 自包含）
+                const srcDir = path.resolve(__dirname, 'docs/en_US/agent-ref');
+                const destDir = path.join(dirname, 'skills/sy-query-view/references');
+                fs.mkdirSync(destDir, { recursive: true });
+                for (const f of ['query-api.md', 'dataview.md', 'wrapped.md', 'types.md']) {
+                    fs.copyFileSync(path.join(srcDir, f), path.join(destDir, f));
+                    console.log(`[skill-refs] copied ${f}`);
                 }
-
-                const replaceMDFileVar = (dirname: string, varVal: Record<string, string>) => {
-                    const replace = (filepath: string) => {
-                        let md = readFile(filepath);
-                        for (const [key, value] of Object.entries(varVal)) {
-                            //@ts-ignore
-                            md = md.replaceAll(key, value);
-                        }
-                        fs.writeFileSync(filepath, md);
-                    }
-
-                    // 遍历所有 README*.md 文件
-                    const files = fs.readdirSync(dirname).filter(file => file.startsWith('README') && file.endsWith('.md'));
-                    for (const file of files) {
-                        replace(path.join(dirname, file));
-                    }
+                // 核心源码（影响 Query 使用的部分）打包进 references/source/，作为最终本地兜底
+                const srcCoreDir = path.resolve(__dirname, 'src/core');
+                const sourceDir = path.join(destDir, 'source');
+                fs.mkdirSync(sourceDir, { recursive: true });
+                for (const f of ['query.ts', 'proxy.ts']) {
+                    fs.copyFileSync(path.join(srcCoreDir, f), path.join(sourceDir, f));
+                    console.log(`[skill-refs] copied source/${f}`);
                 }
-                console.log('Replace MD vars under:', dirname);
-                const jsonfile = './types/types.d.ts.json';
-                const cache = JSON.parse(fs.readFileSync(jsonfile, 'utf8'));
-                replaceMDFileVar(dirname, cache);
             }
         }
     };
-
 }
-
 
 function replaceMDImgUrl(dirname: string) {
     return {
@@ -228,7 +222,7 @@ function replaceMDImgUrl(dirname: string) {
                     }
                     function replaceImageUrl(url: string) {
                         // Replace with your desired image hosting URL
-                        if (url.startsWith('assets/')) {
+                        if (url.startsWith('docs/assets/')) {
                             return `${prefix}/${url}`;
                         }
                         return url;

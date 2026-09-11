@@ -10,3 +10,6 @@ dist
 build
 types/**/*
 .aider*
+
+.pi-input.md
+.worktree/

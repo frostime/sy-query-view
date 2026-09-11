@@ -11,18 +11,14 @@ ${block.attr('box')} - ${block.attr('updated')}
 
 }}}
 `.trim();
-const query = async () => {
-    let dv = Query.DataView(protyle, item, top);
+let dv = Query.DataView(protyle, item, top);
 
-    let blocks = await Query.sql(`
-      select * from blocks where type='d'
-      order by updated desc limit 32;
-    `)
-    dv.addlist(blocks, {
-        renderer: columns
-    });
+let blocks = await Query.sql(`
+  select * from blocks where type='d'
+  order by updated desc limit 32;
+`)
+dv.addlist(blocks, {
+    renderer: columns
+});
 
-    dv.render();
-}
-
-return query();
+dv.render();

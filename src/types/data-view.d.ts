@@ -72,21 +72,14 @@ interface IEchartsOption {
 }
 
 /**
- * Implemented by class DataView
- */
-interface IDataView {
-    render: () => void;
-}
-
-/**
  * User customized view. If registered, you can use it inside DataView by `dv.xxx()` or `dv.addxxx()`
  */
 interface ICustomView {
     /**
      * Use the custom view
-     * @param dv - DataView instance, might be empty while validating process
+     * @param dv - DataView instance (declared as `any` for declaration simplicity; at runtime it is a DataView instance), might be empty while validating process
      */
-    use: (dv?: IDataView) => {
+    use: (dv?: any) => {
         render: (container: HTMLElement, ...args: any[]) => void | string | HTMLElement; //Create the user custom view.
         dispose?: () => void;  // Unmount hook for the user custom view.
     },

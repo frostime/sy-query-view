@@ -43,7 +43,7 @@ const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
  * DataView class for creating and managing dynamic data visualizations
  * Provides various methods for visualizing data.
  */
-export class DataView extends UseStateMixin implements IDataView {
+export class DataView extends UseStateMixin {
     /** @internal */
     private protyle: IProtyle;
 
@@ -329,6 +329,7 @@ export class DataView extends UseStateMixin implements IDataView {
      * Persist state across renders; it will store the state in the block attributes when disposing, and restore it when creating.
      * @param key - The key of the state
      * @param initialValue - The initial value of the state
+     * @note Changes are written to the block attributes when the view is disposed — not persisted in real time
      * @returns An IState object -- see {@link IState}
      * @example
      * const count = dv.useState('count', 0);
@@ -373,7 +374,8 @@ export class DataView extends UseStateMixin implements IDataView {
      * Wrap an element into a view container
      * @param ele 
      */
-    view(ele: HTMLElement | string) {
+    /** @internal */
+    private view(ele: HTMLElement | string) {
         let view: HTMLElement;
         if (typeof ele === 'string') {
             view = newViewWrapper();
@@ -417,7 +419,8 @@ export class DataView extends UseStateMixin implements IDataView {
     /** @internal */
     addele = this.addElement;
 
-    isValidViewContainer(container: HTMLElement) {
+    /** @internal */
+    private isValidViewContainer(container: HTMLElement) {
         if (!container.classList.contains(styles["data-view-component"])) {
             return false;
         }
@@ -461,7 +464,7 @@ export class DataView extends UseStateMixin implements IDataView {
      * @warn Don not duplicately specify dispose function for new view!
      * @returns
      */
-    replaceView(id: string, viewContainer: HTMLElement, disposer?: () => void) {
+    replaceView(id: string, viewContainer: HTMLElement, disposer?: () => void): HTMLElement | null {
         if (!id) return null;
         viewContainer = this.view(viewContainer);
 
@@ -512,6 +515,14 @@ export class DataView extends UseStateMixin implements IDataView {
         return elem;
     }
 
+    /**
+     * Renders a collapsible details/summary element
+     * @param summary - Text placed in the <summary> tag; inserted as raw HTML, not markdown — do not pass untrusted content
+     * @param content - Detail body; a string is inserted as raw HTML (not markdown); an HTMLElement is appended directly
+     * @returns An HTMLDetailsElement, expanded by default (open=true)
+     * @example
+     * dv.adddetails('Summary text', '<p>Body content</p>');
+     */
     details(summary: string, content: string | HTMLElement) {
         const details: HTMLDetailsElement = newViewWrapper('details') as HTMLDetailsElement;
         details.innerHTML = `<summary>${summary}</summary>${typeof content === 'string' ? content : ''}`;
@@ -686,7 +697,8 @@ export class DataView extends UseStateMixin implements IDataView {
         const flex = options.flex ?? Array(elements.length).fill(1);
         const column = (ele: HTMLElement, i: number) => {
             ele.classList.add(styles['column']);
-            flex[i] !== 1 && columns.style.setProperty('--flex-grow', flex[i]);
+            // 写入每列自身，避免覆盖父容器单一变量（--flex-grow 是 CSS 变量，可继承）
+            flex[i] !== 1 && ele.style.setProperty('--flex-grow', flex[i]);
             return ele;
         }
 
@@ -1154,7 +1166,7 @@ export class DataView extends UseStateMixin implements IDataView {
                 roam: options.roam ?? false,
                 data: [data],
                 orient: options.orient || 'TB',
-                layout: 'orthogonal',
+                layout: options.layout ?? 'orthogonal',
                 symbolSize: options.symbolSize ?? 14,
                 initialTreeDepth: -1,
                 lineStyle: {
@@ -1306,16 +1318,14 @@ export class DataView extends UseStateMixin implements IDataView {
             width: 2.5
         };
         for (const link of links) {
-            const source = link.source;
-            const targets = link.target;
-            delete link.source;
-            delete link.target;
-            if (Array.isArray(targets)) {
-                for (const target of targets) {
-                    graphLinks.push({ source, target, lineStyle, ...link });
+            // 非 inplace：解构排除 source/target，不修改调用者传入的 link 对象
+            const { source, target, ...rest } = link;
+            if (Array.isArray(target)) {
+                for (const t of target) {
+                    graphLinks.push({ source, target: t, lineStyle, ...rest });
                 }
             } else {
-                graphLinks.push({ source, target: targets, lineStyle, ...link });
+                graphLinks.push({ source, target, lineStyle, ...rest });
             }
         }
 

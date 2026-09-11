@@ -1,8 +1,8 @@
 /**
  * @name sy-query-view
  * @author frostime
- * @version 1.2.3
- * @updated 2025-05-21T01:53:38.404Z
+ * @version 2.0.0
+ * @updated 2026-09-11T11:00:03.054Z
  */
 
 declare module 'siyuan' {
@@ -22,22 +22,44 @@ import { IProtyle } from "siyuan";
 
 
 type DeprecatedParam<T> = T;
+type DateFormat = 'date' | 'datetime';
+type DateFormatInput = DateFormat | DeprecatedParam<boolean>;
+type DateOffsetUnit = 'd' | 'w' | 'm' | 'y';
+type DateOffset = number | `${bigint}${DateOffsetUnit}`;
+type SiYuanDateConstructorArgs = [] | [value: string | number | Date] | [year: number, monthIndex: number, date?: number, hours?: number, minutes?: number, seconds?: number, ms?: number];
 /**
- * Data class for SiYuan timestamp
- * In SiYuan, the timestamp is in the format of yyyyMMddHHmmss
+ * A local-calendar Date specialized for SiYuan date strings.
+ *
+ * An 8-digit `yyyyMMdd` value represents a calendar date without a time or time zone.
+ * Converting it to JavaScript Date maps it to the start of that date in the local time zone.
+ * A 14-digit `yyyyMMddHHmmss` value represents local date and time to second precision.
  */
 declare class SiYuanDate extends Date {
+    /** Returns a copy at the start of the same local calendar date. */
     beginOfDay(): SiYuanDate;
-    toString(hms?: boolean): string;
+    /**
+     * Converts this value to a compact SiYuan date string.
+     * @param format - `'date'` returns `yyyyMMdd`; `'datetime'` (default) returns `yyyyMMddHHmmss`; deprecated booleans map `false` to `'date'` and `true` to `'datetime'`
+     * @returns An 8-digit date or 14-digit local date-time string
+     */
+    toString(format?: DateFormatInput): string;
     [Symbol.toPrimitive](hint: string): any;
+    /**
+     * Parses an exact 8-digit SiYuan date or 14-digit SiYuan date-time string in the local time zone.
+     * Invalid formats and impossible calendar values throw instead of being silently normalized.
+     */
     static fromString(timestr: string): SiYuanDate;
     /**
-     * Format date
-     * @param fmt default as 'yyyy-MM-dd HH:mm:ss'
-     * @returns
+     * Formats this date with QV's date-time tokens; defaults to `yyyy-MM-dd HH:mm:ss`.
+     * @param fmt - Format containing `yyyy`, `yy`, `MM`, `dd`, `HH`, `mm`, or `ss`
      */
     format(fmt?: string): string;
-    add(days: number | string): SiYuanDate;
+    /**
+     * Returns a copy offset by calendar days, weeks, months, or years.
+     * Numeric values mean calendar days; strings must be an integer followed by `d`, `w`, `m`, or `y`.
+     * Month and year offsets retain JavaScript Date's overflow behavior.
+     */
+    add(offset?: DateOffset): SiYuanDate;
 }
 
 declare const Query: {
@@ -54,61 +76,72 @@ declare const Query: {
      * Every function here is sync function, no need to await
      */
     Utils: {
-        Date: (value: string | number | Date) => SiYuanDate;
         /**
-         * Gets timestamp for current time with optional day offset
-         * @param days - Number of days to offset (positive or negative)
-         * - {number} 直接用数字
-         * - {string} 使用字符串，如 '1d' 表示 1 天，'2w' 表示 2 周，'3m' 表示 3 个月，'4y' 表示 4 年
-         * - 可以为负数
-         * @returns Timestamp string in yyyyMMddHHmmss format
+         * Creates a SiYuanDate using native Date constructor arguments.
+         * Exact `yyyyMMdd` and `yyyyMMddHHmmss` strings are parsed as local SiYuan dates instead of native date strings.
+         * @returns A SiYuanDate; call without arguments for the current local date and time
+         * @example Query.Utils.Date('20260827').add('1w').toString('date')
          */
-        now: (days?: number | string, hms?: boolean) => any;
+        Date: (...args: SiYuanDateConstructorArgs) => SiYuanDate;
         /**
-         * Gets the timestamp for the start of today
-         * @param {boolean} hms - Whether to include time, e.g today(false) returns 20241201, today(true) returns 20241201000000
-         * @returns Timestamp string in yyyyMMddHHmmss format
+         * Gets the current local date-time with an optional calendar offset.
+         * @param offset - Integer days, or an integer with `d`, `w`, `m`, or `y`, such as `-7d` or `2w`
+         * @param format - `'date'` returns `yyyyMMdd`; `'datetime'` (default) returns `yyyyMMddHHmmss`; deprecated booleans map `false` to `'date'` and `true` to `'datetime'`
+         * @returns An 8-digit date or 14-digit local date-time string
          */
-        today: (hms?: boolean) => any;
+        now: (offset?: DateOffset, format?: "date" | "datetime" | boolean) => string;
         /**
-         * Gets the timestamp for the start of current week
-         * @param {boolean} hms - Whether to include time, e.g thisWeek(false) returns 20241201, thisWeek(true) returns 20241201000000
-         * @returns Timestamp string in yyyyMMddHHmmss format
+         * Gets the start of the current local calendar date.
+         * @param format - `'date'` returns `yyyyMMdd`; `'datetime'` (default) returns `yyyyMMddHHmmss`; deprecated booleans map `false` to `'date'` and `true` to `'datetime'`
+         * @returns An 8-digit date or the same date at `000000`
          */
-        thisWeek: (hms?: boolean) => any;
+        today: (format?: "date" | "datetime" | boolean) => string;
         /**
-         * Gets the timestamp for the start of next week
-         * @returns Timestamp string in yyyyMMddHHmmss format
+         * Gets the start of the current local week; weeks start on Sunday.
+         * @param format - `'date'` returns `yyyyMMdd`; `'datetime'` (default) returns `yyyyMMddHHmmss`; deprecated booleans map `false` to `'date'` and `true` to `'datetime'`
+         * @returns An 8-digit date or that Sunday at `000000`
          */
-        lastWeek: (hms?: boolean) => any;
+        thisWeek: (format?: "date" | "datetime" | boolean) => string;
         /**
-         * Gets the timestamp for the start of current month
-         * @returns Timestamp string in yyyyMMddHHmmss format
+         * Gets the start of the previous local week; weeks start on Sunday.
+         * @param format - `'date'` returns `yyyyMMdd`; `'datetime'` (default) returns `yyyyMMddHHmmss`; deprecated booleans map `false` to `'date'` and `true` to `'datetime'`
+         * @returns An 8-digit date or that Sunday at `000000`
          */
-        thisMonth: (hms?: boolean) => any;
+        lastWeek: (format?: "date" | "datetime" | boolean) => string;
         /**
-         * Gets the timestamp for the start of last month
-         * @returns Timestamp string in yyyyMMddHHmmss format
+         * Gets the start of the current local calendar month.
+         * @param format - `'date'` returns `yyyyMMdd`; `'datetime'` (default) returns `yyyyMMddHHmmss`; deprecated booleans map `false` to `'date'` and `true` to `'datetime'`
+         * @returns An 8-digit date or the first day of the month at `000000`
          */
-        lastMonth: (hms?: boolean) => string;
+        thisMonth: (format?: "date" | "datetime" | boolean) => string;
         /**
-         * Gets the timestamp for the start of current year
-         * @returns Timestamp string in yyyyMMddHHmmss format
+         * Gets the start of the previous local calendar month.
+         * @param format - `'date'` returns `yyyyMMdd`; `'datetime'` (default) returns `yyyyMMddHHmmss`; deprecated booleans map `false` to `'date'` and `true` to `'datetime'`
+         * @returns An 8-digit date or the first day of the previous month at `000000`
          */
-        thisYear: (hms?: boolean) => string;
+        lastMonth: (format?: "date" | "datetime" | boolean) => string;
         /**
+         * Gets the start of the current local calendar year.
+         * @param format - `'date'` returns `yyyyMMdd`; `'datetime'` (default) returns `yyyyMMddHHmmss`; deprecated booleans map `false` to `'date'` and `true` to `'datetime'`
+         * @returns An 8-digit date or January 1 at `000000`
+         */
+        thisYear: (format?: "date" | "datetime" | boolean) => string;
         /**
-         * Converts SiYuan timestamp string to Date object
-         * @param timestr - SiYuan timestamp (yyyyMMddHHmmss)
-         * @returns Date object
+         * Converts an exact compact SiYuan string to SiYuanDate in the local time zone.
+         * An 8-digit `yyyyMMdd` input is a calendar date and maps to the start of that local date;
+         * a 14-digit `yyyyMMddHHmmss` input includes local time to second precision.
+         * Invalid formats and impossible calendar values throw an error.
+         * @param timestr - An 8-digit date or 14-digit local date-time string
+         * @returns The parsed SiYuanDate
          */
         asDate: (timestr: string) => SiYuanDate;
         /**
-         * Converts Date object to SiYuan timestamp format
+         * Converts a valid Date to compact SiYuan local date format.
          * @param date - Date to convert
-         * @returns Timestamp string in yyyyMMddHHmmss format
+         * @param format - `'date'` returns `yyyyMMdd`; `'datetime'` (default) returns `yyyyMMddHHmmss`
+         * @returns An 8-digit date or 14-digit local date-time string
          */
-        asTimestr: (date: Date) => any;
+        asTimestr: (date: Date, format?: "date" | "datetime") => string;
         /**
          * Converts a block to a SiYuan link format
          * @param b - Block to convert
@@ -121,6 +154,12 @@ declare const Query: {
          * @returns String in reference format ((id 'content'))
          */
         asRef: (b: Block) => string;
+        /**
+         * Converts blocks into an object keyed by a block property.
+         * @param blocks - Blocks to index
+         * @param key - Property used as the key; defaults to `id`
+         * @returns Object whose keys are the selected property values
+         */
         asMap: (blocks: Block[], key?: string) => {
             [key: string]: Block;
             [key: number]: Block;
@@ -168,6 +207,7 @@ declare const Query: {
             onlyDate?: boolean;
             onlyTime?: boolean;
         }) => string;
+        /** Opens a block in the current SiYuan UI. */
         openBlock: (id: BlockId, options?: {
             zoomIn?: boolean;
             action?: import("siyuan").TProtyleAction[];
@@ -181,9 +221,10 @@ declare const Query: {
      * @param useWrapBlock - Whether to wrap blocks inside the WrappedList
      * @returns Wrapped block(s)
      */
-    wrapBlocks: (blocks: Block[] | Block, useWrapBlock?: boolean) => Block[] | IWrappedBlock;
+    wrapBlocks: (blocks: Block[] | Block, useWrapBlock?: boolean) => IWrappedBlock | IWrappedList<IWrappedBlock>;
     /**
      * SiYuan Kernel Request API
+     * @note Kernel request only — NOT arbitrary HTTP. Use Query.gpt for external HTTP(S) fetch.
      * @example
      * await Query.request('/api/outline/getDocOutline', {
      *     id: docId
@@ -192,7 +233,7 @@ declare const Query: {
     request: typeof request;
     /**
      * Gets blocks by their IDs
-     * @note This API recieve sequence of block IDs, and always return an array of Block.
+     * @note This API receives a sequence of block IDs and always returns an array of wrapped blocks.
      * @param ids - Block IDs to retrieve
      * @returns Array of wrapped blocks
      * @alias `getBlocksById`
@@ -221,10 +262,10 @@ declare const Query: {
     /**
      * Executes SQL query and optionally wraps results
      * @param fmt - SQL query string
-     * @param wrap - Whether to wrap results
-     * @returns Query results
+     * @param wrap - Whether to wrap results; defaults to true when omitted
+     * @returns Query results: an IWrappedList by default, plain Block[] when wrap is false
      */
-    sql: (fmt: string, wrap?: boolean) => Promise<IWrappedList<IWrappedBlock>>;
+    sql: <W extends boolean = true>(fmt: string, wrap?: W) => Promise<W extends false ? Block[] : IWrappedList<IWrappedBlock>>;
     /**
      * Finds backlinks to a specific block
      * @param id - Block ID to find backlinks for
@@ -239,69 +280,86 @@ declare const Query: {
      * @param options - Options
      * @param options.valMatch - Match type ('=' or 'like')
      * @param options.limit - Maximum number of results
-     * @param limit - (Deprecated) Maximum number of results
      * @returns Array of matching blocks
      */
-    attr: (name: string, val?: string, optionDeprecatedAsValMatch?: {
+    attr: (name: string, val?: string, options?: {
         valMatch?: "=" | "like";
         limit?: number;
-    } | DeprecatedParam<"=" | "like">, limit?: DeprecatedParam<number>) => Promise<IWrappedList<IWrappedBlock>>;
+    }) => Promise<IWrappedList<IWrappedBlock>>;
     /**
-     * Search blocks by tags
+     * Lists the complete SiYuan tag tree using the current tag-panel sorting.
+     * Names and labels are returned as decoded text, and leaf nodes always have an empty `children` array.
+     * A node's `count` is the number of direct occurrences of that exact tag; it does not include descendants.
+     * Parent nodes synthesized only to represent a hierarchy therefore have a count of zero.
+     * @returns Complete hierarchical tag list, or an empty array when the kernel request fails
+     * @example
+     * const tags = await Query.listTags();
+     * const projectTag = tags.find(tag => tag.label === 'project');
+     */
+    listTags: () => Promise<QueryTagNode[]>;
+    /**
+     * Search blocks by tags.
+     * Exact matching treats `%` and `_` as literal tag characters; `like` matching treats them as SQL wildcards.
      * @param tags - Tags to search for; can provide multiple tags
      * @param options - Additional options
      * @param options.join - Join type ('or' or 'and')
      * @param options.limit - Maximum number of results
-     * @param options.match - Match type ('=' or 'like'), if `like` the tags will be automatically add % as prefix and suffix
-     * @param limit - (Deprecated) Maximum number of results
+     * @param options.match - Match type ('=' or 'like'); `like` searches within tag labels and allows `%` / `_` wildcards
      * @returns Array of blocks matching the tags
      * @example
-     * Query.tag('tag1') // Search for blocks with 'tag1'
+     * Query.tag('tag1') // Search for blocks with the exact tag 'tag1'
      * Query.tag(['tag1', 'tag2'], { join: 'or' }) // Search for blocks with 'tag1' or 'tag2'
-     * Query.tag(['tag1', 'tag2'], { join: 'and' }) // Search for blocks with 'tag1' and 'tag2'
+     * Query.tag(['tag1', 'tag2'], { join: 'and' }) // Search for blocks with both 'tag1' and 'tag2'
+     * Query.tag('project/%', { match: 'like' }) // Search hierarchical tags under 'project'
      */
-    tag: (tags: string | string[], optionDeprecatedAsJoin?: {
+    tag: (tags: string | string[], options?: {
         join?: "or" | "and";
         limit?: number;
         match?: "=" | "like";
-    } | DeprecatedParam<"or" | "and">, limit?: DeprecatedParam<number>) => Promise<IWrappedList<IWrappedBlock>>;
+    }) => Promise<IWrappedList<IWrappedBlock>>;
     /**
-     * Find unsolved task blocks
+     * Finds unsolved task blocks, optionally updated on or after a local date boundary.
      * @param options - Options
-     * @param options.after - After which the blocks were updated
+     * @param options.after - Inclusive update boundary as Date, `yyyyMMdd`, or `yyyyMMddHHmmss`; dates map to local start of day
      * @param options.limit - Maximum number of results
-     * @param limit - (Deprecated) Maximum number of results
      * @returns Array of unsolved task blocks
      * @example
      * Query.task()
-     * Query.task({ after: '2024101000' })
-     * Query.task({ limit: 32 })
+     * Query.task({ after: Query.Utils.thisMonth(), limit: 32 })
+     * Query.task({ after: new Date(2024, 9, 10) })
      */
-    task: (optionDeprecatedAsAfter?: {
+    task: (options?: {
         limit?: number;
-        after?: string;
-    } | DeprecatedParam<string>, limit?: DeprecatedParam<number>) => Promise<IWrappedList<IWrappedBlock>>;
+        after?: Date | string;
+    }) => Promise<IWrappedList<IWrappedBlock>>;
     /**
-     * Gets the daily notes document
+     * Gets daily note documents, optionally limited to an inclusive local calendar-date range.
+     * Date objects and 14-digit date-times are reduced to their local `yyyyMMdd` date.
+     * When `after` or `before` is specified, results are ordered by daily note date descending.
      * @param options - Options
-     * @param options.notebook - Notebook ID, if not specified, all daily notes documents will be returned
-     * @param options.limit - Maximum number of results
-     * @returns Array of daily notes document blocks
+     * @param options.notebook - Notebook ID; all notebooks are searched when omitted
+     * @param options.after - Earliest date to include, as Date, `yyyyMMdd`, or `yyyyMMddHHmmss`
+     * @param options.before - Latest date to include, as Date, `yyyyMMdd`, or `yyyyMMddHHmmss`
+     * @param options.limit - Maximum number of results, defaults to 64
+     * @returns Array of daily note document blocks
      * @example
      * Query.dailynote()
      * Query.dailynote({ notebook: '20231224140619-bpyuay4' })
-     * Query.dailynote({ limit: 32 })
+     * Query.dailynote({ after: Query.Utils.thisMonth('date'), before: Query.Utils.today('date') })
+     * Query.dailynote({ after: new Date(2024, 0, 1), limit: 32 })
      */
-    dailynote: (optionsDeprecatedAsNotebook?: {
+    dailynote: (options?: {
         notebook?: NotebookId;
+        after?: Date | string;
+        before?: Date | string;
         limit?: number;
-    } | DeprecatedParam<NotebookId>, limitDeprecated?: DeprecatedParam<number>) => Promise<IWrappedList<IWrappedBlock>>;
+    }) => Promise<IWrappedList<IWrappedBlock>>;
     /**
      * Gets child documents of a block
      * @param b - Parent block or block ID
      * @returns Array of child document blocks
      */
-    childDoc: (b: BlockId | Block) => Promise<Block[]>;
+    childDoc: (b: BlockId | Block) => Promise<IWrappedList<IWrappedBlock>>;
     /**
      * Get nearby blocks relative to the specified block within the same container.
      *
@@ -338,11 +396,11 @@ declare const Query: {
         number?: number;
     }) => Promise<{
         previous?: {
-            id: Block;
+            id: BlockId;
             markdown: string;
         }[];
         next?: {
-            id: Block;
+            id: BlockId;
             markdown: string;
         }[];
     }>;
@@ -350,31 +408,40 @@ declare const Query: {
      * Search blocks that contain the given keywords
      * @param keywords {string | string[]} - Keywords to search for; can provide multiple keywords
      * @param options - Options
-     * @param options.join - Join type ('or' or 'and')
+     * @param options.relation - Relation between keywords at block level: 'any' — blocks containing at least one keyword; 'all' — blocks containing every keyword (default: 'any')
      * @param options.limit - Maximum number of results to return, default is 999
-     * @param limit - (Deprecated) Maximum number of results to return, default is 999
      * @returns Array of blocks that contain the given keywords
+     * @deprecated-key join: 旧版参数名（'or' | 'and'），语义映射：'or' → 'any'，'and' → 'all'；兼容保留
      */
     keyword: (keywords: string | string[], options?: {
+        relation?: "any" | "all";
+        limit?: number;
+    } | DeprecatedParam<"any" | "all"> | {
         join?: "or" | "and";
         limit?: number;
-    } | DeprecatedParam<"or" | "and">, limit?: DeprecatedParam<number>) => Promise<IWrappedList<IWrappedBlock>>;
+    } | DeprecatedParam<"or" | "and">) => Promise<IWrappedList<IWrappedBlock>>;
     /**
      * Search the document that contains all the keywords.
      * @param keywords {string | string[]} keywords to search for; can provide multiple keywords
      * @param options - Options
      * @param options.join - Join type ('or' or 'and')
      * @param options.limit - Maximum number of results to return, default is 999
-     * @returns The document blocks that contains all the given keywords; the blocks will attached a 'keywords' property, which is the matched keyword blocks
+     * @param options.relation - Relation between keywords: 'any' — documents containing at least one keyword; 'all' — documents containing every keyword (default: 'all')
+     * @returns The document blocks matching the keywords; the blocks will attached a 'keywords' property, which is the matched keyword blocks
      * @example
      * let docs = await Query.keywordDoc(['Keywords A', 'Keywords B']);
      * //each block in docs is a document block that contains all the keywords
      * docs[0].keywords['Keywords A'] // get the matched keyword block by using `keywords` property
+     * @deprecated-key join: 旧版参数名（'or' | 'and'），语义映射：'or' → 'any'，'and' → 'all'；兼容保留
+     * @deprecated-key 旧式字符串形态（第二个参数直接传 'or'/'and'）同样兼容
      */
     keywordDoc: (keywords: string | string[], options?: {
+        relation?: "any" | "all";
+        limit?: number;
+    } | DeprecatedParam<"any" | "all"> | {
         join?: "or" | "and";
         limit?: number;
-    } | DeprecatedParam<"or" | "and">, limit?: DeprecatedParam<number>) => Promise<Block[]>;
+    } | DeprecatedParam<"or" | "and">) => Promise<any[] | IWrappedList<IWrappedBlock>>;
     /**
      * Randomly roam blocks
      * @param limit - Maximum number of results
@@ -382,6 +449,12 @@ declare const Query: {
      * @returns Array of randomly roamed blocks
      */
     random: (limit?: number, type?: BlockType) => Promise<IWrappedList<IWrappedBlock>>;
+    /**
+     * Returns the markdown content represented by a block or block ID.
+     * Document and heading blocks include their child blocks; other block types return their own markdown.
+     * @param input - Block ID or block object
+     * @returns Markdown text
+     */
     markdown: (input: BlockId | Block) => Promise<any>;
     /**
      * Return the statistics of the document with given document ID
@@ -411,10 +484,10 @@ declare const Query: {
      * @returns Processed blocks or block IDs
      * @alias `redirect`
      */
-    fb2p: (inputs: Block[], enable?: {
+    fb2p: (inputs: Block[] | BlockId[], enable?: {
         heading?: boolean;
         doc?: boolean;
-    }) => Promise<Block[]>;
+    }) => Promise<IWrappedList<IWrappedBlock>>;
     /**
      * Prune/Merge blocks from SQL search results to eliminate duplicates.
      *
@@ -439,10 +512,10 @@ declare const Query: {
      * @returns {Block[]} - A new array containing only the unique (pruned) blocks.
      * @alias `prune`
      */
-    pruneBlocks: (blocks: Block[], keep?: "leaf" | "root", advanced?: boolean) => Promise<Block[]>;
+    pruneBlocks: (blocks: Block[], keep?: "leaf" | "root", advanced?: boolean) => Promise<IWrappedList<IWrappedBlock>>;
     /**
      * Send GPT request, use AI configuration in `siyuan.config.ai.openAI` by default
-     * @param prompt - Prompt
+     * @param input - Prompt text or a user/assistant message history
      * @param options - Options
      * @param options.url - Custom API URL
      * @param options.model - Custom API model
@@ -453,6 +526,7 @@ declare const Query: {
      * @param options.streamMsg - Callback function for streaming messages, only works when options.stream is true
      * @param options.streamInterval - Interval for calling options.streamMsg on each chunk, default: 1
      * @returns GPT response
+     * @note The only API that sends external HTTP(S) requests via fetch; every other Query API is a SiYuan kernel request.
      */
     gpt: (input: string | {
         role: "user" | "assistant";
@@ -547,21 +621,14 @@ interface IEchartsOption {
 }
 
 /**
- * Implemented by class DataView
- */
-interface IDataView {
-    render: () => void;
-}
-
-/**
  * User customized view. If registered, you can use it inside DataView by `dv.xxx()` or `dv.addxxx()`
  */
 interface ICustomView {
     /**
      * Use the custom view
-     * @param dv - DataView instance, might be empty while validating process
+     * @param dv - DataView instance (declared as `any` for declaration simplicity; at runtime it is a DataView instance), might be empty while validating process
      */
-    use: (dv?: IDataView) => {
+    use: (dv?: any) => {
         render: (container: HTMLElement, ...args: any[]) => void | string | HTMLElement; //Create the user custom view.
         dispose?: () => void;  // Unmount hook for the user custom view.
     },
@@ -603,7 +670,7 @@ interface IState<T> {
  * DataView class for creating and managing dynamic data visualizations
  * Provides various methods for visualizing data.
  */
-export declare class DataView implements IDataView {
+export declare class DataView {
     /**
      * The id of the root document
      */
@@ -621,6 +688,7 @@ export declare class DataView implements IDataView {
      * Persist state across renders; it will store the state in the block attributes when disposing, and restore it when creating.
      * @param key - The key of the state
      * @param initialValue - The initial value of the state
+     * @note Changes are written to the block attributes when the view is disposed — not persisted in real time
      * @returns An IState object -- see {@link IState}
      * @example
      * const count = dv.useState('count', 0);
@@ -637,11 +705,6 @@ export declare class DataView implements IDataView {
      */
     addDisposer(dispose: () => void, id?: string): void;
     /**
-     * Wrap an element into a view container
-     * @param ele
-     */
-    view(ele: HTMLElement | string): HTMLElement;
-    /**
      * Add a custom element to the DataView.
      * If the passing is a view container, it will be directly appended.
      * Otherwise, it will be wrapped by a new container
@@ -651,7 +714,6 @@ export declare class DataView implements IDataView {
      * @alias addele
      */
     addElement(ele: HTMLElement | string, disposer?: () => void): HTMLElement;
-    isValidViewContainer(container: HTMLElement): boolean;
     /**
      * Remove the view element (by given the id of the container) from dataview
      * @param id Existed view's data-id
@@ -668,8 +730,8 @@ export declare class DataView implements IDataView {
      * @warn Don not duplicately specify dispose function for new view!
      * @returns
      */
-    replaceView(id: string, viewContainer: HTMLElement, disposer?: () => void): HTMLElement;
-    replaceview: (id: string, viewContainer: HTMLElement, disposer?: () => void) => HTMLElement;
+    replaceView(id: string, viewContainer: HTMLElement, disposer?: () => void): HTMLElement | null;
+    replaceview: (id: string, viewContainer: HTMLElement, disposer?: () => void) => HTMLElement | null;
     /**
      * Adds markdown content to the DataView
      * @param md - Markdown text to be rendered
@@ -678,6 +740,14 @@ export declare class DataView implements IDataView {
      * dv.addmd(`# Hello`);
      */
     markdown(md: string): HTMLElement;
+    /**
+     * Renders a collapsible details/summary element
+     * @param summary - Text placed in the <summary> tag; inserted as raw HTML, not markdown — do not pass untrusted content
+     * @param content - Detail body; a string is inserted as raw HTML (not markdown); an HTMLElement is appended directly
+     * @returns An HTMLDetailsElement, expanded by default (open=true)
+     * @example
+     * dv.adddetails('Summary text', '<p>Body content</p>');
+     */
     details(summary: string, content: string | HTMLElement): HTMLDetailsElement;
     /**
      * Creates a markdown list view for displaying blocks
@@ -1006,10 +1076,16 @@ export interface IWrappedBlock extends Block {
     unwrapped: Block;
     /** Block's URI link in format: siyuan://blocks/xxx */
     asurl: string;
+    /** Runtime-compatible alias of asurl */
+    tourl: string;
     /** Block's Markdown format link [content](siyuan://blocks/xxx) */
     aslink: string;
+    /** Runtime-compatible alias of aslink */
+    tolink: string;
     /** Block's SiYuan reference format text */
     asref: string;
+    /** Runtime-compatible alias of asref */
+    toref: string;
     /** Blocks's ial list, as object
      * @example
      * let icon = block.asial['icon'];
@@ -1042,7 +1118,7 @@ export interface IWrappedBlock extends Block {
 }
 
 /** Wrapped array interface with extended convenient methods */
-export interface IWrappedList<T> extends Array<T> {
+export interface IWrappedList<T = Block> extends Array<T> {
     /** Method to return the original array */
     unwrap(): T[];
     /** Original array */
@@ -1050,15 +1126,19 @@ export interface IWrappedList<T> extends Array<T> {
     /**
      * Converts the array to a map object, where the key is specified by the key parameter.
      * Equivalent to calling `array.reduce((acc, cur) => ({...acc, [cur[key]]: cur }), {})`
-     * @param key
+     * @param key - Key attribute, defaults to 'id'
      * @returns
      */
-    asMap: (key: string) => Record<string, Block>;
+    asMap: (key?: string) => Record<string, Block>;
     /**
      * Returns a new array containing only specified properties
+     * NOTE: a single attribute returns a wrapped array of scalar values
+     * (`pick('id')` → `IWrappedList<T['id']>`); multiple attributes return objects
      * @param attrs - Property names to keep
      */
-    pick(...attrs: (keyof T)[]): IWrappedList<Partial<T>>;
+    pick<A extends keyof T>(attr: A): IWrappedList<T[A]>;
+    /** Selects multiple properties and returns wrapped objects containing only those properties. */
+    pick<A extends keyof T>(...attrs: A[]): IWrappedList<Pick<T, A>>;
     /**
      * Returns a new array excluding specified properties
      * @param attrs - Property names to exclude
@@ -1067,7 +1147,7 @@ export interface IWrappedList<T> extends Array<T> {
     /**
      * Returns a new array sorted by specified property
      * @param attr - Property to sort by
-     * @param order - Sort direction, defaults to 'asc'
+     * @param order - Sort direction, defaults to 'desc'
      */
     sorton(attr: keyof T, order?: 'asc' | 'desc'): IWrappedList<T>;
     /**
@@ -1079,6 +1159,11 @@ export interface IWrappedList<T> extends Array<T> {
     /**
      * Returns a filtered new array, ensuring it's also an IWrappedList
      * @param predicate - Filter condition function
+     */
+    filter(predicate: (value: T, index: number, array: T[]) => boolean): IWrappedList<T>;
+    /**
+     * Returns a new array with filtered elements; the wrapper is preserved
+     * @param predicate - Filter function
      */
     filter(predicate: (value: T, index: number, array: T[]) => boolean): IWrappedList<T>;
     /**
@@ -1098,7 +1183,6 @@ export interface IWrappedList<T> extends Array<T> {
     /**
      * Returns a new array with added rows
      * @alias addrows
-     * @alias concat: modify the default method of Array
      */
     addrow(newItems: T[]): IWrappedList<T>;
     /**
@@ -1114,6 +1198,8 @@ export interface IWrappedList<T> extends Array<T> {
      */
     addcol(newItems: Record<string, ScalarValue | ScalarValue[]> | Record<string, ScalarValue>[] | ((b: T, index: number) => Record<string, ScalarValue> | Record<string, ScalarValue[]>)): IWrappedList<T>;
 }
+
+export declare function wrapList(list: Block[], useWrapBlock: false): IWrappedList<Block>;
 
 ///@index.d.ts
 /*
@@ -1148,6 +1234,17 @@ type NotebookConf = {
     createDocNameTemplate: string;
     dailyNoteSavePath: string;
     dailyNoteTemplatePath: string;
+}
+
+type QueryTagNode = {
+    /** Tag segment name. */
+    name: string;
+    /** Full tag path, including parent segments separated by `/`. */
+    label: string;
+    depth: number;
+    /** Number of direct occurrences of this exact tag; excludes descendants. */
+    count: number;
+    children: QueryTagNode[];
 }
 
 type BlockType = 

@@ -4,7 +4,31 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/2.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [2.0.0] - 2026-09-11
+
+### Added
+
+- 集成思源 Agent 系统: 增加了内置 SKILL，以及 debug qv 的 tool。
+- 增加内部参考文档面板
+- BREAKCHANGE 文档
+- 新增 `Query.listTags()`，用于获取完整、已解码的层级标签列表。
+- `Query.dailynote` 支持通过 `after` / `before` 按日记日期划定包含边界的检索范围。
+- 时间转换与查询边界支持 8 位 `yyyyMMdd`、14 位 `yyyyMMddHHmmss` 和 JavaScript `Date`，由对应 API 自动归一化。
+
+### Changed
+
+- 插件要求思源 3.8.0 或更高版本（minAppVersion 提升，旧版本环境在集市更新时收不到本次更新）。
+- 时间输出参数改用更明确的 `'date' | 'datetime'`；旧布尔值保持兼容并进入废弃期。
+- 非法的思源日期、日期范围和日期偏移会直接报错，不再静默产生无效日期或错误 SQL。
+
+### Fixed
+
+- 修复废弃参数警告文案：消除 `Query.Query.` 双前缀，提示改为指向 BREAKCHANGE 文档。
+- 修复文档站「复制 Agent Prompt」：路径改为内核文件路径（`/data/plugins/<插件名>/…`），思源内置 Agent 的 file.read 可直接读取。
+- 修复 `Query.tag()` 精确匹配将 `%`、`_` 误作通配符，以及单引号标签无法查询的问题。
+- 修复 `Query.Utils.lastMonth()` 在部分月末错误返回本月月初的问题。
+- 修复 `Query.Utils.asDate()` 无法解析同组 API 产生的 8 位日期的问题。
+- 修复插件自身文件内核写入（putFile/removeFile）未标识来源的问题：请求附带 `app` 字段，避免 data/storage/petal 下的变更广播触发自身插件的 onDataChanged（siyuan-note/siyuan#19187）。
 
 ## [1.3.0] - 2026-08-07
 
@@ -63,7 +87,8 @@ v1.1.0 曾因与思源的不兼容问题暂时下架；v1.2.0 重新上架，且
 - `Query.keyword` / `Query.keywordDoc` 旧参数用法弃用：`Query.keyword("keyword", "or", 10)` → `Query.keyword("keyword", { join: "or", limit: 10 })`。
 - `Query.dailynote` 旧参数用法弃用：`Query.dailynote("20231224140619-bpyuay4", 32)` → `Query.dailynote({ notebook: "20231224140619-bpyuay4", limit: 32 })`。
 
-[Unreleased]: https://github.com/frostime/sy-query-view/compare/v1.2.3...HEAD
+[Unreleased]: https://github.com/frostime/sy-query-view/compare/v2.0.0...HEAD
+[2.0.0]: https://github.com/frostime/sy-query-view/compare/v1.3.0...v2.0.0
 [1.3.0]: https://github.com/frostime/sy-query-view/compare/v1.2.3...v1.3.0
 [1.2.3]: https://github.com/frostime/sy-query-view/compare/v1.2.2...v1.2.3
 [1.2.2]: https://github.com/frostime/sy-query-view/compare/v1.2.1...v1.2.2
